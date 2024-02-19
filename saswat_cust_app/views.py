@@ -58,7 +58,7 @@ class SendOTPAPIView(APIView):
                 'message': "Mobile number does not exist",
 
                 }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response_data, status=status.HTTP_200_OK)
         except requests.exceptions.RequestException as e:
             return Response({'message': 'Error occurred while making the request'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -165,7 +165,7 @@ class ValidateOTPAPIView(APIView):
                         'message': "OTP has expired",
                     }
                     valid_otp_time.delete()
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(response_data, status=status.HTTP_200_OK)
                 elif valid_otp_mobile:
                     valid_otp_mobile.delete()
                 else:
@@ -173,13 +173,13 @@ class ValidateOTPAPIView(APIView):
                         'status': '01',
                         'message': "Invalid OTP",
                     }
-                    return JsonResponse(response_data, status=status.HTTP_401_UNAUTHORIZED)
+                    return JsonResponse(response_data, status=status.HTTP_200_OK)
             else:
                 response_data = {
                     'status': '01',
                     'message': "Mobile number does not exist",
                 }
-                return JsonResponse(response_data, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(response_data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
