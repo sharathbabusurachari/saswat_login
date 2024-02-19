@@ -18,4 +18,4 @@ echo "Nginx has been started"
 
 sudo systemctl status nginx
 
-python3 manage.py collectstatic
+python3 $WORKSPACE/manage.py collectstatic
