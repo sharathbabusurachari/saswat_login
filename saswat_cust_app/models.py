@@ -21,6 +21,7 @@ class UserDetails(models.Model):
     mobile_no = models.CharField(max_length=15)
     designation = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
+    designation_id = models.CharField(max_length=10, blank=True, null=True)
 
     def __str__(self):
         return self.first_name
@@ -32,6 +33,9 @@ class UserOtp(models.Model):
     otp_code = models.CharField(max_length=6)
     otp_genration_time = models.DateTimeField(auto_now_add=True)
     otp_expiration_time = models.DateTimeField()
+
+    def __str__(self):
+        return self.mobile_no
 
     def save(self, *args, **kwargs):
 
