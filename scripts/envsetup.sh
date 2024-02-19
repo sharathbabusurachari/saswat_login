@@ -1,15 +1,15 @@
 #!/bin/bash
 
 cd $WORKSPACE
-if [ -d "otp_env" ]
+if [ -d "saswatfinenv" ]
 then
     echo "Python virtual environment exists." 
 else
-    python3 -m venv otp_env
+    python3 -m venv saswatfinenv
 fi
 
 echo $PWD
-source otp_env/bin/activate
+source saswatfinenv/bin/activate
 
 
 pip3 install -r $WORKSPACE/requirements.txt
