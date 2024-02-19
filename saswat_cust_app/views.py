@@ -53,7 +53,12 @@ class SendOTPAPIView(APIView):
                     return Response(response_data,
                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
-                return Response({'detail': 'Mobile number does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {
+                'status': '01',
+                'message': "Mobile number does not exist",
+
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
         except requests.exceptions.RequestException as e:
             return Response({'message': 'Error occurred while making the request'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
