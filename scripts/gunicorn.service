@@ -1,0 +1,14 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=jenkins
+Group=jenkins
+WorkingDirectory=/var/lib/jenkins/workspace/02_DJango_CustApp_CICD/
+ExecStart=/var/lib/jenkins/workspace/02_DJango_CustApp_CICD/saswatfinenv/bin/gunicorn --workers 3 --log-level debug --error-logfile /var/lib/jenkins/workspace/02_DJango_CustApp_CICD/error.log --bind unix:/run/gunicorn.sock saswat_cust_info.wsgi:application
+
+
+[Install]
+WantedBy=multi-user.target
