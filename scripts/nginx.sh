@@ -17,3 +17,5 @@ sudo systemctl enable nginx
 echo "Nginx has been started"
 
 sudo systemctl status nginx
+
+python3 manage.py collectstatic
