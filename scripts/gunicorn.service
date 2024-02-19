@@ -6,8 +6,8 @@ After=network.target
 [Service]
 User=jenkins
 Group=jenkins
-WorkingDirectory=/var/lib/jenkins/workspace/02_DJango_CustApp_CICD/
-ExecStart=/var/lib/jenkins/workspace/02_DJango_CustApp_CICD/saswatfinenv/bin/gunicorn --workers 3 --log-level debug --error-logfile /var/lib/jenkins/workspace/02_DJango_CustApp_CICD/error.log --bind unix:/run/gunicorn.sock saswat_cust_info.wsgi:application
+WorkingDirectory=/var/lib/jenkins/workspace/04_Saswat_login_CICD/
+ExecStart=/var/lib/jenkins/workspace/04_Saswat_login_CICD/otp_env/bin/gunicorn --workers 3 --log-level debug --error-logfile /var/lib/jenkins/workspace/04_Saswat_login_CICD/error.log --bind unix:/run/gunicorn.sock saswat_cust_info.wsgi:application
 
 
 [Install]

@@ -3,7 +3,7 @@
 cd $WORKSPACE
 source saswatfinenv/bin/activate
 
-cd /var/lib/jenkins/workspace/02_DJango_CustApp_CICD/
+cd /var/lib/jenkins/workspace/04_Saswat_login_CICD/
 
 python3 manage.py makemigrations
 python3 manage.py migrate
@@ -11,7 +11,7 @@ python3 manage.py collectstatic
 
 echo "Migrations done"
 
-cd /var/lib/jenkins/workspace/02_DJango_CustApp_CICD/scripts
+cd /var/lib/jenkins/workspace/04_Saswat_login_CICD/scripts
 
 sudo cp -rf gunicorn.socket /etc/systemd/system/
 sudo cp -rf gunicorn.service /etc/systemd/system/
