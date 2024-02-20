@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'saswat_cust_app',
     'saswat_cust_info',
-    'saswat_login',
     'rest_framework.authtoken'
 ]
 
