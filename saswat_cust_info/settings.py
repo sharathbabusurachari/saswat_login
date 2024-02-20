@@ -123,7 +123,7 @@ STATIC_URL = 'static/'
 #STATIC_ROOT = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/static'
 #STATICFILES = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/static'
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR,‘static’)]
+STATICFILES_DIRS = os.path.join(BASE_DIR,‘static’)
 STATIC_ROOT = os.path.join(BASE_DIR, “static_collect”)
 
 # Default primary key field type
