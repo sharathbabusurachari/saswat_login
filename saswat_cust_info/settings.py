@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'saswat_cust_app',
     'saswat_cust_info',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -122,7 +122,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 #STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = BASE_DIR / 'static'
 #STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles'),]
 
 
