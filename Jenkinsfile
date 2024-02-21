@@ -49,8 +49,8 @@ pipeline{
 
                   steps {
                     withSonarQubeEnv('SonarQubeServer') {
-                       sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=saswat_login \
-                           -Dsonar.projectName=saswat_login-repo \
+                       sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=saswat_login_project \
+                           -Dsonar.projectName=saswat_login_project-repo \
                            -Dsonar.projectVersion=1.0 \
                            -Dsonar.sources=src/ \
                            -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
