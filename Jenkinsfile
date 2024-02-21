@@ -52,7 +52,7 @@ pipeline{
                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=saswat_login_project \
                            -Dsonar.projectName=saswat_login_project-repo \
                            -Dsonar.projectVersion=1.0 \
-                           -Dsonar.sources=$WORKSPACE/ \
+                           -Dsonar.sources=$WORKSPACE/saswat_cust_app/ \
                            -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
                            -Dsonar.junit.reportsPath=target/surefire-reports/ \
                            -Dsonar.jacoco.reportsPath=target/jacoco.exec \
