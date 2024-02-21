@@ -67,6 +67,9 @@ pipeline{
 
         stage('Publish to JFrog Repository'){
                     steps {
+                    sh '''
+                    echo 'PlacheHolder for Pushing Artifacts'
+                    '''
                     }
                 }
     }
