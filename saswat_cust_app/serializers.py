@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import OTP, UserOtp
+from .models import OTP, UserOtp, GpsModel
 
 
 # class OTPSerializer(serializers.ModelSerializer):
@@ -15,4 +15,8 @@ class OTPSerializer(serializers.ModelSerializer):
         model = UserOtp
         fields = ('mobile_no', 'otp_code', 'otp_genration_time')
 
+class GpsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GpsModel
+        fields = '__all__'
 
