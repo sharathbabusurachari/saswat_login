@@ -4,11 +4,11 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .utils import is_valid_indian_mobile_number
-from .models import OTP, UserOtp, UserDetails
-from rest_framework.permissions import AllowAny
+from .models import OTP, UserOtp, UserDetails, GpsModel
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.response import Response
 import random
-from saswat_cust_app.serializers import OTPSerializer
+from saswat_cust_app.serializers import OTPSerializer, GpsSerializer
 from datetime import datetime, timedelta
 import requests
 from rest_framework.authentication import SessionAuthentication
@@ -21,12 +21,20 @@ class SendOTPAPIView(APIView):
         mobile_no = request.data.get('mobile_no')
         url = 'http://20.235.246.32:8080/message/telspielmessage'
         try:
-            if UserOtp.objects.filter(mobile_no=mobile_no).exists():
-                return Response({'Error': 'OTP has already sent.'})
+            existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_genration_time').first()
+            if existing_otp is not None:
+                existing_otp.is_expired()
+                existing_otp.delete()
+                response_data = {
+                    'status': '02',
+                    'message': "An OTP has already been sent",
+
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
             # if not is_valid_indian_mobile_number(mobile_no):
             #     return JsonResponse({'error': 'Invalid Indian mobile number format'}, status=400)
-            if UserDetails.objects.filter(mobile_no=mobile_no).exists():
+            elif UserDetails.objects.filter(mobile_no=mobile_no).exists():
                 otp_code = str(random.randint(1000, 9999))
                 data = {
                     'otp': otp_code,
@@ -43,7 +51,7 @@ class SendOTPAPIView(APIView):
                         'message': "OTP sent successfully",
 
                     }
-                    return Response(response_data, status=200)
+                    return Response(response_data, status=status.HTTP_200_OK)
                 else:
                     response_data = {
                         'status': '01',
@@ -54,8 +62,8 @@ class SendOTPAPIView(APIView):
                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
                 response_data = {
-                'status': '01',
-                'message': "Mobile number does not exist",
+                    'status': '01',
+                    'message': "Mobile number does not exist",
 
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
@@ -64,53 +72,6 @@ class SendOTPAPIView(APIView):
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
-
-
-# class ValidateOTPAPIView(APIView):
-#     permission_classes = [AllowAny]
-#
-#     def post(self, request, *args, **kwargs):
-#         mobile_no = request.data.get('mobile_no')
-#         otp_entered = request.data.get('otp_code')
-#
-#         try:
-#             user_details = UserDetails.objects.get(mobile_no=mobile_no)
-#             try:
-#                 otp_record = UserOtp.objects.get(mobile_no=user_details)
-#             except UserOtp.DoesNotExist:
-#                 otp_record = UserOtp.objects.create(mobile_no=str(mobile_no))
-#             if otp_record.is_expired():
-#                 otp_record.delete()
-#                 return Response({'message': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
-#             elif otp_record.otp_code == otp_entered:
-#                 otp_record.delete()
-#                 return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
-#             else:
-#                 return Response({'message': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
-#         except UserDetails.DoesNotExist:
-#             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-#         except UserOtp.DoesNotExist:
-#             return Response({'message': 'No OTP found for this user'}, status=status.HTTP_404_NOT_FOUND)
-
-# class ValidateOTPAPIView(APIView):
-#     permission_classes = [AllowAny]
-#
-#     def post(self, request, *args, **kwargs):
-#         mobile_no = request.data.get('mobile_no')
-#         otp_code = request.data.get('otp_code')
-#         # if not is_valid_indian_mobile_number(mobile_no):
-#         #     return JsonResponse({'error': 'Invalid Indian mobile number format'}, status=400)
-#
-#         if UserDetails.objects.filter(mobile_no=mobile_no).exists():
-#             otp_instance = get_object_or_404(UserOtp, mobile_no=str(mobile_no), otp_code=otp_code)
-#             otp_instance.delete()
-#
-#             return JsonResponse({'success': 'OTP verified successfully'}, status=200)
-#         else:
-#             return JsonResponse({'error': 'Invalid OTP'}, status=404)
-#
 class ValidateOTPAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = [MobileNumberAuthentication]
@@ -125,11 +86,11 @@ class ValidateOTPAPIView(APIView):
                 check_valid_time = datetime.now() - timedelta(minutes=2)
                 user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
                 valid_otp_mobile = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).first()
-                valid_otp_time = UserOtp.objects.filter(mobile_no=mobile_no, otp_expiration_time__lt=timezone.now()).first()
+                valid_otp_time = UserOtp.objects.filter(mobile_no=mobile_no,
+                                                        otp_expiration_time__lt=timezone.now()).first()
 
                 verify_user_otp = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code,
-                                             otp_genration_time__gte=check_valid_time).first()
-                print(valid_otp_mobile, valid_otp_time, verify_user_otp)
+                                                         otp_genration_time__gte=check_valid_time).first()
                 session_id = request.auth
 
                 # otp_instance = get_object_or_404(UserOtp, mobile_no=str(mobile_no), otp_code=otp_code)
@@ -158,7 +119,7 @@ class ValidateOTPAPIView(APIView):
                         "designation_id": user_det.designation_id
                     }
                     verify_user_otp.delete()
-                    return Response(response_data,status=200)
+                    return Response(response_data, status=200)
                 elif valid_otp_time:
                     response_data = {
                         'status': '01',
@@ -184,59 +145,20 @@ class ValidateOTPAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class GetGpsView(APIView):
+    permission_classes = [AllowAny]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def post(self, request, *args, **kwargs):
+        get_gps_serializer = GpsSerializer(data=request.data)
+        try:
+            if get_gps_serializer.is_valid():
+                get_gps_serializer.save()
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(get_gps_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

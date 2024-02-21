@@ -34,9 +34,6 @@ class UserOtp(models.Model):
     otp_genration_time = models.DateTimeField(auto_now_add=True)
     otp_expiration_time = models.DateTimeField()
 
-    def __str__(self):
-        return self.mobile_no
-
     def save(self, *args, **kwargs):
 
         if not self.pk:
@@ -45,7 +42,7 @@ class UserOtp(models.Model):
 
 
     def is_expired(self):
-        return self.otp_expiration_time < timezone.now()
+        return self.otp_genration_time < timezone.now() - timezone.timedelta(minutes=2)
 
     # @staticmethod
     # def delete_expired():
@@ -53,3 +50,17 @@ class UserOtp(models.Model):
     #     expired_otps.delete()
 
 
+
+class GpsModel(models.Model):
+    user_id = models.CharField(max_length=10)
+    mobile_no = models.CharField(max_length=10)
+    name = models.CharField(max_length=10)
+    latitude = models.DecimalField(max_digits=20, decimal_places=6)
+    longitude = models.DecimalField(max_digits=20,decimal_places=6)
+    gps_date = models.DateField()
+    gps_time = models.TimeField()
+    status = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
