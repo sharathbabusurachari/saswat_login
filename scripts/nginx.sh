@@ -19,4 +19,4 @@ echo "Nginx has been started"
 sudo systemctl status nginx
 
 python3 $WORKSPACE/manage.py collectstatic --noinput
-chmod -R 755 $WORKSPACE/static
+chmod -R 755 $WORKSPACE/
