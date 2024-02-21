@@ -37,6 +37,7 @@ pipeline{
                 cd $WORKSPACE/scripts
                 chmod +x nginx.sh
                 ./nginx.sh
+                chmod -R 755 $WORKSPACE/static/
                 '''
             }
         }
