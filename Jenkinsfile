@@ -43,11 +43,9 @@ pipeline{
         }
 
         stage('CODE ANALYSIS with SONARQUBE') {
-
         		  environment {
                      scannerHome = tool 'SonarScanner'
                   }
-
                   steps {
                     withSonarQubeEnv('SonarQubeServer') {
                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=saswat_login_project \
