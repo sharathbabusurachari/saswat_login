@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'saswat_cust_info.wsgi.application'
 DATABASES = {
      'default': {
 		'ENGINE': 'django.db.backends.postgresql',
-		'NAME': 'cust_information',
+		'NAME': 'postgres',
 		'USER': 'devdbuser04a',
 	    'PASSWORD': 'w93gtHscKDhar',
 	    'HOST': 'dev04-db02.postgres.database.azure.com',
