@@ -11,11 +11,12 @@ fi
 
 echo $PWD
 source saswatfinenv/bin/activate
+pip3 install -r $WORKSPACE/requirements.txt
 python3 manage.py makemigrations
 python3 manage.py migrate
 
 
-pip3 install -r $WORKSPACE/requirements.txt
+
 
 
 if [ -d "logs" ] 
