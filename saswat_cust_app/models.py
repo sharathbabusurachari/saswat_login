@@ -23,7 +23,7 @@ class UserDetails(models.Model):
     mobile_no = models.CharField(max_length=15)
     designation = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
-    designation_id = models.CharField(max_length=10)
+    designation_id = models.CharField(max_length=10,blank=True, null=True)
 
 #     class Meta:
 #         unique_together = ('user_id', 'mobile_no')
@@ -93,9 +93,9 @@ class CustomerTest(models.Model):
     c_locality = models.CharField(max_length=200)
     c_state_id = models.ForeignKey(State, on_delete=models.CASCADE, related_name='customers_state')
     c_mobile_no = models.CharField(max_length=10)
-    version = models.CharField(max_length=20)
-    document_name = models.CharField(max_length=20)
-    document_id = models.CharField(max_length=20)
+#     version = models.CharField(max_length=20)
+#     document_name = models.CharField(max_length=20)
+#     document_id = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
