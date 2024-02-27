@@ -89,13 +89,13 @@ class CustomerTest(models.Model):
     c_id = models.IntegerField(primary_key=True)
     c_name = models.CharField(max_length=20)
     c_dob = models.DateField()
-#     c_gender_id = models.ForeignKey(Gender, on_delete=models.CASCADE, related_name='customers_gender')
+    c_gender_id = models.ForeignKey(Gender, on_delete=models.CASCADE, related_name='customers_gender')
     c_locality = models.CharField(max_length=200)
-#     c_state_id = models.ForeignKey(State, on_delete=models.CASCADE, related_name='customers_state')
+    c_state_id = models.ForeignKey(State, on_delete=models.CASCADE, related_name='customers_state')
     c_mobile_no = models.CharField(max_length=10)
-#     version = models.CharField(max_length=20)
-#     document_name = models.CharField(max_length=20)
-#     document_id = models.CharField(max_length=20)
+    version = models.CharField(max_length=20)
+    document_name = models.CharField(max_length=20)
+    document_id = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
