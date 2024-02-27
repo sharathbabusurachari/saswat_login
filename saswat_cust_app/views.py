@@ -1,19 +1,22 @@
-import string
+# import string
 from django.http import JsonResponse
 from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView
 from rest_framework import status
-from django.shortcuts import get_object_or_404
-from .utils import is_valid_indian_mobile_number
-from .models import OTP, UserOtp, UserDetails, GpsModel
-from rest_framework.permissions import AllowAny,IsAuthenticated
+# from django.shortcuts import get_object_or_404
+# from .utils import is_valid_indian_mobile_number
+
+from saswat_cust_app.models import UserOtp, UserDetails, CustomerTest
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 import random
-from saswat_cust_app.serializers import OTPSerializer, GpsSerializer
+from saswat_cust_app.serializers import OTPSerializer, GpsSerializer, CustomerTestSerializer
 from datetime import datetime, timedelta
 import requests
-from rest_framework.authentication import SessionAuthentication
+# from rest_framework.authentication import SessionAuthentication
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
+
 
 class SendOTPAPIView(APIView):
 
@@ -83,7 +86,7 @@ class ValidateOTPAPIView(APIView):
             otp_code = serializer.validated_data['otp_code']
 
             if UserDetails.objects.filter(mobile_no=mobile_no).exists():
-                check_valid_time = datetime.now() - timedelta(minutes=2)
+                check_valid_time = datetime.now() - timedelta(minutes=1)
                 user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
                 valid_otp_mobile = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).first()
                 valid_otp_time = UserOtp.objects.filter(mobile_no=mobile_no,
@@ -157,8 +160,27 @@ class GetGpsView(APIView):
                     'status': '00',
                     'message': "success",
                 }
-                return Response(response_data, status=status.HTTP_200_OK)
+                return Response(response_data, status=status.HTTP_201_CREATED)
             else:
                 return Response(get_gps_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CustomerTestView(ListCreateAPIView):
+    co_applicant_det = CustomerTest.objects.all()
+    serializer_class = CustomerTestSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data, list))
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_create(serializer)
+        except Exception as e:
+            # Handle any errors that occur during creation
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()
