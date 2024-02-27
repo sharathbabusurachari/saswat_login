@@ -84,7 +84,7 @@ DATABASES = {
 		'NAME': 'my_postgres',
 		'USER': 'postgres_usr',
 	    'PASSWORD': 'postgres_pwd',
-	    'HOST': 'ci1.saswatfinance.com',
+	    'HOST': 'localhost',
 	    'PORT': 5432,
       }
  }
