@@ -93,7 +93,6 @@ class CustomerTest(models.Model):
     c_locality = models.CharField(max_length=200)
     c_state_id = models.ForeignKey(State, on_delete=models.CASCADE, related_name='customers_state')
     c_mobile_no = models.CharField(max_length=10)
-    # c_document = models.BinaryField()
     version = models.CharField(max_length=20)
     document_name = models.CharField(max_length=20)
     document_id = models.CharField(max_length=20)
