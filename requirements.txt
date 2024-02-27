@@ -11,10 +11,8 @@ cryptography
 Django
 djangorestframework
 djangorestframework-jwt
-Flask
 idna
 itsdangerous
-Jinja2
 MarkupSafe
 paramiko
 passlib
