@@ -1,7 +1,7 @@
 # urls.py
 
 from django.urls import path
-from .views import SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTestView
+from .views import SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTestView, MasterApi
 
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
