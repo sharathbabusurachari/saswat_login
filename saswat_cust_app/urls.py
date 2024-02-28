@@ -8,5 +8,6 @@ urlpatterns = [
     path('validate-otp/', ValidateOTPAPIView.as_view(), name='validate_otp'),
     path('get-gps/', GetGpsView.as_view(), name='GetGpsView'),
     path('cust-test/', CustomerTestView.as_view(), name='CustomerTestView'),
+    path('get-master/', MasterApi.as_view(), name='MasterApi'),
     # Add other URLs as needed
 ]

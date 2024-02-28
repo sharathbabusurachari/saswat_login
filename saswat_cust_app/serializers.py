@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import OTP, UserOtp, GpsModel, CustomerTest
+from .models import OTP, UserOtp, GpsModel, CustomerTest, Gender, State
 
 
 # class OTPSerializer(serializers.ModelSerializer):
@@ -34,4 +34,14 @@ class CustomerTestSerializer(serializers.ModelSerializer):
     def create_single_object(self, validated_data):
 
         return CustomerTest.objects.create(**validated_data)
+
+class GenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gender
+        fields = ('gender_id', 'gender')
+
+class StateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = State
+        fields = ('state_id', 'state')
 

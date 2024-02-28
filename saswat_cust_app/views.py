@@ -6,11 +6,11 @@ from rest_framework import status
 # from django.shortcuts import get_object_or_404
 # from .utils import is_valid_indian_mobile_number
 
-from saswat_cust_app.models import UserOtp, UserDetails, CustomerTest
+from saswat_cust_app.models import UserOtp, UserDetails, CustomerTest, Gender, State
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 import random
-from saswat_cust_app.serializers import OTPSerializer, GpsSerializer, CustomerTestSerializer
+from saswat_cust_app.serializers import OTPSerializer, GpsSerializer, CustomerTestSerializer, GenderSerializer, StateSerializer
 from datetime import datetime, timedelta
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -184,3 +184,22 @@ class CustomerTestView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save()
+
+class MasterApi(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            master_gender = Gender.objects.all()
+            master_state = State.objects.all()
+            gender_data = GenderSerializer(master_gender, many=True)
+            state_data = StateSerializer(master_state, many=True)
+            response_data = {
+                'status': '00',
+                'message': "success",
+                'gender_data': gender_data.data,
+                'state_data': state_data.data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
