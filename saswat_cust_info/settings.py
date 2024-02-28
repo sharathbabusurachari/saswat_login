@@ -81,10 +81,10 @@ WSGI_APPLICATION = 'saswat_cust_info.wsgi.application'
 DATABASES = {
      'default': {
 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
-		'NAME': 'postgres',
-		'USER': 'devdbuser04a',
-	    'PASSWORD': 'w93gtHscKDhar',
-	    'HOST': 'dev04-db02.postgres.database.azure.com',
+		'NAME': 'kaka_postgres',
+		'USER': 'postgres_kaka',
+	    'PASSWORD': 'postgres_pwd',
+	    'HOST': 'localhost',
 	    'PORT': 5432,
       }
  }
