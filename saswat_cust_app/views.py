@@ -42,7 +42,7 @@ class SendOTPAPIView(APIView):
                 otp_code = str(random.randint(1000, 9999))
                 data = {
                     'otp': otp_code,
-                    'dest': mobile_no
+                    'dest': mobile_no,
                     'msgName': "OTP"
                 }
 
