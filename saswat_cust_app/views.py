@@ -22,7 +22,7 @@ class SendOTPAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         mobile_no = request.data.get('mobile_no')
-        url = 'http://20.235.246.32:8080/saswat/otp'
+        url = 'http://20.235.255.141:8080/saswat/otp'
         #url = 'http://20.235.246.32:8080/message/telspielmessage'
         try:
             existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_genration_time').first()
