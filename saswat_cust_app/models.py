@@ -39,6 +39,9 @@ class UserOtp(models.Model):
     otp_genration_time = models.DateTimeField(auto_now_add=True)
     otp_expiration_time = models.DateTimeField()
 
+    def __str__(self):
+        return self.mobile_no
+
     def save(self, *args, **kwargs):
 
         if not self.pk:
