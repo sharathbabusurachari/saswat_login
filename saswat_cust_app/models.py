@@ -97,6 +97,7 @@ class CustomerTest(models.Model):
     c_state_id = models.ForeignKey(State, on_delete=models.CASCADE, related_name='customers_state')
     c_mobile_no = models.CharField(max_length=10)
     version = models.CharField(max_length=20)
+    file = models.FileField(upload_to='documents/', blank=True)
     document_name = models.CharField(max_length=20)
     document_id = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)

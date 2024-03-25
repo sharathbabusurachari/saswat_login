@@ -16,6 +16,7 @@ import requests
 # from rest_framework.authentication import SessionAuthentication
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 
 
 class SendOTPAPIView(APIView):
@@ -169,20 +170,52 @@ class GetGpsView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# class CustomerTestView(ListCreateAPIView):
+#     co_applicant_det = CustomerTest.objects.all()
+#     serializer_class = CustomerTestSerializer
+#
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data, many=isinstance(request.data, list))
+#         serializer.is_valid(raise_exception=True)
+#         try:
+#             self.perform_create(serializer)
+#         except Exception as e:
+#             # Handle any errors that occur during creation
+#             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+#         headers = self.get_success_headers(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+#
+#     def perform_create(self, serializer):
+#         serializer.save()
+
 class CustomerTestView(ListCreateAPIView):
     co_applicant_det = CustomerTest.objects.all()
     serializer_class = CustomerTestSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, many=isinstance(request.data, list))
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+            # self.perform_create(serializer)
+        except ValidationError as e:
+            if 'c_id' in e.detail:
+                response_data = {
+                    'status': '01',
+                    'message': "Customer   already exist",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             self.perform_create(serializer)
         except Exception as e:
-            # Handle any errors that occur during creation
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+        response_data = {
+            'status': '00',
+            'message': "success",
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         serializer.save()

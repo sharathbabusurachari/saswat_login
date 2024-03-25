@@ -129,6 +129,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/static'
 #STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles'),]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
