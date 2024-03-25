@@ -102,5 +102,6 @@ class CustomerTest(models.Model):
     document_id = models.CharField(max_length=20)
     created_at = models.DateTimeField(default=timezone.now)
 
+
     def __str__(self):
         return self.c_name
