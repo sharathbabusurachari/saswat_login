@@ -12,7 +12,7 @@ fi
 echo $PWD
 source saswatfinenv/bin/activate
 pip3 install -r $WORKSPACE/requirements.txt
-python3 manage.py makemigrations
+python3 manage.py makemigrations -noinput
 python3 manage.py migrate
 
 
