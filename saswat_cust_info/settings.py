@@ -26,10 +26,11 @@ SECRET_KEY = 'django-insecure-p$5m!@8&k@4rtj3f+(sxk5xy9!6zpqf$uz)k_c=m1fi%pql-wb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['ci1.saswatfinance.com']
+ALLOWED_HOSTS = ['ci1.saswatfinance.com','*']
 
 
 # Application definition
+DATABASE_ROUTERS = ['routers.SaswatCustAppRouter', 'routers.DataEntryAppRouter']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     'saswat_cust_app',
     'saswat_cust_info',
     'rest_framework.authtoken',
+    'data_entry_app',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +88,15 @@ DATABASES = {
 	    'PASSWORD': 'postgres_pwd',
 	    'HOST': 'localhost',
 	    'PORT': 5432,
-      }
+      },
+    'sqlit': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'dataentry_db',
+        'USER': 'dataentry_user',
+        'PASSWORD': 'dataentry_pwd',
+        'HOST': 'localhost',
+        'PORT': 5432
+    },
  }
 
 
