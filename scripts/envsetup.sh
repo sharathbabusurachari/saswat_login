@@ -11,6 +11,7 @@ fi
 
 echo $PWD
 source saswatfinenv/bin/activate
+python3 -m pip install Pillow
 pip3 install -r $WORKSPACE/requirements.txt
 python3 manage.py makemigrations -noinput
 python3 manage.py migrate
