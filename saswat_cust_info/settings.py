@@ -28,7 +28,6 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['ci1.saswatfinance.com','*']
 
-
 # Application definition
 DATABASE_ROUTERS = ['routers.SaswatCustAppRouter', 'routers.DataEntryAppRouter']
 
@@ -141,6 +140,11 @@ STATIC_ROOT = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/media'
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # Set maximum request size to 10 megabytes (10 * 1024 * 1024 bytes)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # Set maximum file upload size to 10 megabytes
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
