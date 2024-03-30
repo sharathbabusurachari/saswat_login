@@ -8,18 +8,18 @@ class P01BusinessLoanAppForm(models.Model):
     city = models.CharField(max_length=50, verbose_name="City")
 
     def __str__(self):
-        return self.app_no
+        return self.city
 
 
 class P02FinancialRequirement(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     purpose_of_loan = models.CharField(max_length=50, verbose_name="Purpose of loan")
     loan_type = models.CharField(max_length=50, verbose_name="Loan Type")
     loan_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan amount")
     desire_tenure = models.IntegerField(verbose_name="Desire Tenure")
 
     def __str__(self):
-        return self.app_no
+        return self.purpose_of_loan
 
 
 class P09CoApplicant(models.Model):
@@ -28,7 +28,7 @@ class P09CoApplicant(models.Model):
         ('FORM60', 'Form 60'),
     ]
 
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=100)
     father_or_spouse_name = models.CharField(max_length=100, verbose_name="Father/Spouse's Name")
     pan_and_form_sixty = models.CharField(max_length=10, choices=PAN_AND_FORM_CHOICES, default='Pan')
@@ -62,7 +62,7 @@ class P09CoApplicant(models.Model):
 
 
 class P04BankAccountDetail(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     bank_name = models.CharField(max_length=100)
     account_name = models.CharField(max_length=100)
     ifsc_code = models.CharField(max_length=11, verbose_name="IFSC code")
@@ -74,7 +74,7 @@ class P04BankAccountDetail(models.Model):
 
 
 class P05CustomerConsent(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     applied_amount = models.DecimalField(max_digits=12, decimal_places=2,verbose_name="Applied Amount INR")
 
     def __str__(self):
@@ -90,7 +90,7 @@ class P05CustomerConsent(models.Model):
 
 
 class P06GstDeclaration(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     applicant_name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -98,7 +98,7 @@ class P06GstDeclaration(models.Model):
 
 
 class P07ReferenceOne(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=100)
     relationship = models.CharField(max_length=100)
     occupation = models.CharField(max_length=100)
@@ -110,7 +110,7 @@ class P07ReferenceOne(models.Model):
 
 
 class P08ReferenceTwo(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=100)
     relationship = models.CharField(max_length=100)
     occupation = models.CharField(max_length=100)
@@ -126,7 +126,7 @@ class P03Applicant(models.Model):
         ('PAN', 'Pan'),
         ('FORM60', 'Form 60'),
     ]
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=100)
     father_or_spouse_name = models.CharField(max_length=100, verbose_name="Father/Spouse's Name")
     pan_and_form_sixty = models.CharField(max_length=10, choices=PAN_AND_FORM_CHOICES, default='Pan')
@@ -160,7 +160,7 @@ class P03Applicant(models.Model):
 
 
 class P23InsuranceApplicationToSaswat(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     date = models.DateField()
     loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)")
     insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)")
@@ -171,7 +171,7 @@ class P23InsuranceApplicationToSaswat(models.Model):
 
 
 class P22InsuranceApplicationToAmbit(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     date = models.DateField(verbose_name="Date")
     loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)")
     insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)")
@@ -182,17 +182,15 @@ class P22InsuranceApplicationToAmbit(models.Model):
 
 
 class P10Attachment(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     applicant_adhaar = models.FileField(upload_to='attachments/', verbose_name="Applicant Adhaar(Masked and signed-OSV)")
     # applicant_pan = models.FileField(upload_to='attachments/', verbose_name="Applicant PAN(Signed-OSV)")
-    applicant_pan_or_form_sixty = models.FileField(upload_to='attachments/', verbose_name="Applicant Form-60(Signed-OSV)/ "
-                                                                                          "(if no PAN)")
+    applicant_pan_or_form_sixty = models.FileField(upload_to='attachments/', verbose_name="Applicant PAN/Form 60")
     applicant_voter_id = models.FileField(upload_to='attachments/', verbose_name="Applicant Voter  Id(Optional)", blank=True)
     co_applicant_adhaar = models.FileField(upload_to='attachments/', verbose_name="Co-Applicant Adhaar(Masked and signed)")
     # co_applicant_pan = models.FileField(upload_to='attachments/', verbose_name="Co-Applicant PAN(Signed)")
-    co_applicant_pan_or_form_sixty = models.FileField(upload_to='attachments/', verbose_name="Co Applicant Form-60(Signed-OSV)/ PAN"
-                                                                                             "(if no PAN)")
-    bankers_verification = models.FileField(upload_to='attachments/', verbose_name="Bankers Verification",blank=True)
+    co_applicant_pan_or_form_sixty = models.FileField(upload_to='attachments/', verbose_name="Co Applicant PAN/Form 60")
+    bankers_verification = models.FileField(upload_to='attachments/', verbose_name="Bankers Verification", blank=True)
     indemnity_bond_signature = models.FileField(upload_to='attachments/', verbose_name="Indemnity bond - signature /name/dob(With notorized affidavit)", blank=True)
     milk_statement = models.FileField(upload_to='attachments/', verbose_name="Milk statement")
     bank_statement = models.FileField(upload_to='attachments/', verbose_name="Bank statement")
@@ -231,7 +229,7 @@ class P11PostDatedCheques(models.Model):
     app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
     cheque_no_from = models.IntegerField(verbose_name="Cheque Number From",)
     cheque_no_to = models.IntegerField(verbose_name="Cheque Number To")
-    Amount = models.DecimalField(max_digits=12, decimal_places=2,blank=True)
+    Amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True)
     issuing_bank_name = models.CharField(max_length=30, verbose_name="Issuing bank name")
     issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number")
 
@@ -240,7 +238,7 @@ class P11PostDatedCheques(models.Model):
 
 
 class P13SpdcAndPdcForm(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     date = models.DateField()
     loan_agreement_dated = models.DateField()
     name_of_borrower_or_co_borrower = models.CharField(max_length=30, verbose_name="Name of borrower/co-borrower")
@@ -251,7 +249,7 @@ class P13SpdcAndPdcForm(models.Model):
 ####################
 
 class P14PdSheetPersonalDetails(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     customer_name = models.CharField(max_length=100, verbose_name="Name of customer")
     customer_date_of_birth = models.DateField(verbose_name="Date of birth of customer")
     customer_age = models.IntegerField(verbose_name="Age of customer")
@@ -280,23 +278,23 @@ class P14PdSheetPersonalDetails(models.Model):
 
 
 class P15PdBusinessDetails(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     business_address = models.CharField(max_length=255, verbose_name="Business address")
     OWNED_RENTED_CHOICES = [
         ('Owned', 'Owned'),
         ('Rented', 'Rented'),
     ]
     business_owned_rented = models.CharField(max_length=10, choices=OWNED_RENTED_CHOICES, verbose_name="Owned/rented")
-    business_stability_at_present_address_years = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Business stability at present address in years")
-    total_business_stability_years = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total business stability in years")
-    total_experience_in_business_line_years = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total experience in business line in years")
+    business_stability_at_present_address_years = models.DecimalField(max_digits=12, decimal_places=2, blank=True, verbose_name="Business stability at present address in years")
+    total_business_stability_years = models.DecimalField(max_digits=12, decimal_places=2, blank=True, verbose_name="Total business stability in years")
+    total_experience_in_business_line_years = models.DecimalField(max_digits=12, decimal_places=2,blank=True, verbose_name="Total experience in business line in years")
 
     def __str__(self):
         return f"Business Details at {self.business_address}"
 
 
 class P16PdLoanDetails(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     nature_of_business = models.CharField(max_length=255, verbose_name="Nature of business")
     loan_type = models.CharField(max_length=100, verbose_name="Loan type")
     applied_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Applied amount")
@@ -313,18 +311,19 @@ class P16PdLoanDetails(models.Model):
 
 
 class P17PdTotalAssets(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     home = models.CharField(max_length=255, verbose_name="Home")
     business = models.CharField(max_length=255, verbose_name="Business")
     agri_land = models.CharField(max_length=255, verbose_name="Agri land")
     additional_income = models.CharField(max_length=255, verbose_name="Additional income (others)", blank=True)
 
     def __str__(self):
-        return "Total Assets"
+        return self.business
+
 
 
 class P18PdVisit(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     # reference_check_visit = models.BooleanField(verbose_name="Reference check/visit", default=False)
     residential_house_visit = models.BooleanField(verbose_name="Residential house visit", default=False)
     residential_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Residential house visit)")
@@ -332,12 +331,12 @@ class P18PdVisit(models.Model):
     business_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Business premises visit)")
 
     def __str__(self):
-        return "Visit Details"
+        return self.residential_visit_done_by
 
 
 class P19PdBureauSummary(models.Model):
     # MFI Loan details
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     mfi_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI Loan amount", blank=True)
     mfi_loan_tenure = models.IntegerField(verbose_name="Loan Type MFI Loan tenure", blank=True)
     mfi_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI EMI amount", blank=True)
@@ -366,11 +365,11 @@ class P19PdBureauSummary(models.Model):
     tractor_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI remaining", blank=True)
 
     def __str__(self):
-        return "Bureau Summary"
+        return self.mfi_loan_amt
 
 
 class P20PdMiscellaneousDetails(models.Model):
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     disposable_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Disposable income",blank=True)
     recommended_loan_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Recommended loan amount")
     recommended_tenure = models.IntegerField(verbose_name="Recommended tenure")
@@ -381,12 +380,12 @@ class P20PdMiscellaneousDetails(models.Model):
     total_household_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total household income")
 
     def __str__(self):
-        return "Miscellaneous Details"
+        return self.income_source_agri_land
 
 
 class P21FiSheet(models.Model):
     # Case details
-    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
+    app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE, unique=True)
     case_details = models.CharField(max_length=100, verbose_name="Case Details (HOD)")
     positive_applicant_name = models.CharField(max_length=100, verbose_name="Positive Applicant name")
     positive_co_applicant_name = models.CharField(max_length=100, verbose_name="Positive Co-Applicant name")
@@ -397,11 +396,11 @@ class P21FiSheet(models.Model):
     company_name = models.CharField(max_length=100, verbose_name="Company name")
     occupation = models.CharField(max_length=100, verbose_name="Occupation")
     verifier_emp_id = models.CharField(max_length=100, verbose_name="Verifier emp id")
-    back_office_emp_id = models.CharField(max_length=100, verbose_name="Back office emp id", blank=True)
-    date_of_allocation = models.DateField(verbose_name="Date of allocation", blank=True)
-    time_of_allocation = models.TimeField(verbose_name="Time of allocation", blank=True)
-    date_of_report = models.DateField(verbose_name="Date of report", blank=True)
-    time_of_report = models.TimeField(verbose_name="Time of report", blank=True)
+    back_office_emp_id = models.CharField(max_length=100, verbose_name="Back office emp id", blank=True, null=True)
+    date_of_allocation = models.DateField(verbose_name="Date of allocation", blank=True, null=True)
+    time_of_allocation = models.TimeField(verbose_name="Time of allocation", blank=True, null=True)
+    date_of_report = models.DateField(verbose_name="Date of report", blank=True, null=True)
+    time_of_report = models.TimeField(verbose_name="Time of report", blank=True, null=True)
     TAT_met = models.BooleanField(verbose_name="TAT met")
     OCL_range = models.CharField(max_length=100, verbose_name="OCL range")
     submitted_from = models.CharField(max_length=100, verbose_name="Submitted from")
