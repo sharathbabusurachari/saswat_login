@@ -195,13 +195,13 @@ class P10Attachment(models.Model):
     milk_statement = models.FileField(upload_to='attachments/', verbose_name="Milk statement")
     bank_statement = models.FileField(upload_to='attachments/', verbose_name="Bank statement")
     living_certificate = models.FileField(upload_to='attachments/', verbose_name="Living certificate", blank=True, null=True)
-    nach_mandate = models.FileField(upload_to='attachments/', verbose_name="NACH Mandate")
-    spdc_pdc_cheques = models.FileField(upload_to='attachments/', verbose_name="SPDC/PDC Cheques(Applicant & co-applicant)")
-    address_proof = models.FileField(upload_to='attachments/', verbose_name="Address proof(ration card, electricity bill, pahani, gas cylender book, etc..)")
+    nach_mandate = models.FileField(upload_to='attachments/', verbose_name="NACH Mandate",  blank=True, null=True)
+    spdc_pdc_cheques = models.FileField(upload_to='attachments/', verbose_name="SPDC/PDC Cheques(Applicant & co-applicant)",  blank=True, null=True)
+    address_proof = models.FileField(upload_to='attachments/', verbose_name="Address proof(ration card, electricity bill, pahani, gas cylender book, etc..)",  blank=True, null=True)
     anexure = models.FileField(upload_to='attachments/', verbose_name="Anexure", blank=True, null=True)
     vernacular_signature = models.FileField(upload_to='attachments/', verbose_name="Vernacular Signature", blank=True,null=True)
-    ndc_checklist = models.FileField(upload_to='attachments/', verbose_name="NDC Checklist")
-    login_checklist = models.FileField(upload_to='attachments/', verbose_name="LoginChecklist")
+    ndc_checklist = models.FileField(upload_to='attachments/', verbose_name="NDC Checklist",  blank=True, null=True)
+    login_checklist = models.FileField(upload_to='attachments/', verbose_name="LoginChecklist",  blank=True, null=True)
     loan_agreement = models.FileField(upload_to='attachments/', verbose_name="LOAN Agreement", blank=True, null=True)
     audit_trail = models.FileField(upload_to='attachments/', verbose_name="Audit Trail", blank=True,null=True)
     loan_deduction_table = models.FileField(upload_to='attachments/', verbose_name="Loan deduction Table", blank=True,null=True)
@@ -209,17 +209,17 @@ class P10Attachment(models.Model):
     field_visit_home = models.FileField(upload_to='attachments/', verbose_name="Field visit photo (Home)", blank=True, null=True)
     field_visit_cattle = models.FileField(upload_to='attachments/', verbose_name="Field visit photo (cattle)", blank=True, null=True)
     field_visit_shed = models.FileField(upload_to='attachments/', verbose_name="Field visit photo (shed)", blank=True, null=True)
-    cam_sheet = models.FileField(upload_to='attachments/', verbose_name="CAM sheet")
+    cam_sheet = models.FileField(upload_to='attachments/', verbose_name="CAM sheet",  blank=True, null=True)
     other = models.FileField(upload_to='attachments/', verbose_name="Other Attachment", blank=True, null=True)
 
 
 class P12SequrityPostDatedCheques(models.Model):
     app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    cheque_no_from = models.IntegerField(verbose_name="Cheque Number From")
-    cheque_no_to = models.IntegerField(verbose_name="Cheque Number To")
+    cheque_no_from = models.IntegerField(verbose_name="Cheque Number From", blank=True, null=True)
+    cheque_no_to = models.IntegerField(verbose_name="Cheque Number To",  blank=True, null=True)
     Amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    issuing_bank_name = models.CharField(max_length=30, verbose_name="Issuing bank name")
-    issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number")
+    issuing_bank_name = models.CharField(max_length=30, verbose_name="Issuing bank name",  blank=True, null=True)
+    issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number",  blank=True, null=True)
 
     def __str__(self):
         return self.issuing_bank_name
@@ -227,11 +227,11 @@ class P12SequrityPostDatedCheques(models.Model):
 
 class P11PostDatedCheques(models.Model):
     app_no = models.ForeignKey(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    cheque_no_from = models.IntegerField(verbose_name="Cheque Number From",)
-    cheque_no_to = models.IntegerField(verbose_name="Cheque Number To")
+    cheque_no_from = models.IntegerField(verbose_name="Cheque Number From",  blank=True, null=True)
+    cheque_no_to = models.IntegerField(verbose_name="Cheque Number To",  blank=True, null=True)
     Amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    issuing_bank_name = models.CharField(max_length=30, verbose_name="Issuing bank name")
-    issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number")
+    issuing_bank_name = models.CharField(max_length=30, verbose_name="Issuing bank name",  blank=True, null=True)
+    issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number", blank=True, null=True)
 
     def __str__(self):
         return self.issuing_bank_name
@@ -239,9 +239,9 @@ class P11PostDatedCheques(models.Model):
 
 class P13SpdcAndPdcForm(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    date = models.DateField()
-    loan_agreement_dated = models.DateField()
-    name_of_borrower_or_co_borrower = models.CharField(max_length=30, verbose_name="Name of borrower/co-borrower")
+    date = models.DateField(blank=True, null=True)
+    loan_agreement_dated = models.DateField(blank=True, null=True)
+    name_of_borrower_or_co_borrower = models.CharField(max_length=30, verbose_name="Name of borrower/co-borrower",  blank=True, null=True)
 
     def __str__(self):
         return self.name_of_borrower_or_co_borrower
@@ -250,28 +250,28 @@ class P13SpdcAndPdcForm(models.Model):
 
 class P14PdSheetPersonalDetails(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    customer_name = models.CharField(max_length=100, verbose_name="Name of customer")
-    customer_date_of_birth = models.DateField(verbose_name="Date of birth of customer")
-    customer_age = models.IntegerField(verbose_name="Age of customer")
-    customer_kyc_source = models.CharField(max_length=100, verbose_name="KYC source of customer")
+    customer_name = models.CharField(max_length=100, verbose_name="Name of customer", blank=True, null=True)
+    customer_date_of_birth = models.DateField(verbose_name="Date of birth of customer", blank=True, null=True)
+    customer_age = models.IntegerField(verbose_name="Age of customer", blank=True, null=True)
+    customer_kyc_source = models.CharField(max_length=100, verbose_name="KYC source of customer",  blank=True, null=True)
 
-    co_applicant_name = models.CharField(max_length=100, verbose_name="Name of co-applicant")
-    co_applicant_date_of_birth = models.DateField(verbose_name="Date of birth of co-applicant")
-    co_applicant_age = models.IntegerField(verbose_name="Age of co-applicant")
-    co_applicant_kyc_source = models.CharField(max_length=100, verbose_name="KYC source of co-applicant")
+    co_applicant_name = models.CharField(max_length=100, verbose_name="Name of co-applicant", blank=True, null=True)
+    co_applicant_date_of_birth = models.DateField(verbose_name="Date of birth of co-applicant", blank=True, null=True)
+    co_applicant_age = models.IntegerField(verbose_name="Age of co-applicant", blank=True, null=True)
+    co_applicant_kyc_source = models.CharField(max_length=100, verbose_name="KYC source of co-applicant", blank=True, null=True)
 
-    total_dependents = models.IntegerField(verbose_name="Total Number of dependents")
-    adults_count = models.IntegerField(verbose_name="Adults count")
-    children_count = models.IntegerField(verbose_name="Children count")
+    total_dependents = models.IntegerField(verbose_name="Total Number of dependents", blank=True, null=True)
+    adults_count = models.IntegerField(verbose_name="Adults count", blank=True, null=True)
+    children_count = models.IntegerField(verbose_name="Children count",  blank=True, null=True)
 
-    residence_address = models.CharField(max_length=255, verbose_name="Residence address")
+    residence_address = models.CharField(max_length=255, verbose_name="Residence address",  blank=True, null=True)
     OWNED_RENTED_CHOICES = [
         ('Owned', 'Owned'),
         ('Rented', 'Rented'),
     ]
-    residence_owned_rented = models.CharField(max_length=10, choices=OWNED_RENTED_CHOICES, verbose_name="Owned/rented")
-    residence_stability_years = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Residence stability in years")
-    kyc_source = models.CharField(max_length=100, verbose_name="KYC source")
+    residence_owned_rented = models.CharField(max_length=10, choices=OWNED_RENTED_CHOICES, verbose_name="Owned/rented",  blank=True, null=True)
+    residence_stability_years = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Residence stability in years", blank=True, null=True)
+    kyc_source = models.CharField(max_length=100, verbose_name="KYC source", blank=True, null=True)
 
     def __str__(self):
         return f"{self.customer_name}'s Personal Details"
@@ -279,12 +279,12 @@ class P14PdSheetPersonalDetails(models.Model):
 
 class P15PdBusinessDetails(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    business_address = models.CharField(max_length=255, verbose_name="Business address")
+    business_address = models.CharField(max_length=255, verbose_name="Business address", blank=True, null=True)
     OWNED_RENTED_CHOICES = [
         ('Owned', 'Owned'),
         ('Rented', 'Rented'),
     ]
-    business_owned_rented = models.CharField(max_length=10, choices=OWNED_RENTED_CHOICES, verbose_name="Owned/rented")
+    business_owned_rented = models.CharField(max_length=10, choices=OWNED_RENTED_CHOICES, verbose_name="Owned/rented", blank=True, null=True)
     business_stability_at_present_address_years = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="Business stability at present address in years")
     total_business_stability_years = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="Total business stability in years")
     total_experience_in_business_line_years = models.DecimalField(max_digits=12, decimal_places=2,blank=True, null=True, verbose_name="Total experience in business line in years")
@@ -295,16 +295,17 @@ class P15PdBusinessDetails(models.Model):
 
 class P16PdLoanDetails(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    nature_of_business = models.CharField(max_length=255, verbose_name="Nature of business")
-    loan_type = models.CharField(max_length=100, verbose_name="Loan type")
-    applied_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Applied amount")
-    applied_tenure = models.CharField(max_length=255, verbose_name="Applied tenure")
-    comfortable_emi = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Comfortable EMI as per customer")
+    nature_of_business = models.CharField(max_length=255, verbose_name="Nature of business", blank=True, null=True)
+    loan_type = models.CharField(max_length=100, verbose_name="Loan type",  blank=True, null=True)
+    applied_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Applied amount", blank=True, null=True)
+    applied_tenure = models.CharField(max_length=255, verbose_name="Applied tenure", blank=True, null=True)
+    comfortable_emi = models.CharField(max_length=25, verbose_name="Comfortable EMI as per customer", blank=True, null=True)
+    # comfortable_emi = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Comfortable EMI as per customer")
     # BORROWER_TYPE_CHOICES = [
     #     ('Individual', 'Individual'),
     #     ('Company', 'Company'),
     # ]
-    borrower_type = models.CharField(max_length=100, verbose_name="Borrower type")
+    borrower_type = models.CharField(max_length=100, verbose_name="Borrower type", blank=True, null=True)
 
     def __str__(self):
         return f"Loan Details for {self.nature_of_business}"
@@ -312,9 +313,9 @@ class P16PdLoanDetails(models.Model):
 
 class P17PdTotalAssets(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    home = models.CharField(max_length=255, verbose_name="Home")
-    business = models.CharField(max_length=255, verbose_name="Business")
-    agri_land = models.CharField(max_length=255, verbose_name="Agri land")
+    home = models.CharField(max_length=255, verbose_name="Home",  blank=True, null=True)
+    business = models.CharField(max_length=255, verbose_name="Business",  blank=True, null=True)
+    agri_land = models.CharField(max_length=255, verbose_name="Agri land",  blank=True, null=True)
     additional_income = models.CharField(max_length=255, verbose_name="Additional income (others)", blank=True, null=True)
 
     def __str__(self):
@@ -325,10 +326,10 @@ class P17PdTotalAssets(models.Model):
 class P18PdVisit(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
     # reference_check_visit = models.BooleanField(verbose_name="Reference check/visit", default=False)
-    residential_house_visit = models.BooleanField(verbose_name="Residential house visit", default=False)
-    residential_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Residential house visit)")
-    business_premises_visit = models.BooleanField(verbose_name="Business premises visit", default=False)
-    business_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Business premises visit)")
+    residential_house_visit = models.BooleanField(verbose_name="Residential house visit", default=False, blank=True, null=True)
+    residential_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Residential house visit)", blank=True, null=True)
+    business_premises_visit = models.BooleanField(verbose_name="Business premises visit", default=False,  blank=True, null=True)
+    business_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Business premises visit)",  blank=True, null=True)
 
     def __str__(self):
         return self.residential_visit_done_by
@@ -340,44 +341,46 @@ class P19PdBureauSummary(models.Model):
     mfi_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI Loan amount", blank=True, null=True)
     mfi_loan_tenure = models.IntegerField(verbose_name="Loan Type MFI Loan tenure", blank=True, null=True)
     mfi_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI EMI amount", blank=True,null=True)
-    mfi_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI EMI paid", blank=True,null=True)
-    mfi_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI EMI remaining", blank=True,null=True)
+    mfi_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI EMI paid", blank=True, null=True)
+    mfi_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type MFI EMI remaining", blank=True, null=True)
 
     # KCC Loan details
-    kcc_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC Loan amount", blank=True,null=True)
-    kcc_loan_tenure = models.IntegerField(verbose_name="Loan Type KCC Loan tenure", blank=True,null=True)
-    kcc_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC EMI amount", blank=True,null=True)
-    kcc_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC EMI paid", blank=True,null=True)
-    kcc_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC EMI remaining", blank=True,null=True)
+    kcc_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC Loan amount", blank=True, null=True)
+    kcc_loan_tenure = models.IntegerField(verbose_name="Loan Type KCC Loan tenure", blank=True, null=True)
+    kcc_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC EMI amount", blank=True, null=True)
+    kcc_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC EMI paid", blank=True, null=True)
+    kcc_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type KCC EMI remaining",blank=True, null=True)
 
     # Personal Loan details
-    personal_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan amount", blank=True,null=True)
-    personal_loan_tenure = models.IntegerField(verbose_name="Loan Type Personal Loan tenure", blank=True,null=True)
-    personal_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan EMI amount", blank=True,null=True)
-    personal_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan EMI paid", blank=True,null=True)
-    personal_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan EMI remaining", blank=True,null=True)
+    personal_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan amount", blank=True, null=True)
+    personal_loan_tenure = models.IntegerField(verbose_name="Loan Type Personal Loan tenure", blank=True, null=True)
+    personal_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan EMI amount", blank=True, null=True)
+    personal_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan EMI paid", blank=True, null=True)
+    personal_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Personal Loan EMI remaining", blank=True, null=True)
 
     # Tractor Loan details
-    tractor_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan amount", blank=True,null=True)
+    tractor_loan_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan amount", blank=True, null=True)
     tractor_loan_tenure = models.IntegerField(verbose_name="Loan Type Tractor Loan tenure", blank=True,null=True)
-    tractor_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI amount", blank=True,null=True)
-    tractor_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI paid", blank=True,null=True)
+    tractor_emi_amt = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI amount", blank=True, null=True)
+    tractor_emi_paid = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI paid", blank=True, null=True)
     tractor_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI remaining", blank=True,null=True)
 
     def __str__(self):
-        return str(self.app_no)
+        return self.mfi_loan_amt
 
 
 class P20PdMiscellaneousDetails(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    disposable_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Disposable income", blank=True,null=True)
-    recommended_loan_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Recommended loan amount")
-    recommended_tenure = models.IntegerField(verbose_name="Recommended tenure")
-    bm_visit_done_at_business_premises = models.BooleanField(verbose_name="BM visit done at business premises")
-    income_source_agri_land = models.CharField(max_length=100, verbose_name="Income source/agri land")
-    milk_selling_price_per_litre = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Milk selling price per litre")
-    milk_production_per_day = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Milk production per day in litre")
-    total_household_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total household income")
+    disposable_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Disposable income", blank=True, null=True)
+    recommended_loan_amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Recommended loan amount", blank=True, null=True)
+    recommended_tenure = models.IntegerField(verbose_name="Recommended tenure", blank=True, null=True)
+    bm_visit_done_at_business_premises = models.BooleanField(verbose_name="BM visit done at business premises",  blank=True, null=True)
+    cattle_business_since = models.CharField(max_length=100, verbose_name="Cattle Business Since", blank=True, null=True)
+    number_of_cattle = models.CharField(max_length=100, verbose_name="Number Of Cattle", blank=True, null=True)
+    income_source_agri_land = models.CharField(max_length=100, verbose_name="Income source/agri land", blank=True, null=True)
+    milk_selling_price_per_litre = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Milk selling price per litre", blank=True, null=True)
+    milk_production_per_day = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Milk production per day in litre", blank=True, null=True)
+    total_household_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total household income", blank=True, null=True)
 
     def __str__(self):
         return self.income_source_agri_land
@@ -386,47 +389,47 @@ class P20PdMiscellaneousDetails(models.Model):
 class P21FiSheet(models.Model):
     # Case details
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    case_details = models.CharField(max_length=100, verbose_name="Case Details (HOD)")
-    positive_applicant_name = models.CharField(max_length=100, verbose_name="Positive Applicant name")
-    positive_co_applicant_name = models.CharField(max_length=100, verbose_name="Positive Co-Applicant name")
-    case_id = models.CharField(max_length=100, verbose_name="Case ID")
-    address = models.CharField(max_length=255, verbose_name="Address")
-    mobile = models.CharField(max_length=15, verbose_name="Mobile")
-    location = models.CharField(max_length=100, verbose_name="Location")
-    company_name = models.CharField(max_length=100, verbose_name="Company name")
-    occupation = models.CharField(max_length=100, verbose_name="Occupation")
-    verifier_emp_id = models.CharField(max_length=100, verbose_name="Verifier emp id")
+    case_details = models.CharField(max_length=100, verbose_name="Case Details (HOD)", blank=True, null=True)
+    positive_applicant_name = models.CharField(max_length=100, verbose_name="Positive Applicant name", blank=True, null=True)
+    positive_co_applicant_name = models.CharField(max_length=100, verbose_name="Positive Co-Applicant name", blank=True, null=True)
+    case_id = models.CharField(max_length=100, verbose_name="Case ID", blank=True, null=True)
+    address = models.CharField(max_length=255, verbose_name="Address", blank=True, null=True)
+    mobile = models.CharField(max_length=15, verbose_name="Mobile", blank=True, null=True)
+    location = models.CharField(max_length=100, verbose_name="Location", blank=True, null=True)
+    company_name = models.CharField(max_length=100, verbose_name="Company name", blank=True, null=True)
+    occupation = models.CharField(max_length=100, verbose_name="Occupation", blank=True, null=True)
+    verifier_emp_id = models.CharField(max_length=100, verbose_name="Verifier emp id", blank=True, null=True)
     back_office_emp_id = models.CharField(max_length=100, verbose_name="Back office emp id", blank=True, null=True)
     date_of_allocation = models.DateField(verbose_name="Date of allocation", blank=True, null=True)
     time_of_allocation = models.TimeField(verbose_name="Time of allocation", blank=True, null=True)
     date_of_report = models.DateField(verbose_name="Date of report", blank=True, null=True)
     time_of_report = models.TimeField(verbose_name="Time of report", blank=True, null=True)
-    TAT_met = models.BooleanField(verbose_name="TAT met",)
-    OCL_range = models.CharField(max_length=100, verbose_name="OCL range")
-    submitted_from = models.CharField(max_length=100, verbose_name="Submitted from")
-    sub_status = models.CharField(max_length=100, verbose_name="Sub status")
-    comments = models.TextField(verbose_name="Comments")
-    person_contacted = models.BooleanField(verbose_name="Person contacted")
-    name_of_person_contacted = models.CharField(max_length=100, verbose_name="Name of person contacted")
+    TAT_met = models.BooleanField(verbose_name="TAT met", blank=True, null=True)
+    OCL_range = models.CharField(max_length=100, verbose_name="OCL range", blank=True, null=True)
+    submitted_from = models.CharField(max_length=100, verbose_name="Submitted from", blank=True, null=True)
+    sub_status = models.CharField(max_length=100, verbose_name="Sub status", blank=True, null=True)
+    comments = models.TextField(verbose_name="Comments", blank=True, null=True)
+    person_contacted = models.BooleanField(verbose_name="Person contacted",  blank=True, null=True)
+    name_of_person_contacted = models.CharField(max_length=100, verbose_name="Name of person contacted", blank=True, null=True)
     # Residence details
-    residence_ownership_status = models.CharField(max_length=100, verbose_name="Residence ownership status")
-    does_applicant_stay_in_residence = models.BooleanField(verbose_name="Does the applicant stay in this residence")
-    duration_of_stay = models.CharField(max_length=100, verbose_name="If yes duration of stay")
-    approximate_time_when_applicant_is_available_at_home = models.CharField(max_length=100, verbose_name="Approx time when applicant is available at home")
-    number_of_person_staying_with_applicant = models.IntegerField(verbose_name="Number of person staying with applicant")
-    relationship_of_those_person_with_applicant = models.CharField(max_length=100, verbose_name="Relationship of those person with applicant")
-    prominent_landmark = models.CharField(max_length=255, verbose_name="Prominent landmark")
-    locality_of_residence = models.CharField(max_length=255, verbose_name="Locality of residence")
-    residence_accessibility = models.CharField(max_length=100, verbose_name="Residence accessibility")
-    type_of_residence = models.CharField(max_length=100, verbose_name="Type of residence")
-    external_appearance_of_house_building = models.CharField(max_length=100, verbose_name="External appearance of house/building")
-    construction_of_house = models.CharField(max_length=100, verbose_name="Construction of house")
-    carpet_area_in_sq_ft = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Carpet area in Sq. Ft.")
-    internal_appearance_of_house = models.CharField(max_length=100, verbose_name="Internal appearance of house")
-    assets_seen_at_residence = models.CharField(max_length=255, verbose_name="Assets seen at residence")
-    political_link = models.CharField(max_length=100, verbose_name="Political link")
-    neighbour_1_name = models.CharField(max_length=100, verbose_name="Neighbour 1 name")
-    neighbour_1_status = models.CharField(max_length=100, verbose_name="Neighbour 1 Status")
+    residence_ownership_status = models.CharField(max_length=100, verbose_name="Residence ownership status",  blank=True, null=True)
+    does_applicant_stay_in_residence = models.BooleanField(verbose_name="Does the applicant stay in this residence",  blank=True, null=True)
+    duration_of_stay = models.CharField(max_length=100, verbose_name="If yes duration of stay",  blank=True, null=True)
+    approximate_time_when_applicant_is_available_at_home = models.CharField(max_length=100, verbose_name="Approx time when applicant is available at home", blank=True, null=True)
+    number_of_person_staying_with_applicant = models.IntegerField(verbose_name="Number of person staying with applicant", blank=True, null=True)
+    relationship_of_those_person_with_applicant = models.CharField(max_length=100, verbose_name="Relationship of those person with applicant", blank=True, null=True)
+    prominent_landmark = models.CharField(max_length=255, verbose_name="Prominent landmark", blank=True, null=True)
+    locality_of_residence = models.CharField(max_length=255, verbose_name="Locality of residence", blank=True, null=True)
+    residence_accessibility = models.CharField(max_length=100, verbose_name="Residence accessibility", blank=True, null=True)
+    type_of_residence = models.CharField(max_length=100, verbose_name="Type of residence", blank=True, null=True)
+    external_appearance_of_house_building = models.CharField(max_length=100, verbose_name="External appearance of house/building", blank=True, null=True)
+    construction_of_house = models.CharField(max_length=100, verbose_name="Construction of house", blank=True, null=True)
+    carpet_area_in_sq_ft = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Carpet area in Sq. Ft.",  blank=True, null=True)
+    internal_appearance_of_house = models.CharField(max_length=100, verbose_name="Internal appearance of house", blank=True, null=True)
+    assets_seen_at_residence = models.CharField(max_length=255, verbose_name="Assets seen at residence", blank=True, null=True)
+    political_link = models.CharField(max_length=100, verbose_name="Political link", blank=True, null=True)
+    neighbour_1_name = models.CharField(max_length=100, verbose_name="Neighbour 1 name", blank=True, null=True)
+    neighbour_1_status = models.CharField(max_length=100, verbose_name="Neighbour 1 Status", blank=True, null=True)
 
     def __str__(self):
         return self.case_details
