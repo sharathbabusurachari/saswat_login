@@ -365,7 +365,7 @@ class P19PdBureauSummary(models.Model):
     tractor_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI remaining", blank=True,null=True)
 
     def __str__(self):
-        return self.mfi_loan_amt
+        return str(self.app_no)
 
 
 class P20PdMiscellaneousDetails(models.Model):
