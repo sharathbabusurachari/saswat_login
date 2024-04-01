@@ -31,3 +31,4 @@ tzdata
 urllib3
 Werkzeug
 WTForms
+Pillow
