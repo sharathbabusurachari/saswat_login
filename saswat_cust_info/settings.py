@@ -146,6 +146,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # Set maximum request size to 10 megabyt
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # Set maximum file upload size to 10 megabytes
 
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
