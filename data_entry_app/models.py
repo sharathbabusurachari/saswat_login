@@ -161,10 +161,10 @@ class P03Applicant(models.Model):
 
 class P23InsuranceApplicationToSaswat(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    date = models.DateField()
-    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)")
-    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)")
-    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)")
+    date = models.DateField(blank=True, null=True)
+    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)",blank=True, null=True)
+    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)",blank=True, null=True)
+    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)",blank=True, null=True)
 
     def __str__(self):
         return f"Details - {self.date}"
@@ -172,10 +172,10 @@ class P23InsuranceApplicationToSaswat(models.Model):
 
 class P22InsuranceApplicationToAmbit(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    date = models.DateField(verbose_name="Date")
-    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)")
-    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)")
-    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)")
+    date = models.DateField(verbose_name="Date",blank=True, null=True)
+    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)",blank=True, null=True)
+    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)",blank=True, null=True)
+    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)",blank=True, null=True)
 
     def __str__(self):
         return f"Details - {self.date}"
