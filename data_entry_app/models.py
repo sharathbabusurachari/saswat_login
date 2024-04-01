@@ -222,7 +222,7 @@ class P12SequrityPostDatedCheques(models.Model):
     issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number",  blank=True, null=True)
 
     def __str__(self):
-        return self.issuing_bank_name
+        return str(self.issuing_bank_name)
 
 
 class P11PostDatedCheques(models.Model):
@@ -234,7 +234,7 @@ class P11PostDatedCheques(models.Model):
     issuing_bank_ac_no = models.CharField(max_length=30, verbose_name="Issuing bank Acc Number", blank=True, null=True)
 
     def __str__(self):
-        return self.issuing_bank_name
+        return str(self.issuing_bank_name)
 
 
 class P13SpdcAndPdcForm(models.Model):
@@ -244,7 +244,7 @@ class P13SpdcAndPdcForm(models.Model):
     name_of_borrower_or_co_borrower = models.CharField(max_length=30, verbose_name="Name of borrower/co-borrower",  blank=True, null=True)
 
     def __str__(self):
-        return self.name_of_borrower_or_co_borrower
+        return str(self.name_of_borrower_or_co_borrower)
 
 ####################
 
@@ -319,7 +319,7 @@ class P17PdTotalAssets(models.Model):
     additional_income = models.CharField(max_length=255, verbose_name="Additional income (others)", blank=True, null=True)
 
     def __str__(self):
-        return self.business
+        return str(self.business)
 
 
 
@@ -332,7 +332,7 @@ class P18PdVisit(models.Model):
     business_visit_done_by = models.CharField(max_length=100, verbose_name="Done by (Business premises visit)",  blank=True, null=True)
 
     def __str__(self):
-        return self.residential_visit_done_by
+        return str(self.residential_visit_done_by)
 
 
 class P19PdBureauSummary(models.Model):
@@ -366,7 +366,7 @@ class P19PdBureauSummary(models.Model):
     tractor_emi_remaining = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan Type Tractor Loan EMI remaining", blank=True,null=True)
 
     def __str__(self):
-        return self.mfi_loan_amt
+        return str(self.mfi_loan_amt)
 
 
 class P20PdMiscellaneousDetails(models.Model):
@@ -383,7 +383,7 @@ class P20PdMiscellaneousDetails(models.Model):
     total_household_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total household income", blank=True, null=True)
 
     def __str__(self):
-        return self.income_source_agri_land
+        return str(self.income_source_agri_land)
 
 
 class P21FiSheet(models.Model):
@@ -432,4 +432,4 @@ class P21FiSheet(models.Model):
     neighbour_1_status = models.CharField(max_length=100, verbose_name="Neighbour 1 Status", blank=True, null=True)
 
     def __str__(self):
-        return self.case_details
+        return str(self.case_details)
