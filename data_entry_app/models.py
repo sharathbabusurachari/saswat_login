@@ -48,7 +48,6 @@ class P01BusinessLoanAppForm(models.Model):
 
 
 
-
 class P02FinancialRequirement(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
     purpose_of_loan = models.CharField(max_length=50, verbose_name="Purpose of loan")
@@ -164,6 +163,7 @@ class P07ReferenceOne(models.Model):
     def __str__(self):
         return self.name
 
+
 class P08ReferenceTwo(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -222,13 +222,13 @@ class P03Applicant(models.Model):
 
 class P23InsuranceApplicationToSaswat(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    date = models.DateField()
-    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)")
-    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)")
-    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)")
-    user = models.CharField(max_length=50, verbose_name="user")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=timezone.now)
+    date = models.DateField(blank=True, null=True)
+    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)",blank=True, null=True)
+    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)", blank=True, null=True)
+    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)", blank=True, null=True)
+    user = models.CharField(max_length=50, verbose_name="user", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     def __str__(self):
         return f"Details - {self.date}"
@@ -236,13 +236,13 @@ class P23InsuranceApplicationToSaswat(models.Model):
 
 class P22InsuranceApplicationToAmbit(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
-    date = models.DateField(verbose_name="Date")
-    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)")
-    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)")
-    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)")
-    user = models.CharField(max_length=50, verbose_name="user")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=timezone.now)
+    date = models.DateField(verbose_name="Date", blank=True, null=True)
+    loan_facility = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Loan facility (Rs)", blank=True, null=True)
+    insurance_premium = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Insurance premium (Rs)", blank=True, null=True)
+    to_specified_paravet = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="To specified Paravet (Rs)", blank=True, null=True)
+    user = models.CharField(max_length=50, verbose_name="user", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    updated_at = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     def __str__(self):
         return f"Details - {self.date}"
@@ -277,7 +277,13 @@ class P10Attachment(models.Model):
     field_visit_cattle = models.FileField(upload_to='attachments/', verbose_name="Field visit photo (cattle)", blank=True, null=True)
     field_visit_shed = models.FileField(upload_to='attachments/', verbose_name="Field visit photo (shed)", blank=True, null=True)
     cam_sheet = models.FileField(upload_to='attachments/', verbose_name="CAM sheet",  blank=True, null=True)
-    other = models.FileField(upload_to='attachments/', verbose_name="Other Attachment", blank=True, null=True)
+    post_disbursal_doc = models.FileField(upload_to='attachments/', verbose_name="Post Disbursal Document Attachment", blank=True, null=True)
+    additional_1 = models.FileField(upload_to='attachments/', verbose_name="Additional 1 Attachment", blank=True, null=True)
+    additional_2 = models.FileField(upload_to='attachments/', verbose_name="Additional 2 Attachment", blank=True, null=True)
+    additional_3 = models.FileField(upload_to='attachments/', verbose_name="Additional 3 Attachment", blank=True, null=True)
+    additional_4 = models.FileField(upload_to='attachments/', verbose_name="Additional 4 Attachment", blank=True, null=True)
+    additional_5 = models.FileField(upload_to='attachments/', verbose_name="Additional 5 Attachment", blank=True, null=True)
+    remarks = models.TextField(verbose_name="Additional Remarks", blank=True, null=True)
     user = models.CharField(max_length=50, verbose_name="user")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
@@ -295,7 +301,7 @@ class P12SequrityPostDatedCheques(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.issuing_bank_name
+        return str(self.issuing_bank_name)
 
 
 class P11PostDatedCheques(models.Model):
@@ -310,7 +316,7 @@ class P11PostDatedCheques(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.issuing_bank_name
+        return str(self.issuing_bank_name)
 
 
 class P13SpdcAndPdcForm(models.Model):
@@ -323,7 +329,7 @@ class P13SpdcAndPdcForm(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.name_of_borrower_or_co_borrower
+        return str(self.name_of_borrower_or_co_borrower)
 
 ####################
 
@@ -410,8 +416,7 @@ class P17PdTotalAssets(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.business
-
+        return str(self.business)
 
 
 class P18PdVisit(models.Model):
@@ -426,7 +431,7 @@ class P18PdVisit(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.residential_visit_done_by
+        return str(self.residential_visit_done_by)
 
 
 class P19PdBureauSummary(models.Model):
@@ -463,7 +468,7 @@ class P19PdBureauSummary(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.mfi_loan_amt
+        return str(self.mfi_loan_amt)
 
 
 class P20PdMiscellaneousDetails(models.Model):
@@ -483,7 +488,7 @@ class P20PdMiscellaneousDetails(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.income_source_agri_land
+        return str(self.income_source_agri_land)
 
 
 class P21FiSheet(models.Model):
@@ -535,4 +540,4 @@ class P21FiSheet(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.case_details
+        return str(self.case_details)
