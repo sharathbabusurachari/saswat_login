@@ -164,7 +164,6 @@ class P07ReferenceOne(models.Model):
     def __str__(self):
         return self.name
 
-
 class P08ReferenceTwo(models.Model):
     app_no = models.OneToOneField(P01BusinessLoanAppForm, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
