@@ -482,7 +482,7 @@ class P20PdMiscellaneousDetails(models.Model):
     income_source_agri_land = models.CharField(max_length=100, verbose_name="Income source/agri land", blank=True, null=True)
     milk_selling_price_per_litre = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Milk selling price per litre", blank=True, null=True)
     milk_production_per_day = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Milk production per day in litre", blank=True, null=True)
-    name_of_dairy_and_milk_selling_since = models.CharField(max_length=100, verbose_name="Name Of Dairy And Silk Selling Since", blank=True, null=True)
+    name_of_dairy_and_milk_selling_since = models.CharField(max_length=100, verbose_name="Name Of Dairy And Milk Selling Since", blank=True, null=True)
     total_household_income = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Total household income", blank=True, null=True)
     user = models.CharField(max_length=50, verbose_name="user")
     created_at = models.DateTimeField(auto_now_add=True)
