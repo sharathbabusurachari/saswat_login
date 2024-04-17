@@ -1,7 +1,13 @@
 # serializers.py
 from rest_framework import serializers
-from .models import OTP, UserOtp, GpsModel, CustomerTest, Gender, State
-
+from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
+                     VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
+                     PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
+                     VleNearbyMilkCenterContact, VillageDetails
+                     )
+from rest_framework.response import Response
+from rest_framework import status
+import random
 
 # class OTPSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -45,3 +51,73 @@ class StateSerializer(serializers.ModelSerializer):
         model = State
         fields = ('state_id', 'state')
 
+class VleVillageInfoSerializer(serializers.ModelSerializer):
+    vle_id = serializers.IntegerField(required=False)
+    class Meta:
+        model = VleVillageInfo
+        fields = '__all__'
+
+    def create(self, validated_data):
+        try:
+            random_id = random.randint(1000000, 9999999)
+            while VleVillageInfo.objects.filter(vle_id=random_id).exists():
+                random_id = random.randint(1000000, 9999999)
+            validated_data['vle_id'] = random_id
+
+            return VleVillageInfo.objects.create(**validated_data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BmcBasicInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BmcBasicInformation
+        fields = '__all__'
+
+
+class VleBasicInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VleBasicInformation
+        fields = '__all__'
+
+
+class VleMobileNumberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VleMobileNumber
+        fields = '__all__'
+
+
+class PhotoOfBmcSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhotoOfBmc
+        fields = '__all__'
+
+
+class VLEBankDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VLEBankDetails
+        fields = '__all__'
+
+
+class SkillsAndKnowledgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SkillsAndKnowledge
+        fields = '__all__'
+
+
+class VLEEconomicAndSocialStatusInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VLEEconomicAndSocialStatusInfo
+        fields = '__all__'
+
+
+class VleNearbyMilkCenterContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VleNearbyMilkCenterContact
+        fields = '__all__'
+
+
+class VillageDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VillageDetails
+        fields = '__all__'

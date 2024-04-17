@@ -10,7 +10,14 @@ from saswat_cust_app.models import UserOtp, UserDetails, CustomerTest, Gender, S
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 import random
-from saswat_cust_app.serializers import OTPSerializer, GpsSerializer, CustomerTestSerializer, GenderSerializer, StateSerializer
+from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerTestSerializer,
+                                         GenderSerializer, StateSerializer,
+                                         VleVillageInfoSerializer, BmcBasicInformationSerializer,
+                                         VleBasicInformationSerializer, VleMobileNumberSerializer,
+                                         PhotoOfBmcSerializer, VLEBankDetailsSerializer,
+                                         SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
+                                         VleNearbyMilkCenterContactSerializer,
+                                         VillageDetailsSerializer)
 from datetime import datetime, timedelta
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -236,5 +243,225 @@ class MasterApi(APIView):
                 'state_data': state_data.data
             }
             return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class VleVillageInfoView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        vle_v_info_serializer = VleVillageInfoSerializer(data=request.data)
+        print(vle_v_info_serializer)
+        try:
+            if vle_v_info_serializer.is_valid():
+                vle_id_instance = vle_v_info_serializer.save()
+                print(vle_id_instance)
+                response_data = {
+                    'Vle id': vle_id_instance.vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(vle_v_info_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BmcBasicInformationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        bmc_basic_info_serializer = BmcBasicInformationSerializer(data=request.data)
+        try:
+            if bmc_basic_info_serializer.is_valid():
+                vle_id_instance = bmc_basic_info_serializer.save()
+                serialized_data = BmcBasicInformationSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+
+                response_data = {
+                    'Vle id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(bmc_basic_info_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VleBasicInformationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        vle_basic_info_serializer = VleBasicInformationSerializer(data=request.data)
+        try:
+            if vle_basic_info_serializer.is_valid():
+                vle_id_instance = vle_basic_info_serializer.save()
+                serialized_data = VleBasicInformationSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'Vle Id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(vle_basic_info_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VleMobileNumberView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        vle_mobile_number_serializer = VleMobileNumberSerializer(data=request.data)
+        try:
+            if vle_mobile_number_serializer.is_valid():
+                vle_id_instance = vle_mobile_number_serializer.save()
+                serialized_data = VleMobileNumberSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'Vle Id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(vle_mobile_number_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class PhotoOfBmcView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        photo_of_bmc_serializer = PhotoOfBmcSerializer(data=request.data)
+        try:
+            if photo_of_bmc_serializer.is_valid():
+                vle_id_instance = photo_of_bmc_serializer.save()
+                serialized_data = PhotoOfBmcSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+
+                response_data = {
+                    'Vle Id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(photo_of_bmc_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VLEBankDetailsView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        vle_bank_details_serializer = VLEBankDetailsSerializer(data=request.data)
+        try:
+            if vle_bank_details_serializer.is_valid():
+                vle_id_instance = vle_bank_details_serializer.save()
+                serialized_data = VLEBankDetailsSerializer(vle_id_instance).data
+                vle_id = serialized_data.get("vle_id")
+                response_data = {
+                    'Vle Id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(vle_bank_details_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SkillsAndKnowledgeView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        skills_and_knowledge_serializer = SkillsAndKnowledgeSerializer(data=request.data)
+        try:
+            if skills_and_knowledge_serializer.is_valid():
+                vle_id_instance = skills_and_knowledge_serializer.save()
+                serialized_data = SkillsAndKnowledgeSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'Vle Id':vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(skills_and_knowledge_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VLEEconomicAndSocialStatusInfoView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        vle_eco_and_social_status_serializer = VLEEconomicAndSocialStatusInfoSerializer(data=request.data)
+        try:
+            if vle_eco_and_social_status_serializer.is_valid():
+                vle_id_instance = vle_eco_and_social_status_serializer.save()
+                serialized_data = VLEEconomicAndSocialStatusInfoSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'vle_id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(vle_eco_and_social_status_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VleNearbyMilkCenterContactView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        vle_nearby_milk_center_serializer = VleNearbyMilkCenterContactSerializer(data=request.data)
+        try:
+            if vle_nearby_milk_center_serializer.is_valid():
+                vle_id_instance = vle_nearby_milk_center_serializer.save()
+                serialized_data = VleNearbyMilkCenterContactSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'Vle Id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(vle_nearby_milk_center_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VillageDetailsView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        village_details_serializer = VillageDetailsSerializer(data=request.data)
+        try:
+            if village_details_serializer.is_valid():
+                vle_id_instance = village_details_serializer.save()
+                serialized_data = VillageDetailsSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'Vle Id': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(village_details_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
