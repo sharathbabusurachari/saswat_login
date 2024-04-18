@@ -257,7 +257,7 @@ class VleVillageInfoView(APIView):
                 vle_id_instance = vle_v_info_serializer.save()
                 print(vle_id_instance)
                 response_data = {
-                    'Vle id': vle_id_instance.vle_id,
+                    'VleId': vle_id_instance.vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -280,7 +280,7 @@ class BmcBasicInformationView(APIView):
                 vle_id = serialized_data.get('vle_id')
 
                 response_data = {
-                    'Vle id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -302,7 +302,7 @@ class VleBasicInformationView(APIView):
                 serialized_data = VleBasicInformationSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'Vle Id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -324,7 +324,7 @@ class VleMobileNumberView(APIView):
                 serialized_data = VleMobileNumberSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'Vle Id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -346,7 +346,7 @@ class PhotoOfBmcView(APIView):
                 vle_id = serialized_data.get('vle_id')
 
                 response_data = {
-                    'Vle Id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -368,7 +368,7 @@ class VLEBankDetailsView(APIView):
                 serialized_data = VLEBankDetailsSerializer(vle_id_instance).data
                 vle_id = serialized_data.get("vle_id")
                 response_data = {
-                    'Vle Id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -390,7 +390,7 @@ class SkillsAndKnowledgeView(APIView):
                 serialized_data = SkillsAndKnowledgeSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'Vle Id':vle_id,
+                    'VleId':vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -412,7 +412,7 @@ class VLEEconomicAndSocialStatusInfoView(APIView):
                 serialized_data = VLEEconomicAndSocialStatusInfoSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'vle_id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -434,7 +434,7 @@ class VleNearbyMilkCenterContactView(APIView):
                 serialized_data = VleNearbyMilkCenterContactSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'Vle Id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -456,7 +456,7 @@ class VillageDetailsView(APIView):
                 serialized_data = VillageDetailsSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'Vle Id': vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
