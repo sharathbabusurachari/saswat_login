@@ -123,7 +123,7 @@ class VleVillageInfo(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.village_name
+        return str(self.vle_id)
 
 
     class Meta:
@@ -146,7 +146,7 @@ class BmcBasicInformation(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.name
+        return str(self.vle_id)
     class Meta:
         db_table = "bmc_basic_info"
 
@@ -165,7 +165,7 @@ class VleBasicInformation(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.name
+        return self.vle_name
 
     class Meta:
         db_table = "vle_basic_info"

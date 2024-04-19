@@ -5,10 +5,15 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework import status
 # from django.shortcuts import get_object_or_404
 # from .utils import is_valid_indian_mobile_number
-
-from saswat_cust_app.models import UserOtp, UserDetails, CustomerTest, Gender, State
+from rest_framework.exceptions import ValidationError
+from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, State, VleVillageInfo,
+                                    VleBasicInformation, VleMobileNumber, BmcBasicInformation, VLEBankDetails,
+                                    VillageDetails, VleNearbyMilkCenterContact, VLEEconomicAndSocialStatusInfo,
+                                    PhotoOfBmc, SkillsAndKnowledge)
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from itertools import zip_longest
+from random import randint
 import random
 from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerTestSerializer,
                                          GenderSerializer, StateSerializer,
@@ -23,7 +28,7 @@ import requests
 # from rest_framework.authentication import SessionAuthentication
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
-from rest_framework.exceptions import ValidationError
+
 
 
 class SendOTPAPIView(APIView):
@@ -249,6 +254,22 @@ class MasterApi(APIView):
 class VleVillageInfoView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request, format=None):
+        vle_vill_info = VleVillageInfo.objects.all()
+        vle_basic_info = VleBasicInformation.objects.all()
+        vle_vill_info_serializer = VleVillageInfoSerializer(vle_vill_info, many=True)
+        vle_basic_info_serializer = VleBasicInformationSerializer(vle_basic_info, many=True)
+
+        response_data = []
+        for vill_info, basic_info in zip_longest(vle_vill_info_serializer.data, vle_basic_info_serializer.data):
+            if basic_info is not None:
+                response_data.append({
+                    'VleName': basic_info['vle_name'],
+                    'VleId': vill_info['vle_id'],
+                    'VillageName': vill_info['village_name']
+                })
+        return Response(response_data, status=status.HTTP_200_OK)
+
     def post(self, request, *args, **kwargs):
         vle_v_info_serializer = VleVillageInfoSerializer(data=request.data)
         print(vle_v_info_serializer)
@@ -270,6 +291,22 @@ class VleVillageInfoView(APIView):
 
 class BmcBasicInformationView(APIView):
     permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                bmc_basic_queryset = BmcBasicInformation.objects.filter(vle_id=vle_id)
+                serializer = BmcBasicInformationSerializer(bmc_basic_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
     def post(self, request, *args, **kwargs):
         bmc_basic_info_serializer = BmcBasicInformationSerializer(data=request.data)
@@ -294,6 +331,20 @@ class BmcBasicInformationView(APIView):
 class VleBasicInformationView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                vle_basic_queryset = VleBasicInformation.objects.filter(vle_id=vle_id)
+                serializer = VleBasicInformationSerializer(vle_basic_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request, *args, **kwargs):
         vle_basic_info_serializer = VleBasicInformationSerializer(data=request.data)
         try:
@@ -316,6 +367,20 @@ class VleBasicInformationView(APIView):
 class VleMobileNumberView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                vle_mo_no_queryset = VleMobileNumber.objects.filter(vle_id=vle_id)
+                serializer = VleMobileNumberSerializer(vle_mo_no_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request, *args, **kwargs):
         vle_mobile_number_serializer = VleMobileNumberSerializer(data=request.data)
         try:
@@ -336,6 +401,22 @@ class VleMobileNumberView(APIView):
 
 class PhotoOfBmcView(APIView):
     permission_classes = [AllowAny]
+
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                photo_of_bmc_queryset = PhotoOfBmc.objects.filter(vle_id=vle_id)
+                serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     def post(self, request, *args, **kwargs):
         photo_of_bmc_serializer = PhotoOfBmcSerializer(data=request.data)
@@ -360,6 +441,20 @@ class PhotoOfBmcView(APIView):
 class VLEBankDetailsView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                vle_bank_det_queryset = VLEBankDetails.objects.filter(vle_id=vle_id)
+                serializer = VLEBankDetailsSerializer(vle_bank_det_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request, *args, **kwargs):
         vle_bank_details_serializer = VLEBankDetailsSerializer(data=request.data)
         try:
@@ -381,6 +476,20 @@ class VLEBankDetailsView(APIView):
 
 class SkillsAndKnowledgeView(APIView):
     permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                skill_and_kno_queryset = SkillsAndKnowledge.objects.filter(vle_id=vle_id)
+                serializer = SkillsAndKnowledgeSerializer(skill_and_kno_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, *args, **kwargs):
         skills_and_knowledge_serializer = SkillsAndKnowledgeSerializer(data=request.data)
@@ -404,6 +513,20 @@ class SkillsAndKnowledgeView(APIView):
 class VLEEconomicAndSocialStatusInfoView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                vle_eco_queryset = VLEEconomicAndSocialStatusInfo.objects.filter(vle_id=vle_id)
+                serializer = VLEEconomicAndSocialStatusInfoSerializer(vle_eco_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request, *args, **kwargs):
         vle_eco_and_social_status_serializer = VLEEconomicAndSocialStatusInfoSerializer(data=request.data)
         try:
@@ -426,6 +549,20 @@ class VLEEconomicAndSocialStatusInfoView(APIView):
 class VleNearbyMilkCenterContactView(APIView):
     permission_classes = [AllowAny]
 
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                vle_near_queryset = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id)
+                serializer = VleNearbyMilkCenterContactSerializer(vle_near_queryset, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def post(self, request, *args, **kwargs):
         vle_nearby_milk_center_serializer = VleNearbyMilkCenterContactSerializer(data=request.data)
         try:
@@ -447,6 +584,20 @@ class VleNearbyMilkCenterContactView(APIView):
 
 class VillageDetailsView(APIView):
     permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                village_det_queryset = VillageDetails.objects.filter(vle_id=vle_id)
+                serializer = VillageDetailsSerializer(village_det_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, *args, **kwargs):
         village_details_serializer = VillageDetailsSerializer(data=request.data)
