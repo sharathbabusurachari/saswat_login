@@ -59,15 +59,21 @@ class VleVillageInfoSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         try:
-            random_id = random.randint(1000000, 9999999)
-            while VleVillageInfo.objects.filter(vle_id=random_id).exists():
+            vle_id = validated_data.get('vle_id', None)
+            if vle_id == 0:
                 random_id = random.randint(1000000, 9999999)
-            validated_data['vle_id'] = random_id
-
-            return VleVillageInfo.objects.create(**validated_data)
+                while VleVillageInfo.objects.filter(vle_id=random_id).exists():
+                    random_id = random.randint(1000000, 9999999)
+                validated_data['vle_id'] = random_id
+                return VleVillageInfo.objects.create(**validated_data)
+            else:
+                vle_id_update = VleVillageInfo.objects.get(vle_id=vle_id)
+                for key, value in validated_data.items():
+                    setattr(vle_id_update, key, value)
+                vle_id_update.save()
+                return vle_id_update
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 class BmcBasicInformationSerializer(serializers.ModelSerializer):
     class Meta:

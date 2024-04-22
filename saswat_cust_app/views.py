@@ -289,6 +289,24 @@ class VleVillageInfoView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class VleBasicVillageInfoView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                bmc_basic_queryset = VleVillageInfo.objects.filter(vle_id=vle_id)
+                serializer = VleVillageInfoSerializer(bmc_basic_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class BmcBasicInformationView(APIView):
     permission_classes = [AllowAny]
 
@@ -306,8 +324,6 @@ class BmcBasicInformationView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-
     def post(self, request, *args, **kwargs):
         bmc_basic_info_serializer = BmcBasicInformationSerializer(data=request.data)
         try:
@@ -324,6 +340,31 @@ class BmcBasicInformationView(APIView):
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response(bmc_basic_info_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                bmc_basic_instance = BmcBasicInformation.objects.filter(vle_id=vle_id).first()
+                if not bmc_basic_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = BmcBasicInformationSerializer(bmc_basic_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -363,6 +404,31 @@ class VleBasicInformationView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                vle_basic_info_instance = VleBasicInformation.objects.filter(vle_id=vle_id).first()
+                if not vle_basic_info_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VleBasicInformationSerializer(vle_basic_info_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class VleMobileNumberView(APIView):
     permission_classes = [AllowAny]
@@ -399,9 +465,34 @@ class VleMobileNumberView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                mo_no_instance = VleMobileNumber.objects.filter(vle_id=vle_id).first()
+                if not mo_no_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VleMobileNumberSerializer(mo_no_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class PhotoOfBmcView(APIView):
     permission_classes = [AllowAny]
-
 
     def get(self, request, format=None):
         try:
@@ -416,7 +507,6 @@ class PhotoOfBmcView(APIView):
             return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     def post(self, request, *args, **kwargs):
         photo_of_bmc_serializer = PhotoOfBmcSerializer(data=request.data)
@@ -434,6 +524,31 @@ class PhotoOfBmcView(APIView):
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response(photo_of_bmc_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                photo_bmc_instance = PhotoOfBmc.objects.filter(vle_id=vle_id).first()
+                if not photo_bmc_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = PhotoOfBmcSerializer(photo_bmc_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -473,6 +588,31 @@ class VLEBankDetailsView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                vle_bank_det_instance = VLEBankDetails.objects.filter(vle_id=vle_id).first()
+                if not vle_bank_det_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VLEBankDetailsSerializer(vle_bank_det_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class SkillsAndKnowledgeView(APIView):
     permission_classes = [AllowAny]
@@ -506,6 +646,31 @@ class SkillsAndKnowledgeView(APIView):
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response(skills_and_knowledge_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                sk_and_kno_instance = SkillsAndKnowledge.objects.filter(vle_id=vle_id).first()
+                if not sk_and_kno_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = SkillsAndKnowledgeSerializer(sk_and_kno_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -545,6 +710,31 @@ class VLEEconomicAndSocialStatusInfoView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                eco_and_soc_instance = VLEEconomicAndSocialStatusInfo.objects.filter(vle_id=vle_id).first()
+                if not eco_and_soc_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VLEEconomicAndSocialStatusInfoSerializer(eco_and_soc_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class VleNearbyMilkCenterContactView(APIView):
     permission_classes = [AllowAny]
@@ -578,6 +768,31 @@ class VleNearbyMilkCenterContactView(APIView):
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response(vle_nearby_milk_center_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                milk_center_instance = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id).first()
+                if not milk_center_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -617,20 +832,27 @@ class VillageDetailsView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class VleBasicVillageInfoView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request, format=None):
+    def put(self, request, *args, **kwargs):
         try:
-            vle_id = request.query_params.get('vle_id')
+            vle_id = request.data.get('vle_id')
             if vle_id:
-                bmc_basic_queryset = VleVillageInfo.objects.filter(vle_id=vle_id)
-                serializer = VleVillageInfoSerializer(bmc_basic_queryset, many=True)
-                return Response(serializer.data)
+                vill_det_instance = VillageDetails.objects.filter(vle_id=vle_id).first()
+                if not vill_det_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VillageDetailsSerializer(vill_det_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as ve:
-            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
