@@ -616,3 +616,21 @@ class VillageDetailsView(APIView):
                 return Response(village_details_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VleBasicVillageInfoView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                bmc_basic_queryset = VleVillageInfo.objects.filter(vle_id=vle_id)
+                serializer = VleVillageInfoSerializer(bmc_basic_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
