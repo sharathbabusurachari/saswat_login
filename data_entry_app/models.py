@@ -211,7 +211,7 @@ class P03Applicant(models.Model):
         ('Rented', 'Rented'),
     ]
     ownership_status = models.CharField(max_length=100, choices=OWNERSHIP_CHOICES)
-    applicant_photo = models.ImageField(upload_to='applicant_photos/', verbose_name="Applicant photo(signed)")
+    applicant_photo = models.FileField(upload_to='applicant_photos/', verbose_name="Applicant photo(signed)")
     user = models.CharField(max_length=50, verbose_name="user")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
