@@ -276,7 +276,7 @@ class VleVillageInfoView(APIView):
         response_data = []
 
         # Create a dictionary to store vle_basic_info data by vleId for easy lookup
-        basic_info_dict = {basic_info['vle_id_id']: basic_info for basic_info in vle_basic_info_serializer.data}
+        basic_info_dict = {basic_info['vle_id']: basic_info for basic_info in vle_basic_info_serializer.data}
 
         # Iterate over vle_vill_info_serializer.data
         for vill_info in vle_vill_info_serializer.data:
