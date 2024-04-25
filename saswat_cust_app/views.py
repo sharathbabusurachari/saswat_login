@@ -276,17 +276,17 @@ class VleVillageInfoView(APIView):
         response_data = []
 
         # Create a dictionary to store vle_basic_info data by vleId for easy lookup
-        basic_info_dict = {basic_info['vleId']: basic_info for basic_info in vle_basic_info_serializer.data}
+        basic_info_dict = {basic_info['vle_id_id']: basic_info for basic_info in vle_basic_info_serializer.data}
 
         # Iterate over vle_vill_info_serializer.data
         for vill_info in vle_vill_info_serializer.data:
             # Check if the corresponding basic_info exists based on vleId
-            if vill_info['vleId'] in basic_info_dict:
+            if vill_info['vle_id'] in basic_info_dict:
                 # If basic_info exists, construct the response
-                basic_info = basic_info_dict[vill_info['vleId']]
+                basic_info = basic_info_dict[vill_info['vle_id']]
                 response_data.append({
                     'VleName': basic_info['vle_name'],
-                    'VleId': vill_info['vleId'],
+                    'VleId': vill_info['vle_id'],
                     'VillageName': vill_info['village_name']
                 })
 
