@@ -255,13 +255,33 @@ class VleVillageInfoView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, format=None):
-        vle_vill_info = VleVillageInfo.objects.all()
-        vle_basic_info = VleBasicInformation.objects.all()
-        vle_vill_info_serializer = VleVillageInfoSerializer(vle_vill_info, many=True)
-        vle_basic_info_serializer = VleBasicInformationSerializer(vle_basic_info, many=True)
-        if not vle_vill_info.exists() and vle_basic_info.exists():
-            return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
-                            status=status.HTTP_200_OK)
+
+        village_info_data = VleVillageInfo.objects.values('vle_id', 'village_name')
+        basic_info_data = VleBasicInformation.objects.values('vle_id', 'vle_name')
+        common_data = []
+        for vle_village_info in village_info_data:
+            for vle_basic_info in basic_info_data:
+                if vle_village_info['vle_id'] == vle_basic_info['vle_id']:
+                    common_data.append({
+                        'vle_id': vle_village_info['vle_id'],
+                        'village_name': vle_village_info['village_name'],
+                        'vle_name': vle_basic_info['vle_name']
+                    })
+                    response = {
+                        'status': '00',
+                        'message': 'success',
+                        'data': common_data
+                    }
+        return Response(response, status=status.HTTP_200_OK)
+
+    # def get(self, request, format=None):
+    #     vle_vill_info = VleVillageInfo.objects.all()
+    #     vle_basic_info = VleBasicInformation.objects.all()
+    #     vle_vill_info_serializer = VleVillageInfoSerializer(vle_vill_info, many=True)
+    #     vle_basic_info_serializer = VleBasicInformationSerializer(vle_basic_info, many=True)
+    #     if not vle_vill_info.exists() and vle_basic_info.exists():
+    #         return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+    #                         status=status.HTTP_200_OK)
 
         # response_data = []
         # for vill_info, basic_info in zip_longest(vle_vill_info_serializer.data, vle_basic_info_serializer.data):
@@ -273,25 +293,29 @@ class VleVillageInfoView(APIView):
         #         })
         # return Response(response_data, status=status.HTTP_200_OK)
 
-        response_data = []
+        # response_data = []
+        #
+        # # Create a dictionary to store vle_basic_info data by vleId for easy lookup
+        # basic_info_dict = {basic_info['vle_id']: basic_info for basic_info in vle_basic_info_serializer.data}
+        #
+        # # Iterate over vle_vill_info_serializer.data
+        # for vill_info in vle_vill_info_serializer.data:
+        #     # Check if the corresponding basic_info exists based on vleId
+        #     if vill_info['vle_id'] in basic_info_dict:
+        #         # If basic_info exists, construct the response
+        #         basic_info = basic_info_dict[vill_info['vle_id']]
+        #         response_data.append({
+        #             'VleName': basic_info['vle_name'],
+        #             'VleId': vill_info['vle_id'],
+        #             'VillageName': vill_info['village_name']
+        #         })
+        #
+        # # Return the response data
+        # return Response(response_data, status=status.HTTP_200_OK)
 
-        # Create a dictionary to store vle_basic_info data by vleId for easy lookup
-        basic_info_dict = {basic_info['vle_id']: basic_info for basic_info in vle_basic_info_serializer.data}
 
-        # Iterate over vle_vill_info_serializer.data
-        for vill_info in vle_vill_info_serializer.data:
-            # Check if the corresponding basic_info exists based on vleId
-            if vill_info['vle_id'] in basic_info_dict:
-                # If basic_info exists, construct the response
-                basic_info = basic_info_dict[vill_info['vle_id']]
-                response_data.append({
-                    'VleName': basic_info['vle_name'],
-                    'VleId': vill_info['vle_id'],
-                    'VillageName': vill_info['village_name']
-                })
 
-        # Return the response data
-        return Response(response_data, status=status.HTTP_200_OK)
+
 
 
 def post(self, request, *args, **kwargs):
