@@ -22,7 +22,7 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          PhotoOfBmcSerializer, VLEBankDetailsSerializer,
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
-                                         VillageDetailsSerializer)
+                                         VillageDetailsSerializer,)
 from datetime import datetime, timedelta
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -809,6 +809,68 @@ class VleNearbyMilkCenterContactView(APIView):
                                     status=status.HTTP_404_NOT_FOUND)
 
                 serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class VillageDetailsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if vle_id:
+                village_det_queryset = VillageDetails.objects.filter(vle_id=vle_id)
+                if not village_det_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
+                serializer = VillageDetailsSerializer(village_det_queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, *args, **kwargs):
+        village_details_serializer = VillageDetailsSerializer(data=request.data)
+        try:
+            if village_details_serializer.is_valid():
+                vle_id_instance = village_details_serializer.save()
+                serialized_data = VillageDetailsSerializer(vle_id_instance).data
+                vle_id = serialized_data.get('vle_id')
+                response_data = {
+                    'VleId': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(village_details_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            vle_id = request.data.get('vle_id')
+            if vle_id:
+                vill_det_instance = VillageDetails.objects.filter(vle_id=vle_id).first()
+                if not vill_det_instance:
+                    return Response({'error': 'BmcBasicInformation instance not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                serializer = VillageDetailsSerializer(vill_det_instance, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     response_data = {
