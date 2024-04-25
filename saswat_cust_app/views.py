@@ -274,51 +274,7 @@ class VleVillageInfoView(APIView):
                     }
         return Response(response, status=status.HTTP_200_OK)
 
-    # def get(self, request, format=None):
-    #     vle_vill_info = VleVillageInfo.objects.all()
-    #     vle_basic_info = VleBasicInformation.objects.all()
-    #     vle_vill_info_serializer = VleVillageInfoSerializer(vle_vill_info, many=True)
-    #     vle_basic_info_serializer = VleBasicInformationSerializer(vle_basic_info, many=True)
-    #     if not vle_vill_info.exists() and vle_basic_info.exists():
-    #         return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
-    #                         status=status.HTTP_200_OK)
-
-        # response_data = []
-        # for vill_info, basic_info in zip_longest(vle_vill_info_serializer.data, vle_basic_info_serializer.data):
-        #     if basic_info is not None:
-        #         response_data.append({
-        #             'VleName': basic_info['vle_name'],
-        #             'VleId': vill_info['vle_id'],
-        #             'VillageName': vill_info['village_name']
-        #         })
-        # return Response(response_data, status=status.HTTP_200_OK)
-
-        # response_data = []
-        #
-        # # Create a dictionary to store vle_basic_info data by vleId for easy lookup
-        # basic_info_dict = {basic_info['vle_id']: basic_info for basic_info in vle_basic_info_serializer.data}
-        #
-        # # Iterate over vle_vill_info_serializer.data
-        # for vill_info in vle_vill_info_serializer.data:
-        #     # Check if the corresponding basic_info exists based on vleId
-        #     if vill_info['vle_id'] in basic_info_dict:
-        #         # If basic_info exists, construct the response
-        #         basic_info = basic_info_dict[vill_info['vle_id']]
-        #         response_data.append({
-        #             'VleName': basic_info['vle_name'],
-        #             'VleId': vill_info['vle_id'],
-        #             'VillageName': vill_info['village_name']
-        #         })
-        #
-        # # Return the response data
-        # return Response(response_data, status=status.HTTP_200_OK)
-
-
-
-
-
-
-def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         vle_v_info_serializer = VleVillageInfoSerializer(data=request.data)
         print(vle_v_info_serializer)
         try:
@@ -346,7 +302,12 @@ class VleBasicVillageInfoView(APIView):
             if vle_id:
                 bmc_basic_queryset = VleVillageInfo.objects.filter(vle_id=vle_id)
                 serializer = VleVillageInfoSerializer(bmc_basic_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'VleId': vle_id,
+                    'status': '00',
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -367,7 +328,12 @@ class BmcBasicInformationView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = BmcBasicInformationSerializer(bmc_basic_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': 'success',
+                    'data': serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -432,7 +398,12 @@ class VleBasicInformationView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VleBasicInformationSerializer(vle_basic_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -496,7 +467,12 @@ class VleMobileNumberView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VleMobileNumberSerializer(vle_mo_no_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -560,8 +536,12 @@ class PhotoOfBmcView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
-
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -626,7 +606,12 @@ class VLEBankDetailsView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VLEBankDetailsSerializer(vle_bank_det_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -690,7 +675,12 @@ class SkillsAndKnowledgeView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = SkillsAndKnowledgeSerializer(skill_and_kno_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -706,7 +696,7 @@ class SkillsAndKnowledgeView(APIView):
                 serialized_data = SkillsAndKnowledgeSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
                 response_data = {
-                    'VleId':vle_id,
+                    'VleId': vle_id,
                     'status': '00',
                     'message': "success",
                 }
@@ -754,7 +744,12 @@ class VLEEconomicAndSocialStatusInfoView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VLEEconomicAndSocialStatusInfoSerializer(vle_eco_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': 'success',
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -818,7 +813,12 @@ class VleNearbyMilkCenterContactView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VleNearbyMilkCenterContactSerializer(vle_near_queryset, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                response_data = {
+                    'status': '00',
+                    'message': 'success',
+                    'data': serializer.data,
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
@@ -868,6 +868,8 @@ class VleNearbyMilkCenterContactView(APIView):
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class VillageDetailsView(APIView):
     permission_classes = [AllowAny]
 
@@ -880,7 +882,12 @@ class VillageDetailsView(APIView):
                     return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VillageDetailsSerializer(village_det_queryset, many=True)
-                return Response(serializer.data)
+                response_data = {
+                    'status': '00',
+                    'message': 'success',
+                    'data': serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as ve:
