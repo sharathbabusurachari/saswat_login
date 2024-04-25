@@ -259,6 +259,9 @@ class VleVillageInfoView(APIView):
         vle_basic_info = VleBasicInformation.objects.all()
         vle_vill_info_serializer = VleVillageInfoSerializer(vle_vill_info, many=True)
         vle_basic_info_serializer = VleBasicInformationSerializer(vle_basic_info, many=True)
+        if not vle_vill_info.exists() and vle_basic_info.exists():
+            return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                            status=status.HTTP_200_OK)
 
         response_data = []
         for vill_info, basic_info in zip_longest(vle_vill_info_serializer.data, vle_basic_info_serializer.data):
@@ -315,6 +318,9 @@ class BmcBasicInformationView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 bmc_basic_queryset = BmcBasicInformation.objects.filter(vle_id=vle_id)
+                if not bmc_basic_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = BmcBasicInformationSerializer(bmc_basic_queryset, many=True)
                 return Response(serializer.data)
             else:
@@ -377,6 +383,9 @@ class VleBasicInformationView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 vle_basic_queryset = VleBasicInformation.objects.filter(vle_id=vle_id)
+                if not vle_basic_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = VleBasicInformationSerializer(vle_basic_queryset, many=True)
                 return Response(serializer.data)
             else:
@@ -438,6 +447,9 @@ class VleMobileNumberView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 vle_mo_no_queryset = VleMobileNumber.objects.filter(vle_id=vle_id)
+                if not vle_mo_no_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = VleMobileNumberSerializer(vle_mo_no_queryset, many=True)
                 return Response(serializer.data)
             else:
@@ -499,7 +511,11 @@ class PhotoOfBmcView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 photo_of_bmc_queryset = PhotoOfBmc.objects.filter(vle_id=vle_id)
+                if not photo_of_bmc_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
+
                 return Response(serializer.data)
             else:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -561,6 +577,9 @@ class VLEBankDetailsView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 vle_bank_det_queryset = VLEBankDetails.objects.filter(vle_id=vle_id)
+                if not vle_bank_det_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = VLEBankDetailsSerializer(vle_bank_det_queryset, many=True)
                 return Response(serializer.data)
             else:
@@ -622,6 +641,9 @@ class SkillsAndKnowledgeView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 skill_and_kno_queryset = SkillsAndKnowledge.objects.filter(vle_id=vle_id)
+                if not skill_and_kno_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = SkillsAndKnowledgeSerializer(skill_and_kno_queryset, many=True)
                 return Response(serializer.data)
             else:
@@ -683,6 +705,9 @@ class VLEEconomicAndSocialStatusInfoView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 vle_eco_queryset = VLEEconomicAndSocialStatusInfo.objects.filter(vle_id=vle_id)
+                if not vle_eco_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = VLEEconomicAndSocialStatusInfoSerializer(vle_eco_queryset, many=True)
                 return Response(serializer.data)
             else:
@@ -744,6 +769,9 @@ class VleNearbyMilkCenterContactView(APIView):
             vle_id = request.query_params.get('vle_id')
             if vle_id:
                 vle_near_queryset = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id)
+                if not vle_near_queryset.exists():
+                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                                    status=status.HTTP_200_OK)
                 serializer = VleNearbyMilkCenterContactSerializer(vle_near_queryset, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
@@ -781,67 +809,6 @@ class VleNearbyMilkCenterContactView(APIView):
                                     status=status.HTTP_404_NOT_FOUND)
 
                 serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    response_data = {
-                        'VleId': vle_id,
-                        'status': '00',
-                        'message': "success",
-                    }
-                    return Response(response_data, status=status.HTTP_200_OK)
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class VillageDetailsView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request, format=None):
-        try:
-            vle_id = request.query_params.get('vle_id')
-            if vle_id:
-                village_det_queryset = VillageDetails.objects.filter(vle_id=vle_id)
-                serializer = VillageDetailsSerializer(village_det_queryset, many=True)
-                return Response(serializer.data)
-            else:
-                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as ve:
-            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, *args, **kwargs):
-        village_details_serializer = VillageDetailsSerializer(data=request.data)
-        try:
-            if village_details_serializer.is_valid():
-                vle_id_instance = village_details_serializer.save()
-                serialized_data = VillageDetailsSerializer(vle_id_instance).data
-                vle_id = serialized_data.get('vle_id')
-                response_data = {
-                    'VleId': vle_id,
-                    'status': '00',
-                    'message': "success",
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                return Response(village_details_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def put(self, request, *args, **kwargs):
-        try:
-            vle_id = request.data.get('vle_id')
-            if vle_id:
-                vill_det_instance = VillageDetails.objects.filter(vle_id=vle_id).first()
-                if not vill_det_instance:
-                    return Response({'error': 'BmcBasicInformation instance not found'},
-                                    status=status.HTTP_404_NOT_FOUND)
-
-                serializer = VillageDetailsSerializer(vill_det_instance, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                     response_data = {
