@@ -325,7 +325,7 @@ class BmcBasicInformationView(APIView):
             if vle_id:
                 bmc_basic_queryset = BmcBasicInformation.objects.filter(vle_id=vle_id)
                 if not bmc_basic_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = BmcBasicInformationSerializer(bmc_basic_queryset, many=True)
                 response_data = {
@@ -395,7 +395,7 @@ class VleBasicInformationView(APIView):
             if vle_id:
                 vle_basic_queryset = VleBasicInformation.objects.filter(vle_id=vle_id)
                 if not vle_basic_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VleBasicInformationSerializer(vle_basic_queryset, many=True)
                 response_data = {
@@ -464,7 +464,7 @@ class VleMobileNumberView(APIView):
             if vle_id:
                 vle_mo_no_queryset = VleMobileNumber.objects.filter(vle_id=vle_id)
                 if not vle_mo_no_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VleMobileNumberSerializer(vle_mo_no_queryset, many=True)
                 response_data = {
@@ -533,7 +533,7 @@ class PhotoOfBmcView(APIView):
             if vle_id:
                 photo_of_bmc_queryset = PhotoOfBmc.objects.filter(vle_id=vle_id)
                 if not photo_of_bmc_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
                 response_data = {
@@ -603,7 +603,7 @@ class VLEBankDetailsView(APIView):
             if vle_id:
                 vle_bank_det_queryset = VLEBankDetails.objects.filter(vle_id=vle_id)
                 if not vle_bank_det_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VLEBankDetailsSerializer(vle_bank_det_queryset, many=True)
                 response_data = {
@@ -672,7 +672,7 @@ class SkillsAndKnowledgeView(APIView):
             if vle_id:
                 skill_and_kno_queryset = SkillsAndKnowledge.objects.filter(vle_id=vle_id)
                 if not skill_and_kno_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = SkillsAndKnowledgeSerializer(skill_and_kno_queryset, many=True)
                 response_data = {
@@ -741,7 +741,7 @@ class VLEEconomicAndSocialStatusInfoView(APIView):
             if vle_id:
                 vle_eco_queryset = VLEEconomicAndSocialStatusInfo.objects.filter(vle_id=vle_id)
                 if not vle_eco_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VLEEconomicAndSocialStatusInfoSerializer(vle_eco_queryset, many=True)
                 response_data = {
@@ -810,7 +810,7 @@ class VleNearbyMilkCenterContactView(APIView):
             if vle_id:
                 vle_near_queryset = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id)
                 if not vle_near_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VleNearbyMilkCenterContactSerializer(vle_near_queryset, many=True)
                 response_data = {
@@ -879,7 +879,7 @@ class VillageDetailsView(APIView):
             if vle_id:
                 village_det_queryset = VillageDetails.objects.filter(vle_id=vle_id)
                 if not village_det_queryset.exists():
-                    return Response({'status': '00', 'msg': 'Data does not exist', 'data': []},
+                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
                                     status=status.HTTP_200_OK)
                 serializer = VillageDetailsSerializer(village_det_queryset, many=True)
                 response_data = {
