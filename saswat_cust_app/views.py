@@ -1036,11 +1036,11 @@ class VleValidateOTPAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = VleOtpSerializer(data=request.data)
+        # serializer = VleOtpSerializer(data=request.data)
         # if serializer.is_valid():
-        mobile_no = serializer.validated_data['mobile_no']
-        otp_code = serializer.validated_data['otp_code']
-        vle_id = serializer.validated_data['vle_id']
+        mobile_no = request.data.get('mobile_no')
+        otp_code = request.data.get('otp_code')
+        vle_id = request.data.get('vle_id')
 
         if VleOtp.objects.filter(mobile_no=mobile_no).exists():
 
