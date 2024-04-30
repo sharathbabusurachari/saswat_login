@@ -1037,32 +1037,32 @@ class VleValidateOTPAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = VleOtpSerializer(data=request.data)
-        if serializer.is_valid():
-            mobile_no = serializer.validated_data['mobile_no']
-            otp_code = serializer.validated_data['otp_code']
-            vle_id = serializer.validated_data['vle_id']
+        # if serializer.is_valid():
+        mobile_no = serializer.validated_data['mobile_no']
+        otp_code = serializer.validated_data['otp_code']
+        vle_id = serializer.validated_data['vle_id']
 
-            if VleOtp.objects.filter(mobile_no=mobile_no).exists():
+        if VleOtp.objects.filter(mobile_no=mobile_no).exists():
 
-                if VleOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).exists():
-                    response_data = {
-                        'status': '00',
-                        'message': "OTP verified successfully",
-                        'vle_id': vle_id
-                    }
-                    return Response(response_data, status=200)
+            if VleOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).exists():
+                response_data = {
+                    'status': '00',
+                    'message': "OTP verified successfully",
+                    'vle_id': vle_id
+                }
+                return Response(response_data, status=200)
 
-                else:
-                    response_data = {
-                        'status': '01',
-                        'message': "Invalid OTP",
-                    }
-                    return JsonResponse(response_data, status=status.HTTP_200_OK)
             else:
                 response_data = {
                     'status': '01',
-                    'message': "Mobile number does not exist, Please Resend OTP.",
+                    'message': "Invalid OTP",
                 }
                 return JsonResponse(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            response_data = {
+                'status': '01',
+                'message': "Mobile number does not exist, Please Resend OTP.",
+            }
+            return JsonResponse(response_data, status=status.HTTP_200_OK)
+        # else:
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
