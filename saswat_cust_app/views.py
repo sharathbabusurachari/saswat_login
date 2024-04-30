@@ -1064,5 +1064,5 @@ class VleValidateOTPAPIView(APIView):
                     'message': "Mobile number does not exist, Please Resend OTP.",
                 }
                 return JsonResponse(response_data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
