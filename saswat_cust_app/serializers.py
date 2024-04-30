@@ -134,6 +134,7 @@ class VleMobileVOtpSerializer(serializers.ModelSerializer):
 
 
 class VleOtpSerializer(serializers.ModelSerializer):
+    vle_id = serializers.PrimaryKeyRelatedField(queryset=VleVillageInfo.objects.all())
     class Meta:
         model = VleOtp
         fields = ('vle_id', 'mobile_no', 'otp_code', 'otp_genration_time')
