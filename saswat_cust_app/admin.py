@@ -6,7 +6,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation,
                      VleMobileNumber, PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge,
                      VLEEconomicAndSocialStatusInfo,
-                     VleNearbyMilkCenterContact, VillageDetails)
+                     VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp)
 
 
 admin.site.register(UserOtp)
@@ -163,3 +163,31 @@ class VillageDetailsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(VillageDetails, VillageDetailsAdmin)
+
+class VleMobileAdmin(admin.ModelAdmin):
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+
+admin.site.register(VleMobileVOtp, VleMobileAdmin)
+
+
+class VleOtpAdmin(admin.ModelAdmin):
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+admin.site.register(VleOtp, VleOtpAdmin)
