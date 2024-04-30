@@ -966,34 +966,43 @@ class VleMobileVerificationView(APIView):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number).exists()
-                if existing_otp:
-                    existing_otp.delete()
-                    otp_code = str(random.randint(1000, 9999))
-                    data = {
+                existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number)
+                if existing_otp.exists():
+                    try:
+                        existing_otp.delete()
+                        otp_code = str(random.randint(1000, 9999))
+                        data = {
                         'otp': otp_code,
                         'dest': vle_mobile_number,
-                    }
-                    response = requests.post(url, json=data)
-                    print(response)
-                    if response.status_code == 200:
-                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id,
+                                }
+                        response = requests.post(url, json=data)
+                        print(response)
+                        if response.status_code == 200:
+                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id,
                                               user_id=user_id)
-                        response_data = {
+                            response_data = {
                             'vle_id': vle_id,
                             'status': '00',
                             'message': "OTP sent successfully",
-                        }
-                        return Response(response_data, status=status.HTTP_200_OK)
-                    else:
-                        response_data = {
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
+                        else:
+                            response_data = {
                             'status': '01',
                             'message': "Failed to send OTP to the user",
 
-                        }
-                        return Response(response_data,
+                            }
+                            return Response(response_data,
                                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Optionally, perform additional actions after deletion
+                    except Exception as e:
+                        print("Error deleting existing OTPs:", e)
                 else:
+                    print("No existing OTPs found for the provided mobile number.")
+                # if existing_otp:
+                #     existing_otp.delete()
+                #
+                # else:
                     otp_code = str(random.randint(1000, 9999))
                     data = {
                         'otp': otp_code,
