@@ -972,8 +972,8 @@ class VleMobileVerificationView(APIView):
                         existing_otp.delete()
                         otp_code = str(random.randint(1000, 9999))
                         data = {
-                        'otp': otp_code,
-                        'dest': vle_mobile_number,
+                            'otp': otp_code,
+                            'dest': vle_mobile_number,
                                 }
                         response = requests.post(url, json=data)
                         print(response)
@@ -981,19 +981,19 @@ class VleMobileVerificationView(APIView):
                             VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id,
                                               user_id=user_id)
                             response_data = {
-                            'vle_id': vle_id,
-                            'status': '00',
-                            'message': "OTP sent successfully",
+                                'vle_id': vle_id,
+                                'status': '00',
+                                'message': "OTP sent successfully",
                             }
                             return Response(response_data, status=status.HTTP_200_OK)
                         else:
                             response_data = {
-                            'status': '01',
-                            'message': "Failed to send OTP to the user",
+                                'status': '01',
+                                'message': "Failed to send OTP to the user",
 
                             }
                             return Response(response_data,
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         # Optionally, perform additional actions after deletion
                     except Exception as e:
                         print("Error deleting existing OTPs:", e)
