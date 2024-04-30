@@ -953,6 +953,7 @@ class VleMobileVerificationView(APIView):
     def post(self, request, *args, **kwargs):
         vle_mobile_number = request.data.get('mobile_no')
         vle_id = request.data.get('vle_id')
+        user_id = request.data.get('user_id')
         url = 'http://ci1.saswatfinance.com:8084/api/otp'
 
         try:
@@ -977,7 +978,7 @@ class VleMobileVerificationView(APIView):
                     print(response)
                     if response.status_code == 200:
                         VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id,
-                                              user_id="091")
+                                              user_id=user_id)
                         response_data = {
                             'vle_id': vle_id,
                             'status': '00',
@@ -1001,7 +1002,7 @@ class VleMobileVerificationView(APIView):
                     response = requests.post(url, json=data)
                     print(response)
                     if response.status_code == 200:
-                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id="091")
+                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
                         response_data = {
                             'vle_id': vle_id,
                             'status': '00',
