@@ -288,7 +288,7 @@ class VleNearbyMilkCenterContact(models.Model):
         return self.name
 
     class Meta:
-        db_table = "vle_nearby_milk_center_contact"
+     db_table = "vle_nearby_milk_center_contact"
 
 
 class VillageDetails(models.Model):
@@ -315,3 +315,55 @@ class VillageDetails(models.Model):
 
     class Meta:
         db_table = "village_details"
+
+class VleMobileVOtp(models.Model):
+    vle_id = models.OneToOneField(VleVillageInfo, on_delete=models.CASCADE)
+    mobile_no = models.CharField(max_length=15)
+    otp_code = models.CharField(max_length=6)
+    otp_genration_time = models.DateTimeField(auto_now_add=True)
+    otp_expiration_time = models.DateTimeField()
+    uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    user_id = models.CharField(max_length=50, verbose_name="User Id")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'vle_mobile_no_verification'
+
+    def __str__(self):
+        return self.mobile_no
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.otp_expiration_time = datetime.now() + timedelta(minutes=1)
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        return self.otp_genration_time < timezone.now() - timezone.timedelta(minutes=1)
+
+
+class VleOtp(models.Model):
+    vle_id = models.OneToOneField(VleVillageInfo, on_delete=models.CASCADE)
+    mobile_no = models.CharField(max_length=15)
+    otp_code = models.CharField(max_length=6)
+    otp_genration_time = models.DateTimeField(auto_now_add=True)
+    otp_expiration_time = models.DateTimeField()
+    uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    user_id = models.CharField(max_length=50, verbose_name="User Id")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'vle_otp'
+
+    def __str__(self):
+        return self.mobile_no
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.otp_expiration_time = datetime.now() + timedelta(minutes=1)
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        return self.otp_genration_time < timezone.now() - timezone.timedelta(minutes=1)
+

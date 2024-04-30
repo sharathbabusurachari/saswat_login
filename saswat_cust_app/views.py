@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, State, VleVillageInfo,
                                     VleBasicInformation, VleMobileNumber, BmcBasicInformation, VLEBankDetails,
                                     VillageDetails, VleNearbyMilkCenterContact, VLEEconomicAndSocialStatusInfo,
-                                    PhotoOfBmc, SkillsAndKnowledge)
+                                    PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp)
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from itertools import zip_longest
@@ -22,7 +22,7 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          PhotoOfBmcSerializer, VLEBankDetailsSerializer,
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
-                                         VillageDetailsSerializer,)
+                                         VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer)
 from datetime import datetime, timedelta
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -35,7 +35,7 @@ class SendOTPAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         mobile_no = request.data.get('mobile_no')
-        url = 'http://20.235.255.141:8080/saswat/otp'
+        url = 'http://ci1.saswatfinance.com:8084/api/otp'
         #url = 'http://20.235.246.32:8080/message/telspielmessage'
         try:
             existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_genration_time').first()
@@ -937,3 +937,122 @@ class VillageDetailsView(APIView):
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+
+
+class VleMobileVerificationView(APIView):
+    def post(self, request, *args, **kwargs):
+        vle_mobile_number = request.data.get('mobile_no')
+        vle_id = request.data.get('vle_id')
+        url = 'http://ci1.saswatfinance.com:8084/api/otp'
+
+        try:
+            mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number).exists()
+            if mobile_exists:
+                response_data = {
+                    'status': '01',
+                    'message': "Mobile Number already exists, Please enter another number.",
+
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number).exists()
+                if existing_otp:
+                    existing_otp.delete()
+                    otp_code = str(random.randint(1000, 9999))
+                    data = {
+                        'otp': otp_code,
+                        'dest': vle_mobile_number,
+                    }
+                    response = requests.post(url, json=data)
+                    print(response)
+                    if response.status_code == 200:
+                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id,
+                                              user_id="091")
+                        response_data = {
+                            'vle_id': vle_id,
+                            'status': '00',
+                            'message': "OTP sent successfully",
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    else:
+                        response_data = {
+                            'status': '01',
+                            'message': "Failed to send OTP to the user",
+
+                        }
+                        return Response(response_data,
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                else:
+                    otp_code = str(random.randint(1000, 9999))
+                    data = {
+                        'otp': otp_code,
+                        'dest': vle_mobile_number,
+                    }
+                    response = requests.post(url, json=data)
+                    print(response)
+                    if response.status_code == 200:
+                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id="091")
+                        response_data = {
+                            'vle_id': vle_id,
+                            'status': '00',
+                            'message': "OTP sent successfully",
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    else:
+                        response_data = {
+                            'status': '01',
+                            'message': "Failed to send OTP to the user",
+
+                        }
+                        return Response(response_data,
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except requests.exceptions.RequestException as e:
+            return Response({'message': 'Error occurred while making the request'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class VleValidateOTPAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = VleOtpSerializer(data=request.data)
+        if serializer.is_valid():
+            mobile_no = serializer.validated_data['mobile_no']
+            otp_code = serializer.validated_data['otp_code']
+            vle_id = serializer.validated_data['vle_id']
+
+            if VleOtp.objects.filter(mobile_no=mobile_no).exists():
+
+                if VleOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).exists():
+                    response_data = {
+                        'status': '00',
+                        'message': "OTP verified successfully",
+                        'vle_id': vle_id
+                    }
+                    return Response(response_data, status=200)
+
+                else:
+                    response_data = {
+                        'status': '01',
+                        'message': "Invalid OTP",
+                    }
+                    return JsonResponse(response_data, status=status.HTTP_200_OK)
+            else:
+                response_data = {
+                    'status': '01',
+                    'message': "Mobile number does not exist, Please Resend OTP.",
+                }
+                return JsonResponse(response_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
-                     VleNearbyMilkCenterContact, VillageDetails
+                     VleNearbyMilkCenterContact, VillageDetails,VleMobileVOtp,VleOtp
                      )
 from rest_framework.response import Response
 from rest_framework import status
@@ -127,3 +127,13 @@ class VillageDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = VillageDetails
         fields = '__all__'
+class VleMobileVOtpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VleMobileVOtp
+        fields = ('vle_id', 'mobile_no', 'otp_code', 'otp_genration_time')
+
+
+class VleOtpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VleOtp
+        fields = ('vle_id', 'mobile_no', 'otp_code', 'otp_genration_time')
