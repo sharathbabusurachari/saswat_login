@@ -28,7 +28,7 @@ import requests
 # from rest_framework.authentication import SessionAuthentication
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
-
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class SendOTPAPIView(APIView):
@@ -255,24 +255,39 @@ class VleVillageInfoView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, format=None):
-        user_id = request.query_params.get('user_id')
-        village_info_data = VleVillageInfo.objects.filter(user_id=user_id).values('vle_id', 'village_name')
-        basic_info_data = VleBasicInformation.objects.filter(user_id=user_id).values('vle_id', 'vle_name')
-        common_data = []
-        for vle_village_info in village_info_data:
-            for vle_basic_info in basic_info_data:
-                if vle_village_info['vle_id'] == vle_basic_info['vle_id']:
-                    common_data.append({
-                        'vle_id': vle_village_info['vle_id'],
-                        'village_name': vle_village_info['village_name'],
-                        'vle_name': vle_basic_info['vle_name']
-                    })
-                    response = {
-                        'status': '00',
-                        'message': 'success',
-                        'data': common_data
-                    }
-        return Response(response, status=status.HTTP_200_OK)
+        try:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                raise ValueError("User ID is not provided")
+
+            village_info_data = VleVillageInfo.objects.filter(user_id=user_id).values('vle_id', 'village_name')
+            basic_info_data = VleBasicInformation.objects.filter(user_id=user_id).values('vle_id', 'vle_name')
+            common_data = []
+            for vle_village_info in village_info_data:
+                for vle_basic_info in basic_info_data:
+                    if vle_village_info['vle_id'] == vle_basic_info['vle_id']:
+                        common_data.append({
+                            'vle_id': vle_village_info['vle_id'],
+                            'village_name': vle_village_info['village_name'],
+                            'vle_name': vle_basic_info['vle_name']
+                        })
+            if not common_data:
+                return Response({'status': '01', 'message': 'No data found for the provided user_id'}, status=status.HTTP_404_NOT_FOUND)
+
+            response = {
+                'status': '00',
+                'message': 'success',
+                'data': common_data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'status': '02', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # except VleVillageInfo.DoesNotExist or VleBasicInformation.DoesNotExist:
+        #     return Response({'status': '03', 'message': 'User ID does not exist in the table'},
+        #                     status=status.HTTP_404_NOT_FOUND)
+        except ObjectDoesNotExist:
+            return Response({'status': '03', 'message': 'User ID does not exist in the table'}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, *args, **kwargs):
         vle_v_info_serializer = VleVillageInfoSerializer(data=request.data)
@@ -1074,21 +1089,32 @@ class CheckVLEDataView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, format=None):
-        vle_id = request.query_params.get('vle_id')
-        tables_with_data = []
-        tables_without_data = []
-        models = [VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber, PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo, VleNearbyMilkCenterContact, VillageDetails]
-        for model in models:
-            if model.objects.filter(vle_id=vle_id).exists():
-                tables_with_data.append(model.__name__)
-            else:
-                tables_without_data.append(model.__name__)
+        try:
+            vle_id = request.query_params.get('vle_id')
+            if not vle_id:
+                raise ValueError("VLE ID is not provided")
 
-        response = {
-            'status': '00',
-            'message': 'success',
-            'tables_with_data': tables_with_data,
-            'tables_without_data': tables_without_data
-        }
+            tables_with_data = []
+            tables_without_data = []
+            models = [VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber, PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo, VleNearbyMilkCenterContact, VillageDetails]
+            for model in models:
+                if model.objects.filter(vle_id=vle_id).exists():
+                    tables_with_data.append({"name": model.__name__})
+                else:
+                    tables_without_data.append({"name": model.__name__})
 
-        return Response(response, status=status.HTTP_200_OK)
+            response = {
+                'status': '00',
+                'message': 'success',
+                'tables_with_data': tables_with_data,
+                'tables_without_data': tables_without_data
+            }
+
+            return Response(response, status=status.HTTP_200_OK)
+
+        except ValueError as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
