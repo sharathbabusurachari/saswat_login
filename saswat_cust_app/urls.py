@@ -25,5 +25,6 @@ urlpatterns = [
     path('near-by-milk-center-cont/', VleNearbyMilkCenterContactView.as_view(), name='VleNearbyMilkCenterContactView'),
     path('village-details/', VillageDetailsView.as_view(), name='VillageDetailsView'),
     path('vle-mo-verification/', VleMobileVerificationView.as_view(), name='VillageDetailsView'),
-    path('vle-validate-otp/', VleValidateOTPAPIView.as_view(), name='VleValidateOTPAPIView')
+    path('vle-validate-otp/', VleValidateOTPAPIView.as_view(), name='VleValidateOTPAPIView'),
+    path('check-vle-data/', CheckVLEDataView.as_view(), name='CheckVLEDataView'),
 ]

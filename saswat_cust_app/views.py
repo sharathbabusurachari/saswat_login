@@ -255,9 +255,9 @@ class VleVillageInfoView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, format=None):
-
-        village_info_data = VleVillageInfo.objects.values('vle_id', 'village_name')
-        basic_info_data = VleBasicInformation.objects.values('vle_id', 'vle_name')
+        user_id = request.query_params.get('user_id')
+        village_info_data = VleVillageInfo.objects.filter(user_id=user_id).values('vle_id', 'village_name')
+        basic_info_data = VleBasicInformation.objects.filter(user_id=user_id).values('vle_id', 'vle_name')
         common_data = []
         for vle_village_info in village_info_data:
             for vle_basic_info in basic_info_data:
@@ -978,7 +978,7 @@ class VleMobileVerificationView(APIView):
                         response = requests.post(url, json=data)
                         print(response)
                         if response.status_code == 200:
-                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
+                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id=vle_id, user_id=user_id)
                             response_data = {
                                 'vle_id': vle_id,
                                 'status': '00',
@@ -1002,6 +1002,9 @@ class VleMobileVerificationView(APIView):
                 #     existing_otp.delete()
                 #
                 # else:
+                    existing_otp = VleOtp.objects.filter(vle_id=vle_id)
+                    if existing_otp.exists():
+                        existing_otp.delete()
                     otp_code = str(random.randint(1000, 9999))
                     data = {
                         'otp': otp_code,
@@ -1010,7 +1013,7 @@ class VleMobileVerificationView(APIView):
                     response = requests.post(url, json=data)
                     print(response)
                     if response.status_code == 200:
-                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
+                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id=vle_id, user_id=user_id)
                         response_data = {
                             'vle_id': vle_id,
                             'status': '00',
@@ -1065,3 +1068,27 @@ class VleValidateOTPAPIView(APIView):
             return JsonResponse(response_data, status=status.HTTP_200_OK)
         # else:
         #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CheckVLEDataView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        vle_id = request.query_params.get('vle_id')
+        tables_with_data = []
+        tables_without_data = []
+        models = [VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber, PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo, VleNearbyMilkCenterContact, VillageDetails]
+        for model in models:
+            if model.objects.filter(vle_id=vle_id).exists():
+                tables_with_data.append(model.__name__)
+            else:
+                tables_without_data.append(model.__name__)
+
+        response = {
+            'status': '00',
+            'message': 'success',
+            'tables_with_data': tables_with_data,
+            'tables_without_data': tables_without_data
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
