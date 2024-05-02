@@ -978,7 +978,7 @@ class VleMobileVerificationView(APIView):
                         response = requests.post(url, json=data)
                         print(response)
                         if response.status_code == 200:
-                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id=vle_id, user_id=user_id)
+                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
                             response_data = {
                                 'vle_id': vle_id,
                                 'status': '00',
@@ -1002,7 +1002,7 @@ class VleMobileVerificationView(APIView):
                 #     existing_otp.delete()
                 #
                 # else:
-                    existing_otp = VleOtp.objects.filter(vle_id=vle_id)
+                    existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
                     if existing_otp.exists():
                         existing_otp.delete()
                     otp_code = str(random.randint(1000, 9999))
@@ -1013,7 +1013,7 @@ class VleMobileVerificationView(APIView):
                     response = requests.post(url, json=data)
                     print(response)
                     if response.status_code == 200:
-                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id=vle_id, user_id=user_id)
+                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
                         response_data = {
                             'vle_id': vle_id,
                             'status': '00',
