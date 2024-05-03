@@ -1094,21 +1094,29 @@ class CheckVLEDataView(APIView):
             if not vle_id:
                 raise ValueError("VLE ID is not provided")
 
-            tables_with_data = []
-            tables_without_data = []
+            # tables_with_data = []
+            # tables_without_data = []
+
             models = [VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber, PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo, VleNearbyMilkCenterContact, VillageDetails]
-            for model in models:
-                if model.objects.filter(vle_id=vle_id).exists():
-                    tables_with_data.append({"name": model.__name__})
-                else:
-                    tables_without_data.append({"name": model.__name__})
 
             response = {
                 'status': '00',
                 'message': 'success',
-                'tables_with_data': tables_with_data,
-                'tables_without_data': tables_without_data
             }
+
+            for model in models:
+                if model.objects.filter(vle_id=vle_id).exists():
+                    response[model] = 1
+                else:
+                    response[model] = -1
+
+            # response = {
+            #     'status': '00',
+            #     'message': 'success',
+            #     'VleVillageInfo':1
+            #     'tables_with_data': tables_with_data,
+            #     'tables_without_data': tables_without_data
+            # }
 
             return Response(response, status=status.HTTP_200_OK)
 
@@ -1117,4 +1125,3 @@ class CheckVLEDataView(APIView):
 
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
