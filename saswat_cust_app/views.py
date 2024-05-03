@@ -1106,9 +1106,9 @@ class CheckVLEDataView(APIView):
 
             for model in models:
                 if model.objects.filter(vle_id=vle_id).exists():
-                    response[model] = 1
+                    response[model.__name__] = 1
                 else:
-                    response[model] = -1
+                    response[model.__name__] = -1
 
             # response = {
             #     'status': '00',
