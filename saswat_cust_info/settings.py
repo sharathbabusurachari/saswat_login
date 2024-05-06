@@ -174,7 +174,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs/django.log',
             'formatter': 'verbose',
