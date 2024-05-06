@@ -260,7 +260,6 @@ class VleVillageInfoView(APIView):
             if not user_id:
                 raise ValueError("User ID is not provided")
 
-
             village_info_data = VleVillageInfo.objects.filter(user_id=user_id).values('vle_id', 'village_name')
             basic_info_data = VleBasicInformation.objects.filter(user_id=user_id).values('vle_id', 'vle_name')
             common_data = []
