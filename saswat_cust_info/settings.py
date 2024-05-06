@@ -175,7 +175,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django': {
+        'django.db.backends': {
             'handlers': ['file'],
             'level': 'DEBUG',  # Set to INFO or higher for production
             'propagate': True,
