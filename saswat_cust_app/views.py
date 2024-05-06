@@ -272,7 +272,7 @@ class VleVillageInfoView(APIView):
                             'vle_name': vle_basic_info['vle_name']
                         })
             if not common_data:
-                return Response({'status': '01', 'message': 'No data found for the provided user_id'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'status': '01', 'message': 'No data found for the provided user_id'}, status=status.HTTP_200_OK)
 
             response = {
                 'status': '00',
