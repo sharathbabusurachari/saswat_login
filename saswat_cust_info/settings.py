@@ -1,4 +1,5 @@
 import os
+import logging
 """
 Django settings for saswat_cust_info project.
 
@@ -159,4 +160,32 @@ REST_FRAMEWORK = {
     ],
 }
 
+LOG_DIR = '/var/log/django/'
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',  # Set to INFO or higher for production
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'django.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',  # Set to INFO or higher for production
+            'propagate': True,
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+}
 
