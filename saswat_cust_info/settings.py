@@ -160,7 +160,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-LOG_DIR = '/var/log/django/'
+LOG_DIR = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
