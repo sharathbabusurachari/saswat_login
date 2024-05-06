@@ -166,25 +166,25 @@ LOG_DIR = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
-            'level': 'INFO',  # Set to INFO or higher for production
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'django.log'),
+            'filename': '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs/django.log',
             'formatter': 'verbose',
         },
     },
     'loggers': {
-        'django.db.backends': {
+        'django': {
             'handlers': ['file'],
-            'level': 'DEBUG',  # Set to INFO or higher for production
+            'level': 'DEBUG',
             'propagate': True,
-        },
-    },
-    'formatters': {
-        'verbose': {
-            'format': '{asctime} {levelname} {name} {message}',
-            'style': '{',
         },
     },
 }
