@@ -1,5 +1,7 @@
 import os
 import logging
+logger = logging.getLogger(__name__)
+logger.info('Logging initialized in settings.py')
 """
 Django settings for saswat_cust_info project.
 
