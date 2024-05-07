@@ -5,7 +5,7 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     VleVillageInfoView, BmcBasicInformationView, VleBasicInformationView,
                     VleMobileNumberView, PhotoOfBmcView, VLEBankDetailsView, SkillsAndKnowledgeView,
                     VLEEconomicAndSocialStatusInfoView, VleNearbyMilkCenterContactView, VillageDetailsView,
-                    VleBasicVillageInfoView, VleValidateOTPAPIView, VleMobileVerificationView, CheckVLEDataView,home)
+                    VleBasicVillageInfoView, VleValidateOTPAPIView, VleMobileVerificationView, CheckVLEDataView)
 
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
@@ -27,5 +27,4 @@ urlpatterns = [
     path('vle-mo-verification/', VleMobileVerificationView.as_view(), name='VillageDetailsView'),
     path('vle-validate-otp/', VleValidateOTPAPIView.as_view(), name='VleValidateOTPAPIView'),
     path('check-vle-data/', CheckVLEDataView.as_view(), name='CheckVLEDataView'),
-    path('', views.home, name='home'),
 ]

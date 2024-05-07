@@ -29,11 +29,6 @@ import requests
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
-from django.http import HttpResponse
-
-def home(request):
-    return HttpResponse("Welcome to the Saswat home page!")  # Example response for the root URL
 
 
 class SendOTPAPIView(APIView):
