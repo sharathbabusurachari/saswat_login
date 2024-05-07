@@ -7,7 +7,7 @@ cd /var/lib/jenkins/workspace/04_Saswat_login_CICD/
 
 python3 manage.py makemigrations
 python3 manage.py migrate
-python3 manage.py collectstatic
+python3 manage.py collectstatic  --noinput
 
 echo "Migrations done"
 
