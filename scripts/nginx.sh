@@ -11,6 +11,9 @@ fi
 
 sudo nginx -t
 
+python3 $WORKSPACE/manage.py collectstatic --noinput
+chmod -R 755 $WORKSPACE/static/
+
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
@@ -18,5 +21,4 @@ echo "Nginx has been started"
 
 sudo systemctl status nginx
 
-python3 $WORKSPACE/manage.py collectstatic --noinput
-chmod -R 755 $WORKSPACE/static/
+

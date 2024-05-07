@@ -1,7 +1,7 @@
 import os
-# import logging
-# logger = logging.getLogger(__name__)
-# logger.info('Logging initialized in settings.py')
+import logging
+logger = logging.getLogger(__name__)
+logger.info('Logging initialized in settings.py')
 """
 Django settings for saswat_cust_info project.
 
@@ -162,31 +162,31 @@ REST_FRAMEWORK = {
     ],
 }
 
-# LOG_DIR = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs'
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'verbose': {
-#             'format': '{asctime} {levelname} {module} {message}',
-#             'style': '{',
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'INFO',
-#             'class': 'logging.FileHandler',
-#             'filename': '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs/django.log',
-#             'formatter': 'verbose',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }
+LOG_DIR = '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/var/lib/jenkins/workspace/04_Saswat_login_CICD/logs/django.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 
