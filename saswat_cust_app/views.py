@@ -9,7 +9,10 @@ from rest_framework.exceptions import ValidationError
 from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, State, VleVillageInfo,
                                     VleBasicInformation, VleMobileNumber, BmcBasicInformation, VLEBankDetails,
                                     VillageDetails, VleNearbyMilkCenterContact, VLEEconomicAndSocialStatusInfo,
-                                    PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp)
+                                    PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
+                                    DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
+                                    EmployeeSetTargetDetails)
+
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from itertools import zip_longest
@@ -23,13 +26,15 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
                                          VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer)
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.db.models import F, Q, Sum, Max, OuterRef, Subquery
+from django.db import connection
+from django.shortcuts import render
 
 class SendOTPAPIView(APIView):
 
@@ -1120,6 +1125,201 @@ class CheckVLEDataView(APIView):
 
             return Response(response, status=status.HTTP_200_OK)
 
+        except ValueError as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*------Dashboard API------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+
+
+class GetTargetDataView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                raise ValueError("User ID is not provided")
+            else:
+                employee_id_queryset = EmployeeDetails.objects.filter(employee_id=user_id)
+                if employee_id_queryset.exists():
+                    employee_id_queryset = employee_id_queryset.first()
+                    employee_id = employee_id_queryset.id
+                else:
+                    return Response({'status': '01', 'message': f'No Employee has been created in the '
+                                                                f'employee_details table for the provided '
+                                                                f'user_id ({user_id})',
+                                     'week_flag': -1, 'month_flag': -1}, status=status.HTTP_200_OK)
+
+            response = {
+                'status': '00',
+                'message': 'success',
+                'week_flag': 1,
+                'month_flag': 1,
+                'month_data': [{"loginTarget": "", "visitTarget": "", "disbursementTarget": "",
+                                "loginAchieved": "", "visitAchieved": "", "disbursementAchieved": "",
+                                "MonthName": "", "MonthId": ""}],
+                'current_week_data': [{"loginAchieved": "", "visitAchieved": "", "disbursementAchieved": "",
+                                       "weekName": "", "weekId": ""}]
+            }
+            today_date = date.today()
+            month_id = today_date.month
+            month = today_date.strftime("%B")
+            year = today_date.year
+            month_target = EmployeeSetTargetDetails.objects.filter(employee_id=employee_id, month_name=month, year=year)
+            if not month_target.exists():
+                return Response({'status': '01', 'message': f'No Target has been set for the provided user_id '
+                                                            f'({user_id}) for the given month and year',
+                                 'week_flag': -1, 'month_flag': -1}, status=status.HTTP_200_OK)
+            elif month_target.exists():
+                month_target = month_target.first()
+                response['month_data'][0]['loginTarget'] = str(month_target.login_target)
+                response['month_data'][0]['visitTarget'] = str(month_target.visit_target)
+                response['month_data'][0]['disbursementTarget'] = str(month_target.disbursement_target)
+                response['month_data'][0]['MonthName'] = month
+                response['month_data'][0]['MonthId'] = str(month_id)
+                week_details = WeekDetails.objects.filter(month_name=month, year=str(year))
+                if not week_details.exists():
+                    response['week_flag'] = -1
+                    response['month_data'][0]['loginAchieved'] = "0"
+                    response['month_data'][0]['visitAchieved'] = "0"
+                    response['month_data'][0]['disbursementAchieved'] = "0"
+                    return Response(response, status=status.HTTP_200_OK)
+                elif week_details.exists():
+                    week_ids = list(week_details.values_list('id', flat=True))
+                    aggregate_visit = 0
+                    aggregate_login = 0
+                    aggregate_disbursement = 0
+                    current_week_details = WeekDetails.objects.filter(start_date__lte=today_date,
+                                                                      end_date__gte=today_date)
+                    if not current_week_details.exists():
+                        response['week_flag'] = -1
+                        for week_id in week_ids:
+                            week_detail = WeekDetails.objects.get(id=week_id)
+                            start_date = week_detail.start_date
+                            end_date = week_detail.end_date
+                            filtered_data = EmployeeTargetDetails.objects.filter(employee_id=employee_id,
+                                                                                 date__range=(start_date, end_date))
+                            if not filtered_data.exists():
+                                pass
+                            elif filtered_data.exists():
+                                filtered_data = EmployeeTargetDetails.objects.filter(
+                                    employee_id=employee_id,
+                                    date__range=(start_date, end_date),
+                                    version=Subquery(
+                                        EmployeeTargetDetails.objects.filter(
+                                            employee_id=OuterRef('employee_id'),
+                                            date=OuterRef('date')
+                                        ).values('version').order_by('-version').values('version')[:1]
+                                    )
+                                )
+                                total_sums = filtered_data.aggregate(
+                                    total_login_achieved=Sum('login_achieved'),
+                                    total_visit_achieved=Sum('visit_achieved'),
+                                    total_disbursement_achieved=Sum('disbursement_achieved')
+                                )
+                                total_visit_achieved = total_sums['total_visit_achieved']
+                                total_login_achieved = total_sums['total_login_achieved']
+                                total_disbursement_achieved = total_sums['total_disbursement_achieved']
+
+                                aggregate_visit += total_visit_achieved
+                                aggregate_login += total_login_achieved
+                                aggregate_disbursement += total_disbursement_achieved
+                        response['month_data'][0]['loginAchieved'] = str(aggregate_login)
+                        response['month_data'][0]['visitAchieved'] = str(aggregate_visit)
+                        response['month_data'][0]['disbursementAchieved'] = str(aggregate_disbursement)
+                        return Response(response, status=status.HTTP_200_OK)
+                    elif current_week_details.exists():
+                        current_week_details = current_week_details.first()
+                        current_week_name = current_week_details.week_name
+                        current_week_id = current_week_details.id
+                        start_date = current_week_details.start_date
+                        end_date = current_week_details.end_date
+                        filtered_data = EmployeeTargetDetails.objects.filter(employee_id=employee_id,
+                                                                             date__range=(start_date, end_date))
+                        if not filtered_data.exists():
+                            response['week_flag'] = -1
+                        elif filtered_data.exists():
+                            filtered_data = EmployeeTargetDetails.objects.filter(
+                                employee_id=employee_id,
+                                date__range=(start_date, end_date),
+                                version=Subquery(
+                                    EmployeeTargetDetails.objects.filter(
+                                        employee_id=OuterRef('employee_id'),
+                                        date=OuterRef('date')
+                                    ).values('version').order_by('-version').values('version')[:1]
+                                )
+                            )
+                            current_total_sums = filtered_data.aggregate(
+                                total_login_achieved=Sum('login_achieved'),
+                                total_visit_achieved=Sum('visit_achieved'),
+                                total_disbursement_achieved=Sum('disbursement_achieved')
+                            )
+                            current_total_visit_achieved = current_total_sums['total_visit_achieved']
+                            current_total_login_achieved = current_total_sums['total_login_achieved']
+                            current_total_disbursement_achieved = current_total_sums['total_disbursement_achieved']
+
+                            response['current_week_data'][0]['loginAchieved'] = str(current_total_login_achieved)
+                            response['current_week_data'][0]['visitAchieved'] = str(current_total_visit_achieved)
+                            response['current_week_data'][0]['disbursementAchieved'] = str(current_total_disbursement_achieved)
+                            response['current_week_data'][0]['weekName'] = current_week_name
+                            response['current_week_data'][0]['weekId'] = str(current_week_id)
+                            aggregate_visit += current_total_visit_achieved
+                            aggregate_login += current_total_login_achieved
+                            aggregate_disbursement += current_total_disbursement_achieved
+                        remaining_week_list = [week for week in week_ids if week != current_week_id]
+                        if remaining_week_list:
+                            for week_id in remaining_week_list:
+                                week_detail = WeekDetails.objects.get(id=week_id)
+                                start_date = week_detail.start_date
+                                end_date = week_detail.end_date
+                                filtered_data = EmployeeTargetDetails.objects.filter(employee_id=employee_id,
+                                                                                     date__range=(start_date, end_date))
+                                if not filtered_data.exists():
+                                    pass
+                                elif filtered_data.exists():
+                                    filtered_data = EmployeeTargetDetails.objects.filter(
+                                        employee_id=employee_id,
+                                        date__range=(start_date, end_date),
+                                        version=Subquery(
+                                            EmployeeTargetDetails.objects.filter(
+                                                employee_id=OuterRef('employee_id'),
+                                                date=OuterRef('date')
+                                            ).values('version').order_by('-version').values('version')[:1]
+                                        )
+                                    )
+                                    total_sums = filtered_data.aggregate(
+                                        total_login_achieved=Sum('login_achieved'),
+                                        total_visit_achieved=Sum('visit_achieved'),
+                                        total_disbursement_achieved=Sum('disbursement_achieved')
+                                    )
+                                    total_visit_achieved = total_sums['total_visit_achieved']
+                                    total_login_achieved = total_sums['total_login_achieved']
+                                    total_disbursement_achieved = total_sums['total_disbursement_achieved']
+
+                                    aggregate_visit += total_visit_achieved
+                                    aggregate_login += total_login_achieved
+                                    aggregate_disbursement += total_disbursement_achieved
+                            response['month_data'][0]['loginAchieved'] = str(aggregate_login)
+                            response['month_data'][0]['visitAchieved'] = str(aggregate_visit)
+                            response['month_data'][0]['disbursementAchieved'] = str(aggregate_disbursement)
+                            return Response(response, status=status.HTTP_200_OK)
+                        else:
+                            response['month_data'][0]['loginAchieved'] = str(aggregate_login)
+                            response['month_data'][0]['visitAchieved'] = str(aggregate_visit)
+                            response['month_data'][0]['disbursementAchieved'] = str(aggregate_disbursement)
+                            return Response(response, status=status.HTTP_200_OK)
+                    return Response(response, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

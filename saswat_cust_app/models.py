@@ -4,6 +4,10 @@ from django.db import models
 from datetime import datetime, timedelta
 from django.utils import timezone
 import uuid
+from random import randint
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.db.models import F, Q
 
 
 class OTP(models.Model):
@@ -367,3 +371,238 @@ class VleOtp(models.Model):
     def is_expired(self):
         return self.otp_genration_time < timezone.now() - timezone.timedelta(minutes=1)
 
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*------Dashboard API------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+# -----------------------------------*-------------------------*--------------------------------------*-----------------
+
+
+class Country(models.Model):
+    id = models.AutoField(primary_key=True)
+    country_id = models.IntegerField(unique=True)
+    country_name = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By")
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By")
+
+    def __str__(self):
+        return self.country_name
+
+    class Meta:
+        db_table = 'country'
+
+
+class District(models.Model):
+    id = models.AutoField(primary_key=True)
+    district_id = models.IntegerField(unique=True)
+    district_name = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By")
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By")
+
+    def __str__(self):
+        return self.district_name
+
+    class Meta:
+        db_table = 'district'
+
+
+class DesignationDetails(models.Model):
+    id = models.AutoField(primary_key=True)
+    designation_id = models.IntegerField(unique=True)
+    designation_name = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By")
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By")
+
+    def __str__(self):
+        return self.designation_name
+
+    class Meta:
+        db_table = 'designation_details'
+
+
+class WeekDetails(models.Model):
+
+    WEEK_DATES_FORMAT = "%d-%d"
+
+    id = models.AutoField(primary_key=True)
+    week_number = models.IntegerField(verbose_name="Week Number (e.g. 18)")
+    week_name = models.CharField(max_length=20, verbose_name="Week Name (e.g. week18)")
+    start_date = models.DateField(verbose_name="Start Date")
+    end_date = models.DateField(verbose_name="End Date")
+    week_dates = models.CharField(max_length=20, verbose_name="Week Dates", editable=False)
+    working_days = models.IntegerField()
+    month = models.IntegerField(verbose_name="Month", editable=False)
+    month_name = models.CharField(max_length=20, verbose_name="Month Name", editable=False)
+    year = models.CharField(max_length=4, verbose_name="Year", editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By")
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By")
+
+    def __str__(self):
+        return f"{self.week_name}_{self.month_name}_{self.year}"
+
+    def clean(self):
+        if self.start_date > self.end_date:
+            raise ValidationError("End date must be greater than or equal to start date")
+        if WeekDetails.objects.filter(start_date=self.start_date, end_date=self.end_date).exists():
+            raise ValidationError(f"The Week Number has already been set for the given date range \
+            between {self.start_date} - {self.end_date}")
+        return super().clean()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Perform validation before saving
+        self.month = self.start_date.month
+        self.month_name = self.start_date.strftime('%B')  # Format the start date to get the month name
+        self.year = str(self.start_date.year)
+        self.week_dates = self.WEEK_DATES_FORMAT % (self.start_date.day, self.end_date.day)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'week_details'
+
+
+class EmployeeDetails(models.Model):
+
+    id = models.AutoField(primary_key=True)
+    employee = models.ForeignKey(UserDetails, on_delete=models.CASCADE,
+                                 related_name='employees', verbose_name="Employee")
+    designation = models.ForeignKey(DesignationDetails, on_delete=models.SET_NULL, verbose_name="Designation",
+                                    blank=True, null=True)
+    full_name = models.CharField(max_length=255, verbose_name="Employee Full Name")
+    mobile_number = models.CharField(max_length=15, verbose_name="Mobile Number", unique=True)
+    alternate_mobile_number = models.CharField(max_length=15, verbose_name="Alternate Mobile Number",
+                                               blank=True, null=True)
+    official_email = models.EmailField(max_length=255, verbose_name="Official Email ID", unique=True,
+                                       blank=True, null=True)
+    reporting_manager = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True,
+                                          related_name='reportees', verbose_name="Reporting Manager")
+    cluster_head = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True,
+                                     related_name='cluster_members', verbose_name="Cluster Head")
+    hobli_block = models.CharField(max_length=100, verbose_name="Hobli / Block")
+    taluk = models.CharField(max_length=100, verbose_name="Taluk")
+    cluster = models.CharField(max_length=100, verbose_name="Cluster")
+    district = models.CharField(max_length=100, verbose_name="District")
+    state = models.CharField(max_length=100, verbose_name="State")
+    full_address = models.TextField(verbose_name="Full address")
+    pin_code = models.CharField(max_length=10, verbose_name="PIN CODE")
+    work_department = models.CharField(max_length=20, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By")
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By")
+
+    def __str__(self):
+        return self.full_name
+
+    class Meta:
+        db_table = "employee_details"
+        unique_together = ('employee',)
+
+
+class EmployeeTargetDetails(models.Model):
+    id = models.AutoField(primary_key=True)
+    employee = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE,
+                                 related_name='employee_targets', verbose_name="Employee")
+    year = models.CharField(max_length=4, verbose_name="Year", editable=False)
+    month = models.IntegerField(verbose_name="Month", editable=False)
+    month_name = models.CharField(max_length=20, verbose_name="Month Name", editable=False)
+    week = models.ForeignKey(WeekDetails, on_delete=models.CASCADE, verbose_name="Week")
+    date = models.DateField()
+    visit_achieved = models.IntegerField()
+    login_achieved = models.IntegerField()
+    disbursement_achieved = models.IntegerField()
+    version = models.IntegerField(default=1, editable=False, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255)
+    modified_by = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.employee.full_name
+
+    def clean(self):
+        if self.date > timezone.now().date():
+            raise ValidationError("You can not know the Targets achieved by a user for a "
+                                  "future date (Correct the Date).")
+        week = WeekDetails.objects.get(pk=self.week_id)
+        if not (week.start_date <= self.date <= week.end_date):
+            raise ValidationError(f"Date {self.date} is outside the range of selected week: {week.week_name} ({week.start_date} - {week.end_date})")
+        return super().clean()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Perform validation before saving
+
+        if not self.pk:  # Check if it's a new entry
+            # Annotate the queryset to count existing entries for the same user and date
+            existing_entries_count = EmployeeTargetDetails.objects.filter(
+                employee=self.employee,
+                date=self.date
+            ).annotate(
+                num_entries=F('id')
+            ).count()
+            # Set the version to the count + 1
+            self.version = existing_entries_count + 1
+
+        self.month = self.date.month
+        self.month_name = self.date.strftime('%B')  # Format the start date to get the month name
+        self.year = str(self.date.year)
+        super().save(*args, **kwargs)
+
+
+    class Meta:
+        db_table = "employee_target_details"
+
+
+class EmployeeSetTargetDetails(models.Model):
+
+    MONTH_CHOICES = [
+        (1, 'January'), (2, 'February'), (3, 'March'),
+        (4, 'April'), (5, 'May'), (6, 'June'),
+        (7, 'July'), (8, 'August'), (9, 'September'),
+        (10, 'October'), (11, 'November'), (12, 'December')
+    ]
+
+    YEAR_CHOICES = [(str(i), str(i)) for i in range(2020, 2051)]
+
+    id = models.AutoField(primary_key=True)
+    employee = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE,
+                                 related_name='employee_set_targets', verbose_name="Employee")
+    month = models.IntegerField(choices=MONTH_CHOICES)
+    year = models.CharField(choices=YEAR_CHOICES, max_length=4)
+    month_name = models.CharField(max_length=20, verbose_name="Month Name", editable=False)
+    visit_target = models.IntegerField()
+    login_target = models.IntegerField()
+    disbursement_target = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255)
+    modified_by = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.employee.full_name
+
+    def clean(self):
+        if EmployeeSetTargetDetails.objects.filter(employee=self.employee, month=self.month, year=self.year).exists():
+            self.month_name = dict(self.MONTH_CHOICES)[self.month]
+            raise ValidationError(f"The Target has already been set for '{self.employee}' \
+            for {self.month_name}-{self.year}. Kindly delete that entry first and then Create another entry")
+        return super().clean()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Perform validation before saving
+        self.month_name = dict(self.MONTH_CHOICES)[self.month]
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = "employee_set_target_details"

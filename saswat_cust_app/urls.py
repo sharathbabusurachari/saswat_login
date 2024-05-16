@@ -5,7 +5,8 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     VleVillageInfoView, BmcBasicInformationView, VleBasicInformationView,
                     VleMobileNumberView, PhotoOfBmcView, VLEBankDetailsView, SkillsAndKnowledgeView,
                     VLEEconomicAndSocialStatusInfoView, VleNearbyMilkCenterContactView, VillageDetailsView,
-                    VleBasicVillageInfoView, VleValidateOTPAPIView, VleMobileVerificationView, CheckVLEDataView)
+                    VleBasicVillageInfoView, VleValidateOTPAPIView, VleMobileVerificationView, CheckVLEDataView,
+                    GetTargetDataView)
 
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
@@ -24,7 +25,8 @@ urlpatterns = [
     path('vle-eco-status/', VLEEconomicAndSocialStatusInfoView.as_view(), name='VLEEconomicAndSocialStatusInfoView'),
     path('near-by-milk-center-cont/', VleNearbyMilkCenterContactView.as_view(), name='VleNearbyMilkCenterContactView'),
     path('village-details/', VillageDetailsView.as_view(), name='VillageDetailsView'),
-    path('vle-mo-verification/', VleMobileVerificationView.as_view(), name='VillageDetailsView'),
+    path('vle-mo-verification/', VleMobileVerificationView.as_view(), name='VleMobileVerificationView'),
     path('vle-validate-otp/', VleValidateOTPAPIView.as_view(), name='VleValidateOTPAPIView'),
     path('check-vle-data/', CheckVLEDataView.as_view(), name='CheckVLEDataView'),
+    path('get-target-data/', GetTargetDataView.as_view(), name='get_target_data'),
 ]
