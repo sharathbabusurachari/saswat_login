@@ -1159,7 +1159,6 @@ class GetTargetDataView(APIView):
                     return Response({'status': '01', 'message': f'No Employee has been created '
                                                                 f'for the provided user_id.',
                                      'week_flag': -1, 'month_flag': -1}, status=status.HTTP_200_OK)
-
             response = {
                 'status': '00',
                 'message': 'success',
