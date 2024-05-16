@@ -1156,9 +1156,8 @@ class GetTargetDataView(APIView):
                     employee_id_queryset = employee_id_queryset.first()
                     employee_id = employee_id_queryset.id
                 else:
-                    return Response({'status': '01', 'message': f'No Employee has been created in the '
-                                                                f'employee_details table for the provided '
-                                                                f'user_id ({user_id})',
+                    return Response({'status': '01', 'message': f'No Employee has been created '
+                                                                f'for the provided user_id.',
                                      'week_flag': -1, 'month_flag': -1}, status=status.HTTP_200_OK)
 
             response = {
@@ -1178,8 +1177,8 @@ class GetTargetDataView(APIView):
             year = today_date.year
             month_target = EmployeeSetTargetDetails.objects.filter(employee_id=employee_id, month_name=month, year=year)
             if not month_target.exists():
-                return Response({'status': '01', 'message': f'No Target has been set for the provided user_id '
-                                                            f'({user_id}) for the given month and year',
+                return Response({'status': '01', 'message': f'No Target has been set '
+                                                            f'for the provided user_id for the given month and year',
                                  'week_flag': -1, 'month_flag': -1}, status=status.HTTP_200_OK)
             elif month_target.exists():
                 month_target = month_target.first()
