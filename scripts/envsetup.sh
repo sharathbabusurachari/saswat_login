@@ -9,6 +9,14 @@ else
 
 fi
 
+if [ -d "saswat_cust_info/settings.py" ]
+then
+    echo "Python settings.py file exists."
+else
+    cp /app/django_settings/settings.py saswat_cust_info/
+
+fi
+
 echo $PWD
 source saswatfinenv/bin/activate
 #python3 -m pip install Pillow
