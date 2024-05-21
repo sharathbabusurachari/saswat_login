@@ -454,17 +454,17 @@ class WeekDetails(models.Model):
 
     def clean(self):
         super().clean()
-    if self.start_date and self.end_date:
-        if self.start_date.month != self.end_date.month or self.start_date.year != self.end_date.year:
-            raise ValidationError("Start date and end date must be in the same month and year.")
-        if self.start_date > self.end_date:
-            raise ValidationError("End date must be greater than or equal to start date")
-        overlapping_ranges = WeekDetails.objects.filter(
-            start_date__lt=self.end_date,
-            end_date__gt=self.start_date
-        ).exclude(pk=self.pk)
-        if overlapping_ranges.exists():
-            raise ValidationError("The date range overlaps with an existing date range.")
+        if self.start_date and self.end_date:
+            if self.start_date.month != self.end_date.month or self.start_date.year != self.end_date.year:
+                raise ValidationError("Start date and end date must be in the same month and year.")
+            if self.start_date > self.end_date:
+                raise ValidationError("End date must be greater than or equal to start date")
+            overlapping_ranges = WeekDetails.objects.filter(
+                start_date__lt=self.end_date,
+                end_date__gt=self.start_date
+            ).exclude(pk=self.pk)
+            if overlapping_ranges.exists():
+                raise ValidationError("The date range overlaps with an existing date range.")
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Perform validation before saving
@@ -539,21 +539,21 @@ class EmployeeTargetDetails(models.Model):
 
     def clean(self):
         super().clean()
-    if self.date and self.date > timezone.now().date():
-        raise ValidationError("You can not know the Targets achieved by a user for a "
-                              "future date (Correct the Date).")
-    if self.week_id and self.date:
-        week = WeekDetails.objects.get(pk=self.week_id)
-        if not (week.start_date <= self.date <= week.end_date):
-            raise ValidationError(f"Date {self.date} is outside the range of selected week: {week.week_name} ({week.start_date} - {week.end_date})")
-    if self.employee_id and self.date:
-        self.month = self.date.month
-        self.month_name = self.date.strftime('%B')
-        self.year = str(self.date.year)
-        is_target_set = EmployeeSetTargetDetails.objects.filter(employee_id=self.employee_id, month=self.month, year=self.year)
-        if not is_target_set.exists():
-            raise ValidationError(f'Kindly set a target first for the employee - {self.employee}, '
-                                  f'for {self.month_name}, {self.year}.')
+        if self.date and self.date > timezone.now().date():
+            raise ValidationError("You can not know the Targets achieved by a user for a "
+                                  "future date (Correct the Date).")
+        if self.week_id and self.date:
+            week = WeekDetails.objects.get(pk=self.week_id)
+            if not (week.start_date <= self.date <= week.end_date):
+                raise ValidationError(f"Date {self.date} is outside the range of selected week: {week.week_name} ({week.start_date} - {week.end_date})")
+        if self.employee_id and self.date:
+            self.month = self.date.month
+            self.month_name = self.date.strftime('%B')
+            self.year = str(self.date.year)
+            is_target_set = EmployeeSetTargetDetails.objects.filter(employee_id=self.employee_id, month=self.month, year=self.year)
+            if not is_target_set.exists():
+                raise ValidationError(f'Kindly set a target first for the employee - {self.employee}, '
+                                      f'for {self.month_name}, {self.year}.')
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Perform validation before saving
@@ -609,12 +609,12 @@ class EmployeeSetTargetDetails(models.Model):
 
     def clean(self):
         super().clean()
-    if self.employee_id and self.month and self.year:
-        if (EmployeeSetTargetDetails.objects.
-                filter(employee=self.employee, month=self.month, year=self.year).exists()):
-            self.month_name = dict(self.MONTH_CHOICES)[self.month]
-            raise ValidationError(f"The Target has already been set for '{self.employee}' \
-            for {self.month_name}-{self.year}. Kindly delete that entry first and then Create another entry")
+        if self.employee_id and self.month and self.year:
+            if (EmployeeSetTargetDetails.objects.
+                    filter(employee=self.employee, month=self.month, year=self.year).exists()):
+                self.month_name = dict(self.MONTH_CHOICES)[self.month]
+                raise ValidationError(f"The Target has already been set for '{self.employee}' \
+                for {self.month_name}-{self.year}. Kindly delete that entry first and then Create another entry")
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Perform validation before saving
