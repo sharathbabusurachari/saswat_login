@@ -1347,3 +1347,9 @@ class GetTargetDataView(APIView):
 
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# -----------------------------------*------Privacy Policy Webpage------*--------------------------------------*--------
+
+def privacy_policy(request):
+    return render(request, 'privacy-policy.html')
