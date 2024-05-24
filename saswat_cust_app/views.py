@@ -40,7 +40,7 @@ class SendOTPAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         mobile_no = request.data.get('mobile_no')
-        if mobile_no == "8888888888":
+        if mobile_no == "8888888888" or 8888888888:
             response_data = {
                 'status': '00',
                 'message': "OTP sent successfully",
@@ -113,7 +113,7 @@ class ValidateOTPAPIView(APIView):
         if serializer.is_valid():
             mobile_no = serializer.validated_data['mobile_no']
             otp_code = serializer.validated_data['otp_code']
-            if mobile_no == "8888888888" and otp_code == "1234":
+            if (mobile_no == "8888888888" or mobile_no == 8888888888) and (otp_code == "1234" or otp_code == 1234):
                 if UserDetails.objects.filter(mobile_no=mobile_no).exists():
                     user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
                     session_id = request.auth
