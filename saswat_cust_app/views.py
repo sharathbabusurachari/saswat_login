@@ -40,7 +40,7 @@ class SendOTPAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         mobile_no = request.data.get('mobile_no')
-        if mobile_no == "8888888888" or 8888888888:
+        if mobile_no == "8888888888" or mobile_no == 8888888888:
             response_data = {
                 'status': '00',
                 'message': "OTP sent successfully",
