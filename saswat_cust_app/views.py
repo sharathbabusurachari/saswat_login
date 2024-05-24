@@ -50,7 +50,7 @@ class SendOTPAPIView(APIView):
 
         else:
 
-            url = 'http://20.235.246.32:8080/saswat/otp'
+            url = 'http://20.235.255.141:8084/saswat/otp'
             try:
                 existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_genration_time').first()
                 if existing_otp is not None:
