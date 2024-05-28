@@ -50,7 +50,8 @@ class SendOTPAPIView(APIView):
 
         else:
 
-            url = 'http://20.235.255.141:8084/saswat/otp'
+            url = 'http://ci1.saswatfinance.com:8084/api/otp'
+            #url = 'http://20.235.255.141:8084/saswat/otp'
             try:
                 existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_genration_time').first()
                 if existing_otp is not None:
@@ -299,6 +300,12 @@ class VleVillageInfoView(APIView):
                             'vle_id': vle_village_info['vle_id'],
                             'village_name': vle_village_info['village_name'],
                             'vle_name': vle_basic_info['vle_name']
+                        })
+                    elif vle_village_info['vle_id']:
+                        common_data.append({
+                            'vle_id': vle_village_info['vle_id'],
+                            'village_name': vle_village_info['village_name'],
+                            'vle_name': ""
                         })
             if not common_data:
                 return Response({'status': '01', 'message': 'No data found for the provided user_id'}, status=status.HTTP_200_OK)
@@ -1200,8 +1207,8 @@ class GetTargetDataView(APIView):
             year = today_date.year
             month_target = EmployeeSetTargetDetails.objects.filter(employee_id=employee_id, month_name=month, year=year)
             if not month_target.exists():
-                return Response({'status': '01', 'message': f'No Target has been set '
-                                                            f'for the provided user_id for the given month and year',
+                return Response({'status': '01', 'message': f'Target is not set for you. '
+                                                            f'Kindly reach-out to your reporting manager.',
                                  'week_flag': -1, 'month_flag': -1}, status=status.HTTP_200_OK)
             elif month_target.exists():
                 month_target = month_target.first()
