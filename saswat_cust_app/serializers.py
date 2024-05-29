@@ -3,8 +3,9 @@ from rest_framework import serializers
 from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
-                     VleNearbyMilkCenterContact, VillageDetails,VleMobileVOtp,VleOtp
-                     )
+                     VleNearbyMilkCenterContact, VillageDetails,VleMobileVOtp,VleOtp,
+                     LoanApplication, Query)
+
 from rest_framework.response import Response
 from rest_framework import status
 import random
@@ -137,3 +138,47 @@ class VleOtpSerializer(serializers.ModelSerializer):
     class Meta:
         model = VleOtp
         fields = ('vle_id', 'mobile_no', 'otp_code', 'otp_genration_time')
+
+# -----------------------------------*------------Query API-------------*--------------------------------------*--------
+
+
+class LoanApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoanApplication
+        fields = '__all__'
+
+
+class QuerySerializer(serializers.ModelSerializer):
+    loan_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Query
+        fields = '__all__'
+
+    def get_loan_id(self, obj):
+        return obj.loan_id
+
+
+class CustomQuerySerializer(serializers.ModelSerializer):
+    saswat_application_number = serializers.CharField(source='saswat_application_number.saswat_application_number',
+                                                      read_only=True)
+    loan_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Query
+        fields = '__all__'
+
+    def get_loan_id(self, obj):
+        return obj.loan_id
+
+
+class QuerySerializerr(serializers.ModelSerializer):
+    loan_id = serializers.SerializerMethodField()
+    saswat_application_numberr = serializers.CharField(source='saswat_application_number.saswat_application_number')
+
+    class Meta:
+        model = Query
+        fields = '__all__'
+
+    def get_loan_id(self, obj):
+        return obj.loan_id

@@ -11,7 +11,8 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     VillageDetails, VleNearbyMilkCenterContact, VLEEconomicAndSocialStatusInfo,
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
-                                    EmployeeSetTargetDetails)
+                                    EmployeeSetTargetDetails,
+                                    LoanApplication, Query)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -25,7 +26,8 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          PhotoOfBmcSerializer, VLEBankDetailsSerializer,
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
-                                         VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer)
+                                         VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer,
+                                         LoanApplicationSerializer, CustomQuerySerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -1358,3 +1360,112 @@ class GetTargetDataView(APIView):
 
 def privacy_policy(request):
     return render(request, 'privacy-policy.html')
+
+
+# -----------------------------------*------------Query API-------------*--------------------------------------*--------
+
+class QueryDataView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, format=None):
+        try:
+            user_id = request.query_params.get('user_id')
+            param_status = request.query_params.get('status')
+            if param_status:
+                query_status = param_status.upper()
+            else:
+                query_status = param_status
+            if not user_id:
+                raise ValueError("User ID is not provided")
+            else:
+                employee_id_queryset = EmployeeDetails.objects.filter(employee_id=user_id)
+                if employee_id_queryset.exists():
+                    employee_id_queryset = employee_id_queryset.first()
+                    employee_id = employee_id_queryset.id
+                else:
+                    return Response({'status': '01', 'message': f'No Employee has been created for the '
+                                                                f'provided user_id.'}, status=status.HTTP_200_OK)
+            loan_application_queryset = LoanApplication.objects.filter(sales_officer=employee_id)
+            if not loan_application_queryset.exists():
+                return Response({'status': '01', 'message': f'No Loan Applications found for the given user.'},
+                                status=status.HTTP_200_OK)
+            else:
+                serializer = LoanApplicationSerializer(loan_application_queryset, many=True)
+                loan_application_serialized_data = serializer.data
+                saswat_application_numbers = [i['saswat_application_number'] for i in loan_application_serialized_data]
+            query_data_queryset = Query.objects.filter(
+                saswat_application_number__saswat_application_number__in=saswat_application_numbers)
+            if not query_data_queryset.exists():
+                return Response({'status': '01', 'message': f'No Queries found for the given user.'},
+                                status=status.HTTP_200_OK)
+            else:
+                if query_status == "" or query_status is None or query_status == "''" or query_status == '""':
+                    serializer = CustomQuerySerializer(query_data_queryset, many=True)
+                    serialized_data = serializer.data
+                elif (query_status == "OPEN" or query_status == "REOPENED" or
+                      query_status == "ANSWERED" or query_status == "VERIFIED"):
+                    query_data_queryset = query_data_queryset.filter(query_status=query_status)
+                    if query_data_queryset.exists():
+                        serializer = CustomQuerySerializer(query_data_queryset, many=True)
+                        serialized_data = serializer.data
+                    else:
+                        return Response({'status': '01', 'message': f'No Records found.'},
+                                        status=status.HTTP_200_OK)
+                elif (query_status == "'OPEN'" or query_status == "'REOPENED'" or
+                      query_status == "'ANSWERED'" or query_status == "'VERIFIED'"):
+                    query_status = query_status.strip("'")
+                    query_data_queryset = query_data_queryset.filter(query_status=query_status)
+                    if query_data_queryset.exists():
+                        serializer = CustomQuerySerializer(query_data_queryset, many=True)
+                        serialized_data = serializer.data
+                    else:
+                        return Response({'status': '01', 'message': f'No Records found.'},
+                                        status=status.HTTP_200_OK)
+                elif (query_status == '"OPEN"' or query_status == '"REOPENED"' or
+                      query_status == '"ANSWERED"' or query_status == '"VERIFIED"'):
+                    query_status = query_status.strip('"')
+                    query_data_queryset = query_data_queryset.filter(query_status=query_status)
+                    if query_data_queryset.exists():
+                        serializer = CustomQuerySerializer(query_data_queryset, many=True)
+                        serialized_data = serializer.data
+                    else:
+                        return Response({'status': '01', 'message': f'No Records found.'},
+                                        status=status.HTTP_200_OK)
+                else:
+                    return Response({'status': '01', 'message': f'Please pass the correct status such as - '
+                                                                f'OPEN or ANSWERED or REOPENED or VERIFIED.'},
+                                    status=status.HTTP_200_OK)
+            response_data = {
+                'status': '00',
+                'message': 'success',
+                'data': serialized_data
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            q_id = request.data.get('id')
+            saswat_application_number = request.data.get('saswat_application_number')
+            if not q_id or not saswat_application_number:
+                raise ValueError("ID or Saswat Application Number is not provided")
+            query_data_queryset = Query.objects.filter(id=q_id)
+            if not query_data_queryset.exists():
+                return Response({'status': '01', 'message': f'No Queries found for the given '
+                                                            f'Saswat Application Number.'},
+                                status=status.HTTP_404_NOT_FOUND)
+            else:
+                query_data_queryset = query_data_queryset.first()
+                serializer = CustomQuerySerializer(query_data_queryset, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

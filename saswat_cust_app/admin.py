@@ -9,7 +9,8 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
-                     EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails)
+                     EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
+                     LoanApplication, Query)
 
 admin.site.register(UserOtp)
 # admin.site.register(UserDetails)
@@ -434,3 +435,78 @@ class EmployeeSetTargetDetailsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EmployeeSetTargetDetails,EmployeeSetTargetDetailsAdmin)
+
+class LoanApplicationAdmin(admin.ModelAdmin):
+    exclude = ('created_by', 'modified_by')
+    excluded_fields = ['created_at', 'modified_at', 'created_by', 'modified_by']
+
+    def get_model_fields(self, obj):
+        fields = [field.name for field in obj._meta.fields if field.name not in self.excluded_fields]
+        fields += ['get_reporting_manager_name', 'get_district', 'get_cluster']
+        fields += self.excluded_fields
+        return fields
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+    def get_reporting_manager_name(self, obj):
+        return obj.sales_officer_rm
+
+    get_reporting_manager_name.short_description = 'SO: RM name'
+
+    def get_district(self, obj):
+        return obj.sales_officer_district
+
+    get_district.short_description = 'SO: District'
+
+    def get_cluster(self, obj):
+        return obj.sales_officer_cluster
+
+    get_cluster.short_description = 'SO: Cluster'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "sales_officer":
+            kwargs["queryset"] = EmployeeDetails.objects.filter(designation__designation_name="Sales Officer")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user.username
+        obj.modified_by = request.user.username
+        super().save_model(request, obj, form, change)
+
+
+admin.site.register(LoanApplication, LoanApplicationAdmin)
+
+
+class QueryAdmin(admin.ModelAdmin):
+    exclude = ('created_by', 'modified_by')
+    excluded_fields = ['id', 'saswat_application_number']
+
+    def get_model_fields(self, obj):
+        fields = ['id', 'saswat_application_number', 'get_loan_id']
+        fields += [field.name for field in obj._meta.fields if field.name not in self.excluded_fields]
+        return fields
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+    def get_loan_id(self, obj):
+        return obj.loan_id
+
+    get_loan_id.short_description = 'Loan ID'
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user.username
+        obj.modified_by = request.user.username
+        super().save_model(request, obj, form, change)
+
+
+admin.site.register(Query, QueryAdmin)

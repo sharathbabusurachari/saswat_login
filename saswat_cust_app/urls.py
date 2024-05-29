@@ -7,7 +7,8 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     VLEEconomicAndSocialStatusInfoView, VleNearbyMilkCenterContactView, VillageDetailsView,
                     VleBasicVillageInfoView, VleValidateOTPAPIView, VleMobileVerificationView, CheckVLEDataView,
                     GetTargetDataView,
-                    privacy_policy)
+                    privacy_policy,
+                    QueryDataView)
 
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
@@ -31,4 +32,5 @@ urlpatterns = [
     path('check-vle-data/', CheckVLEDataView.as_view(), name='CheckVLEDataView'),
     path('get-target-data/', GetTargetDataView.as_view(), name='get_target_data'),
     path('privacy-policy/', privacy_policy, name='privacy_policy'),
+    path('query-data/', QueryDataView.as_view(), name='query_data'),
 ]
