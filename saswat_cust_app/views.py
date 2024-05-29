@@ -292,21 +292,20 @@ class VleVillageInfoView(APIView):
 
             village_info_data = VleVillageInfo.objects.filter(user_id=user_id).values('vle_id', 'village_name')
             basic_info_data = VleBasicInformation.objects.filter(user_id=user_id).values('vle_id', 'vle_name')
+            basic_info_dict = {item['vle_id']: item for item in basic_info_data}
+
             common_data = []
+
             for vle_village_info in village_info_data:
-                for vle_basic_info in basic_info_data:
-                    if vle_village_info['vle_id'] == vle_basic_info['vle_id']:
-                        common_data.append({
-                            'vle_id': vle_village_info['vle_id'],
-                            'village_name': vle_village_info['village_name'],
-                            'vle_name': vle_basic_info['vle_name']
-                        })
-                    elif vle_village_info['vle_id']:
-                        common_data.append({
-                            'vle_id': vle_village_info['vle_id'],
-                            'village_name': vle_village_info['village_name'],
-                            'vle_name': ""
-                        })
+                vle_id = vle_village_info['vle_id']
+                village_name = vle_village_info['village_name']
+                vle_name = basic_info_dict.get(vle_id, {}).get('vle_name', '')
+
+                common_data.append({
+                    'vle_id': vle_id,
+                    'village_name': village_name,
+                    'vle_name': vle_name
+                })
             if not common_data:
                 return Response({'status': '01', 'message': 'No data found for the provided user_id'}, status=status.HTTP_200_OK)
 
