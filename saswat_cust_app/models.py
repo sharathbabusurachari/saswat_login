@@ -213,7 +213,6 @@ class PhotoOfBmc(models.Model):
         db_table = "photo_of_bmc"
 
 
-
 class VLEBankDetails(models.Model):
     vle_id = models.OneToOneField(VleVillageInfo, on_delete=models.CASCADE)
     cheque_or_statement = models.ImageField(upload_to='vle_documents/', verbose_name="Cheque or first page of statement or passbook")
