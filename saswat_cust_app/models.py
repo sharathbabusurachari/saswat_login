@@ -595,7 +595,7 @@ class EmployeeSetTargetDetails(models.Model):
     year = models.CharField(choices=YEAR_CHOICES, max_length=4)
     month_name = models.CharField(max_length=20, verbose_name="Month Name", editable=False)
     week = models.ForeignKey(WeekDetails, on_delete=models.CASCADE, related_name='employee_week_set_targets',
-                             verbose_name="Week", null=True)
+                             verbose_name="Week")
     visit_target = models.IntegerField()
     login_target = models.IntegerField()
     disbursement_target = models.IntegerField()
