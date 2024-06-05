@@ -546,14 +546,14 @@ class EmployeeTargetDetails(models.Model):
             week = WeekDetails.objects.get(pk=self.week_id)
             if not (week.start_date <= self.date <= week.end_date):
                 raise ValidationError(f"Date {self.date} is outside the range of selected week: {week.week_name} ({week.start_date} - {week.end_date})")
-        if self.employee_id and self.date:
-            self.month = self.date.month
-            self.month_name = self.date.strftime('%B')
-            self.year = str(self.date.year)
-            is_target_set = EmployeeSetTargetDetails.objects.filter(employee_id=self.employee_id, month=self.month, year=self.year)
+        if self.employee_id and self.week_id and self.date:
+            month = self.date.month
+            year = str(self.date.year)
+            is_target_set = EmployeeSetTargetDetails.objects.filter(employee_id=self.employee_id, month=month,
+                                                                    year=year, week_id=self.week_id)
             if not is_target_set.exists():
                 raise ValidationError(f'Kindly set a target first for the employee - {self.employee}, '
-                                      f'for {self.month_name}, {self.year}.')
+                                      f'for the selected week.')
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Perform validation before saving
@@ -573,7 +573,6 @@ class EmployeeTargetDetails(models.Model):
         self.month_name = self.date.strftime('%B')  # Format the start date to get the month name
         self.year = str(self.date.year)
         super().save(*args, **kwargs)
-
 
     class Meta:
         db_table = "employee_target_details"
@@ -596,6 +595,8 @@ class EmployeeSetTargetDetails(models.Model):
     month = models.IntegerField(choices=MONTH_CHOICES)
     year = models.CharField(choices=YEAR_CHOICES, max_length=4)
     month_name = models.CharField(max_length=20, verbose_name="Month Name", editable=False)
+    week = models.ForeignKey(WeekDetails, on_delete=models.CASCADE, related_name='employee_week_set_targets',
+                             verbose_name="Week", null=True)
     visit_target = models.IntegerField()
     login_target = models.IntegerField()
     disbursement_target = models.IntegerField()
@@ -609,12 +610,18 @@ class EmployeeSetTargetDetails(models.Model):
 
     def clean(self):
         super().clean()
-        if self.employee_id and self.month and self.year:
+        if self.employee_id and self.month and self.year and self.week_id:
             if (EmployeeSetTargetDetails.objects.
-                    filter(employee=self.employee, month=self.month, year=self.year).exists()):
-                self.month_name = dict(self.MONTH_CHOICES)[self.month]
-                raise ValidationError(f"The Target has already been set for '{self.employee}' \
-                for {self.month_name}-{self.year}. Kindly delete that entry first and then Create another entry")
+                    filter(employee=self.employee, month=self.month, year=self.year, week=self.week).exists()):
+                month_name = dict(self.MONTH_CHOICES)[self.month]
+                raise ValidationError(f"The Target for '{self.week}' has already been set for '{self.employee}' \
+                for {month_name}-{self.year}. Kindly delete that entry first and then Create another entry")
+        if self.employee_id and self.month and self.year and self.week_id:
+            week_identifier_qs = WeekDetails.objects.filter(month=self.month, year=self.year)
+            week_identifier_list = list(week_identifier_qs.values_list('id', flat=True))
+            if self.week_id not in week_identifier_list:
+                month_name = dict(self.MONTH_CHOICES)[self.month]
+                raise ValidationError(f"The selected Week - '{self.week}' does not belong to {month_name},{self.year}.")
 
     def save(self, *args, **kwargs):
         self.full_clean()  # Perform validation before saving
