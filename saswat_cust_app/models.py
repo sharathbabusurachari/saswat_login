@@ -699,3 +699,41 @@ class Query(models.Model):
 
     class Meta:
         db_table = 'query'
+
+class QueryModel(models.Model):
+    QUERY_STATUS_CHOICES = [
+        ('OPEN', 'OPEN'), ('ANSWERED', 'ANSWERED'), ('REOPENED', 'REOPENED'), ('VERIFIED', 'VERIFIED')
+    ]
+    id = models.AutoField(primary_key=True)
+    saswat_application_number = models.ForeignKey(LoanApplication, on_delete=models.CASCADE)
+    query_id = models.CharField(max_length=6, verbose_name="Query ID")
+    query_date = models.DateField()
+    question_or_query = models.CharField(max_length=255, verbose_name="Question / Query")
+    query_status = models.CharField(choices=QUERY_STATUS_CHOICES, max_length=20)
+    remarks_by_ta = models.CharField(max_length=255, null=True, blank=True)
+    remarks_by_so = models.CharField(max_length=255, null=True, blank=True)
+    version = models.IntegerField(default=1, editable=False, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By")
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By")
+
+    @property
+    def loan_id(self):
+        return self.saswat_application_number.loan_id if self.saswat_application_number.loan_id else None
+
+    def __str__(self):
+        return str(self.saswat_application_number)
+
+    class Meta:
+        db_table = 'query_model'
+
+
+class SoAndTaAttachment(models.Model):
+    query = models.ForeignKey(QueryModel, on_delete=models.CASCADE, related_name='attachments')
+    so_attachment = models.FileField(upload_to='so_attachments/', null=True, blank=True)
+    ta_attachment = models.FileField(upload_to='ta_attachments/', null=True, blank=True)
+
+    class Meta:
+        db_table = 'so_and_ta_attachment'

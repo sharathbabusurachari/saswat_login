@@ -12,7 +12,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
-                                    LoanApplication, Query)
+                                    LoanApplication, Query, QueryModel)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -27,7 +27,7 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
                                          VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer,
-                                         LoanApplicationSerializer, CustomQuerySerializer)
+                                         LoanApplicationSerializer, CustomQuerySerializer, NewQuerySerializer, GetQuerySerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -1432,7 +1432,6 @@ def privacy_policy(request):
 
 
 # -----------------------------------*------------Query API-------------*--------------------------------------*--------
-
 class QueryDataView(APIView):
     permission_classes = [AllowAny]
 
@@ -1454,6 +1453,7 @@ class QueryDataView(APIView):
                 else:
                     return Response({'status': '01', 'message': f'No Employee has been created for the '
                                                                 f'provided user_id.'}, status=status.HTTP_200_OK)
+
             loan_application_queryset = LoanApplication.objects.filter(sales_officer=employee_id)
             if not loan_application_queryset.exists():
                 return Response({'status': '01', 'message': f'No Loan Applications found for the given user.'},
@@ -1462,40 +1462,87 @@ class QueryDataView(APIView):
                 serializer = LoanApplicationSerializer(loan_application_queryset, many=True)
                 loan_application_serialized_data = serializer.data
                 saswat_application_numbers = [i['saswat_application_number'] for i in loan_application_serialized_data]
-            query_data_queryset = Query.objects.filter(
+            query_data_queryset = QueryModel.objects.filter(
                 saswat_application_number__saswat_application_number__in=saswat_application_numbers)
             if not query_data_queryset.exists():
                 return Response({'status': '01', 'message': f'No Queries found for the given user.'},
                                 status=status.HTTP_200_OK)
             else:
-                if query_status == "" or query_status is None or query_status == "''" or query_status == '""':
-                    serializer = CustomQuerySerializer(query_data_queryset, many=True)
+                if not query_status:
+                    max_versions = query_data_queryset.values('query_id').annotate(
+                        max_version=Max('version'))
+                    query_id = [mv['query_id'] for mv in max_versions]
+                    version = [mv['max_version'] for mv in max_versions]
+
+                    max_version_by_query_id = {}
+                    for q_id, ver in zip(query_id, version):
+                        if q_id not in max_version_by_query_id:
+                            max_version_by_query_id[q_id] = ver
+                        else:
+                            max_version_by_query_id[q_id] = max(max_version_by_query_id[q_id], ver)
+
+                    query_data_queryset = QueryModel.objects.none()
+                    for query_id, max_version in max_version_by_query_id.items():
+                        query_data_queryset |= QueryModel.objects.filter(query_id=query_id, version=max_version)
+                    serializer = GetQuerySerializer(query_data_queryset, many=True)
                     serialized_data = serializer.data
                 elif (query_status == "OPEN" or query_status == "REOPENED" or
                       query_status == "ANSWERED" or query_status == "VERIFIED"):
-                    query_data_queryset = query_data_queryset.filter(query_status=query_status)
-                    if query_data_queryset.exists():
-                        serializer = CustomQuerySerializer(query_data_queryset, many=True)
-                        serialized_data = serializer.data
+                    if query_status == "OPEN":
+                        max_versions = query_data_queryset.values('query_id').annotate(
+                            max_version=Max('version'))
+                        query_id = [mv['query_id'] for mv in max_versions]
+                        version = [mv['max_version'] for mv in max_versions]
+
+                        max_version_by_query_id = {}
+                        for q_id, ver in zip(query_id, version):
+                            if q_id not in max_version_by_query_id:
+                                max_version_by_query_id[q_id] = ver
+                            else:
+                                max_version_by_query_id[q_id] = max(max_version_by_query_id[q_id], ver)
+
+                        query_data_queryset = QueryModel.objects.none()
+                        for query_id, max_version in max_version_by_query_id.items():
+                            query_data_queryset |= QueryModel.objects.filter(
+                                query_id=query_id,
+                                version=max_version).filter(Q(query_status="OPEN") | Q(query_status="REOPENED"))
+                    elif query_status == "ANSWERED":
+                        max_versions = query_data_queryset.values('query_id').annotate(
+                            max_version=Max('version'))
+                        query_id = [mv['query_id'] for mv in max_versions]
+                        version = [mv['max_version'] for mv in max_versions]
+
+                        max_version_by_query_id = {}
+                        for q_id, ver in zip(query_id, version):
+                            if q_id not in max_version_by_query_id:
+                                max_version_by_query_id[q_id] = ver
+                            else:
+                                max_version_by_query_id[q_id] = max(max_version_by_query_id[q_id], ver)
+
+                        query_data_queryset = QueryModel.objects.none()
+                        for query_id, max_version in max_version_by_query_id.items():
+                            query_data_queryset |= QueryModel.objects.filter(
+                                query_id=query_id, version=max_version).filter(query_status="ANSWERED")
+
                     else:
-                        return Response({'status': '01', 'message': f'No Records found.'},
-                                        status=status.HTTP_200_OK)
-                elif (query_status == "'OPEN'" or query_status == "'REOPENED'" or
-                      query_status == "'ANSWERED'" or query_status == "'VERIFIED'"):
-                    query_status = query_status.strip("'")
-                    query_data_queryset = query_data_queryset.filter(query_status=query_status)
+                        max_versions = query_data_queryset.values('query_id').annotate(
+                            max_version=Max('version'))
+                        query_id = [mv['query_id'] for mv in max_versions]
+                        version = [mv['max_version'] for mv in max_versions]
+
+                        max_version_by_query_id = {}
+                        for q_id, ver in zip(query_id, version):
+                            if q_id not in max_version_by_query_id:
+                                max_version_by_query_id[q_id] = ver
+                            else:
+                                max_version_by_query_id[q_id] = max(max_version_by_query_id[q_id], ver)
+
+                        query_data_queryset = QueryModel.objects.none()
+                        for query_id, max_version in max_version_by_query_id.items():
+                            query_data_queryset |= QueryModel.objects.filter(
+                                query_id=query_id, version=max_version).filter(query_status="VERIFIED")
                     if query_data_queryset.exists():
-                        serializer = CustomQuerySerializer(query_data_queryset, many=True)
-                        serialized_data = serializer.data
-                    else:
-                        return Response({'status': '01', 'message': f'No Records found.'},
-                                        status=status.HTTP_200_OK)
-                elif (query_status == '"OPEN"' or query_status == '"REOPENED"' or
-                      query_status == '"ANSWERED"' or query_status == '"VERIFIED"'):
-                    query_status = query_status.strip('"')
-                    query_data_queryset = query_data_queryset.filter(query_status=query_status)
-                    if query_data_queryset.exists():
-                        serializer = CustomQuerySerializer(query_data_queryset, many=True)
+                        serializer = GetQuerySerializer(query_data_queryset, many=True)
                         serialized_data = serializer.data
                     else:
                         return Response({'status': '01', 'message': f'No Records found.'},
@@ -1515,26 +1562,33 @@ class QueryDataView(APIView):
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
             q_id = request.data.get('id')
             saswat_application_number = request.data.get('saswat_application_number')
+            query_id = request.data.get('query_id')
             if not q_id or not saswat_application_number:
                 raise ValueError("ID or Saswat Application Number is not provided")
-            query_data_queryset = Query.objects.filter(id=q_id)
+            query_data_queryset = QueryModel.objects.filter(id=q_id)
             if not query_data_queryset.exists():
                 return Response({'status': '01', 'message': f'No Queries found for the given '
                                                             f'Saswat Application Number.'},
                                 status=status.HTTP_404_NOT_FOUND)
             else:
-                query_data_queryset = query_data_queryset.first()
-                serializer = CustomQuerySerializer(query_data_queryset, data=request.data, partial=True)
+                existing_entries_count = QueryModel.objects.filter(
+                    query_id=query_id
+                ).annotate(
+                    num_entries=F('id')
+                ).count()
+                version = existing_entries_count + 1
+                serializer = NewQuerySerializer(data=request.data,
+                                                context={'request': request, 'version': version, 'query_id': query_id})
+
                 if serializer.is_valid():
                     serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-

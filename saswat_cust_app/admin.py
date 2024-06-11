@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django import forms
-
+from django.db.models import F
 # Register your models here.
+import random
 
 from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation,
@@ -10,7 +11,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, Query)
+                     LoanApplication, Query, QueryModel, SoAndTaAttachment)
 
 admin.site.register(UserOtp)
 # admin.site.register(UserDetails)
@@ -439,6 +440,7 @@ admin.site.register(EmployeeSetTargetDetails,EmployeeSetTargetDetailsAdmin)
 class LoanApplicationAdmin(admin.ModelAdmin):
     exclude = ('created_by', 'modified_by')
     excluded_fields = ['created_at', 'modified_at', 'created_by', 'modified_by']
+    search_fields = ['saswat_application_number', 'loan_id']
 
     def get_model_fields(self, obj):
         fields = [field.name for field in obj._meta.fields if field.name not in self.excluded_fields]
@@ -510,3 +512,67 @@ class QueryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Query, QueryAdmin)
+
+class AttachmentOneInline(admin.TabularInline):
+    model = SoAndTaAttachment
+    extra = 1
+    fields = ('so_attachment', 'ta_attachment')
+
+
+class MainModelOneAdmin(admin.ModelAdmin):
+    inlines = [AttachmentOneInline]
+    search_fields = ['saswat_application_number__saswat_application_number', 'query_status']
+    exclude = ['query_id', 'created_by', 'modified_by']
+
+    excluded_fields = ['id', 'saswat_application_number']
+
+    def get_model_fields(self, obj):
+        fields = ['id', 'saswat_application_number', 'loan_id']
+        fields += [field.name for field in obj._meta.fields if field.name not in self.excluded_fields]
+        return fields
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user.username
+        obj.modified_by = request.user.username
+
+        if not change or not obj.query_id:
+            obj.query_id = self.generate_query_id()
+
+        existing_entries_count = QueryModel.objects.filter(
+            query_id=obj.query_id
+        ).annotate(
+            num_entries=F('id')
+        ).count()
+        obj.version = existing_entries_count + 1
+        obj.pk = None
+
+        super().save_model(request, obj, form, change)
+
+    def generate_query_id(self):
+        while True:
+            query_id = f"{random.randint(000000, 999999)}"
+            if not QueryModel.objects.filter(query_id=query_id).exists():
+                return query_id
+
+    def get_loan_id(self, obj):
+        return obj.loan_id
+
+
+admin.site.register(QueryModel, MainModelOneAdmin)
+
+
+@admin.register(SoAndTaAttachment)
+class SoAndTaAttachmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'saswat_application_number', 'so_attachment', 'ta_attachment')
+
+    def saswat_application_number(self, obj):
+        return obj.query.saswat_application_number
+
+    saswat_application_number.short_description = 'Saswat Application Number'
