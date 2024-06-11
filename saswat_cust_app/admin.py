@@ -484,34 +484,34 @@ class LoanApplicationAdmin(admin.ModelAdmin):
 admin.site.register(LoanApplication, LoanApplicationAdmin)
 
 
-class QueryAdmin(admin.ModelAdmin):
-    exclude = ('created_by', 'modified_by')
-    excluded_fields = ['id', 'saswat_application_number']
-
-    def get_model_fields(self, obj):
-        fields = ['id', 'saswat_application_number', 'get_loan_id']
-        fields += [field.name for field in obj._meta.fields if field.name not in self.excluded_fields]
-        return fields
-
-    list_display = []
-
-    def __init__(self, model, admin_site):
-        super().__init__(model, admin_site)
-        self.list_display = self.get_model_fields(model)
-
-    def get_loan_id(self, obj):
-        return obj.loan_id
-
-    get_loan_id.short_description = 'Loan ID'
-
-    def save_model(self, request, obj, form, change):
-        if not obj.created_by:
-            obj.created_by = request.user.username
-        obj.modified_by = request.user.username
-        super().save_model(request, obj, form, change)
-
-
-admin.site.register(Query, QueryAdmin)
+# class QueryAdmin(admin.ModelAdmin):
+#     exclude = ('created_by', 'modified_by')
+#     excluded_fields = ['id', 'saswat_application_number']
+#
+#     def get_model_fields(self, obj):
+#         fields = ['id', 'saswat_application_number', 'get_loan_id']
+#         fields += [field.name for field in obj._meta.fields if field.name not in self.excluded_fields]
+#         return fields
+#
+#     list_display = []
+#
+#     def __init__(self, model, admin_site):
+#         super().__init__(model, admin_site)
+#         self.list_display = self.get_model_fields(model)
+#
+#     def get_loan_id(self, obj):
+#         return obj.loan_id
+#
+#     get_loan_id.short_description = 'Loan ID'
+#
+#     def save_model(self, request, obj, form, change):
+#         if not obj.created_by:
+#             obj.created_by = request.user.username
+#         obj.modified_by = request.user.username
+#         super().save_model(request, obj, form, change)
+#
+#
+# admin.site.register(Query, QueryAdmin)
 
 class AttachmentOneInline(admin.TabularInline):
     model = SoAndTaAttachment
