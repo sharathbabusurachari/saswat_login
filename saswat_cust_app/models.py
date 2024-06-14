@@ -459,8 +459,8 @@ class WeekDetails(models.Model):
             if self.start_date > self.end_date:
                 raise ValidationError("End date must be greater than or equal to start date")
             overlapping_ranges = WeekDetails.objects.filter(
-                start_date__lt=self.end_date,
-                end_date__gt=self.start_date
+                start_date__lte=self.end_date,
+                end_date__gte=self.start_date
             ).exclude(pk=self.pk)
             if overlapping_ranges.exists():
                 raise ValidationError("The date range overlaps with an existing date range.")
