@@ -340,18 +340,6 @@ class WeekDetailsAdmin(admin.ModelAdmin):
 admin.site.register(WeekDetails, WeekDetailsAdmin)
 
 
-class UserChoiceField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        # return "Category: {}".format(obj.name)
-        if obj.mid_name is None or obj.mid_name == "":
-            return "{} {}_{}".format(obj.first_name, obj.last_name, obj.user_id)
-        elif obj.last_name is None or obj.last_name == "":
-            return "{} {}_{}".format(obj.first_name, obj.mid_name, obj.user_id)
-        elif (obj.mid_name is None or obj.mid_name == "") and (obj.last_name is None or obj.last_name == ""):
-            return "{}_{}".format(obj.first_name, obj.user_id)
-        else:
-            return "{} {} {}_{}".format(obj.first_name, obj.mid_name, obj.last_name, obj.user_id)
-
 
 class EmployeeDetailsAdmin(admin.ModelAdmin):
     exclude = ('created_by', 'modified_by')
@@ -365,6 +353,8 @@ class EmployeeDetailsAdmin(admin.ModelAdmin):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
 
+    list_select_related = ['employee', 'designation', 'reporting_manager', 'cluster_head']
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "reporting_manager":
             # Filter queryset to include only employees with the designation "Reporting Manager"
@@ -372,8 +362,7 @@ class EmployeeDetailsAdmin(admin.ModelAdmin):
         if db_field.name == "cluster_head":
             # Filter queryset to include only employees with the designation "Cluster Head"
             kwargs["queryset"] = EmployeeDetails.objects.filter(designation__designation_name="Cluster Head")
-        if db_field.name == 'employee':
-            return UserChoiceField(queryset=UserDetails.objects.all())
+
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 

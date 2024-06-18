@@ -34,7 +34,7 @@ class UserDetails(models.Model):
 #         unique_together = ('user_id', 'mobile_no')
 
     def __str__(self):
-        return self.first_name
+        return f"{self.first_name} {self.mid_name} {self.last_name}_{self.user_id}"
 
 
 class UserOtp(models.Model):
@@ -416,7 +416,7 @@ class District(models.Model):
 class DesignationDetails(models.Model):
     id = models.AutoField(primary_key=True)
     designation_id = models.IntegerField(unique=True)
-    designation_name = models.CharField(max_length=20)
+    designation_name = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
