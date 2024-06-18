@@ -13,9 +13,13 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
                      LoanApplication, Query, QueryModel, SoAndTaAttachment)
 
+class GpsModelAdmin(admin.ModelAdmin):
+    list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'created_at')
+    list_per_page = 20
+admin.site.register(GpsModel, GpsModelAdmin)
+
 admin.site.register(UserOtp)
 # admin.site.register(UserDetails)
-admin.site.register(GpsModel)
 admin.site.register(CustomerTest)
 admin.site.register(Gender)
 # admin.site.register(State)
