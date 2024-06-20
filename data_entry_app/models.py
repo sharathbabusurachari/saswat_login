@@ -544,9 +544,3 @@ class P21FiSheet(models.Model):
         return str(self.case_details)
 
 
-class Test(models.Model):
-    app_no = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.app_no
-
