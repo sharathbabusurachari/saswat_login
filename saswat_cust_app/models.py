@@ -120,7 +120,7 @@ class VleVillageInfo(models.Model):
     taluk = models.CharField(max_length=30, verbose_name="Taluk")
     district = models.CharField(max_length=30, verbose_name="District")
     pincode = models.CharField(max_length=20, verbose_name="Pincode")
-    state = models.CharField(max_length=10, verbose_name="State")
+    state = models.CharField(max_length=30, verbose_name="State")
     user_id = models.CharField(max_length=10, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
