@@ -33,4 +33,5 @@ urlpatterns = [
     path('get-target-data/', GetTargetDataView.as_view(), name='get_target_data'),
     path('privacy-policy/', privacy_policy, name='privacy_policy'),
     path('query-data/', QueryDataView.as_view(), name='query_data'),
+    path('signin-signout/', SignInSignOutView.as_view(), name='signin_sign_out'),
 ]

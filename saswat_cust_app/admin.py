@@ -11,7 +11,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, Query, QueryModel, SoAndTaAttachment)
+                     LoanApplication, Query, QueryModel, SoAndTaAttachment, SignInSignOut)
 
 class GpsModelAdmin(admin.ModelAdmin):
     list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'created_at')
@@ -569,3 +569,15 @@ class SoAndTaAttachmentAdmin(admin.ModelAdmin):
         return obj.query.saswat_application_number
 
     saswat_application_number.short_description = 'Saswat Application Number'
+
+
+class SignInSignOutAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'created_at', 'remarks_one')
+    # list_select_related = ['user']
+    list_display_links = ('id', 'user')
+    search_fields = ('user__user_id', 'user__first_name')
+    search_help_text = f'Search with the User ID or First Name of User.'
+    list_filter = ['event_date', 'user']
+
+
+admin.site.register(SignInSignOut, SignInSignOutAdmin)

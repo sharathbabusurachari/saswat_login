@@ -4,7 +4,7 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails,VleMobileVOtp,VleOtp,
-                     LoanApplication, Query, QueryModel, SoAndTaAttachment)
+                     LoanApplication, Query, QueryModel, SoAndTaAttachment, SignInSignOut)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -234,3 +234,9 @@ class NewQuerySerializer(serializers.ModelSerializer):
 
     def get_loan_id(self, obj):
         return obj.loan_id
+
+
+class SignInSignOutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SignInSignOut
+        fields = '__all__'

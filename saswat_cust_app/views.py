@@ -12,7 +12,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
-                                    LoanApplication, Query, QueryModel)
+                                    LoanApplication, Query, QueryModel, SignInSignOut)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -27,7 +27,8 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
                                          VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer,
-                                         LoanApplicationSerializer, CustomQuerySerializer, NewQuerySerializer, GetQuerySerializer)
+                                         LoanApplicationSerializer, CustomQuerySerializer, NewQuerySerializer,
+                                         GetQuerySerializer, SignInSignOutSerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -1545,3 +1546,22 @@ class QueryDataView(APIView):
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SignInSignOutView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        signin_signout_serializer = SignInSignOutSerializer(data=request.data)
+        try:
+            if signin_signout_serializer.is_valid():
+                signin_signout_serializer.save()
+                response_data = {
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
