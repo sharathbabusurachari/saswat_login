@@ -8,7 +8,8 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     VleBasicVillageInfoView, VleValidateOTPAPIView, VleMobileVerificationView, CheckVLEDataView,
                     GetTargetDataView,
                     privacy_policy,
-                    QueryDataView)
+                    QueryDataView,
+                    SignInSignOutView,)
 
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
