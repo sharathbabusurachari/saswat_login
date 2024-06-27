@@ -11,7 +11,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, Query, QueryModel, SoAndTaAttachment, SignInSignOut)
+                     LoanApplication, Query, QueryModel, QnaAttachment, SignInSignOut)
 
 class GpsModelAdmin(admin.ModelAdmin):
     list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'created_at')
@@ -507,7 +507,7 @@ admin.site.register(LoanApplication, LoanApplicationAdmin)
 # admin.site.register(Query, QueryAdmin)
 
 class AttachmentOneInline(admin.TabularInline):
-    model = SoAndTaAttachment
+    model = QnaAttachment
     extra = 1
     fields = ('so_attachment', 'ta_attachment')
 
@@ -561,8 +561,8 @@ class MainModelOneAdmin(admin.ModelAdmin):
 admin.site.register(QueryModel, MainModelOneAdmin)
 
 
-@admin.register(SoAndTaAttachment)
-class SoAndTaAttachmentAdmin(admin.ModelAdmin):
+@admin.register(QnaAttachment)
+class QnaAttachmentAdmin(admin.ModelAdmin):
     list_display = ('id', 'saswat_application_number', 'so_attachment', 'ta_attachment')
 
     def saswat_application_number(self, obj):

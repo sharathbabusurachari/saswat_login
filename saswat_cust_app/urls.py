@@ -9,7 +9,8 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     GetTargetDataView,
                     privacy_policy,
                     QueryDataView,
-                    SignInSignOutView,)
+                    SignInSignOutView,
+                    SoAndTaAttachmentAPIView,)
 
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
@@ -35,4 +36,5 @@ urlpatterns = [
     path('privacy-policy/', privacy_policy, name='privacy_policy'),
     path('query-data/', QueryDataView.as_view(), name='query_data'),
     path('signin-signout/', SignInSignOutView.as_view(), name='signin_sign_out'),
+    path('query-attachments/', SoAndTaAttachmentAPIView.as_view(), name='attachment-query-create'),
 ]

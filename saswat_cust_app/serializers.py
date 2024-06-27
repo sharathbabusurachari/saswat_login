@@ -4,7 +4,7 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails,VleMobileVOtp,VleOtp,
-                     LoanApplication, Query, QueryModel, SoAndTaAttachment, SignInSignOut)
+                     LoanApplication, Query, QueryModel, SoAndTaAttachment, SignInSignOut, QnaAttachment)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -184,16 +184,15 @@ class QuerySerializerr(serializers.ModelSerializer):
     def get_loan_id(self, obj):
         return obj.loan_id
 
-class AttachmentSerializer(serializers.ModelSerializer):
+class QnaAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SoAndTaAttachment
-        fields = ['id', 'so_attachment', 'ta_attachment']
+        model = QnaAttachment
+        fields = '__all__'
 
 
 class GetQuerySerializer(serializers.ModelSerializer):
     saswat_application_number = serializers.CharField(read_only=True)
     loan_id = serializers.SerializerMethodField()
-    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = QueryModel
@@ -206,7 +205,6 @@ class GetQuerySerializer(serializers.ModelSerializer):
 class NewQuerySerializer(serializers.ModelSerializer):
     saswat_application_number = serializers.CharField(write_only=True,)
     loan_id = serializers.SerializerMethodField()
-    attachments = AttachmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = QueryModel
@@ -226,10 +224,7 @@ class NewQuerySerializer(serializers.ModelSerializer):
         if version is not None:
             max_version = QueryModel.objects.filter(query_id=query_id).aggregate(Max('version'))['version__max']
             validated_data['version'] = (max_version or 0)+1
-        attachments_data = self.context['request'].FILES.getlist('attachments')
         query = QueryModel.objects.create(**validated_data)
-        for attachment in attachments_data:
-            SoAndTaAttachment.objects.create(query=query, so_attachment=attachment)
         return query
 
     def get_loan_id(self, obj):

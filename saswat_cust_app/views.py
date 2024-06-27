@@ -12,7 +12,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
-                                    LoanApplication, Query, QueryModel, SignInSignOut)
+                                    LoanApplication, Query, QueryModel, SignInSignOut, QnaAttachment)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -28,7 +28,7 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          VleNearbyMilkCenterContactSerializer,
                                          VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer,
                                          LoanApplicationSerializer, CustomQuerySerializer, NewQuerySerializer,
-                                         GetQuerySerializer, SignInSignOutSerializer)
+                                         GetQuerySerializer, SignInSignOutSerializer, QnaAttachmentSerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -38,6 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import F, Q, Sum, Max, OuterRef, Subquery
 from django.db import connection
 from django.shortcuts import render
+from rest_framework.exceptions import APIException
 
 class SendOTPAPIView(APIView):
 
@@ -1431,7 +1432,7 @@ class GetTargetDataView(APIView):
 def privacy_policy(request):
     return render(request, 'privacy-policy.html')
 
-from rest_framework.exceptions import APIException
+
 
 
 class CustomAPIException(APIException):
@@ -1457,10 +1458,16 @@ class QueryDataView(APIView):
             filtered_queryset |= query
         return filtered_queryset
 
-    def serialize_and_respond(self, queryset, serializer_class, status_code=status.HTTP_200_OK):
+    def serialize_and_respond(self, queryset, attachment_queryset, status_code=status.HTTP_200_OK):
         if queryset.exists():
-            serializer = serializer_class(queryset, many=True)
-            return Response({'status': '00', 'message': 'success', 'data': serializer.data}, status=status_code)
+            query_serializer = GetQuerySerializer(queryset, many=True)
+            attachment_serializer = QnaAttachmentSerializer(attachment_queryset, many=True)
+            return Response({
+                'status': '00',
+                'message': 'success',
+                'queries': query_serializer.data,
+                'attachments': attachment_serializer.data
+            }, status=status_code)
         return Response({'status': '01', 'message': 'No Records found.'}, status=status.HTTP_200_OK)
 
     def get(self, request, format=None):
@@ -1469,6 +1476,7 @@ class QueryDataView(APIView):
             user_id = request.query_params.get('user_id')
             param_status = request.query_params.get('status')
             query_id = request.query_params.get('query_id')
+            row_id = request.query_params.get('row_id')
 
             if not user_id:
                 raise CustomAPIException("User ID is not provided")
@@ -1508,13 +1516,17 @@ class QueryDataView(APIView):
             # Process and Serialize Queries
             max_version_by_query_id = self.get_max_version_by_query_id(query_data)
             filtered_queries = self.filter_queryset_by_max_version(query_data, max_version_by_query_id, query_status)
-            return self.serialize_and_respond(filtered_queries, GetQuerySerializer)
+
+            attachment_queryset = QnaAttachment.objects.none()
+            if query_id:
+                attachment_queryset = QnaAttachment.objects.filter(query=row_id)
+
+            return self.serialize_and_respond(filtered_queries, attachment_queryset)
 
         except CustomAPIException as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     def post(self, request, *args, **kwargs):
         try:
@@ -1522,27 +1534,52 @@ class QueryDataView(APIView):
             saswat_application_number = request.data.get('saswat_application_number')
             query_id = request.data.get('query_id')
             if not q_id or not saswat_application_number:
-                raise ValueError("ID or Saswat Application Number is not provided")
+                raise CustomAPIException("ID or Saswat Application Number is not provided")
             query_data_queryset = QueryModel.objects.filter(id=q_id)
             if not query_data_queryset.exists():
                 return Response({'status': '01', 'message': f'No Queries found for the given '
                                                             f'Saswat Application Number.'},
                                 status=status.HTTP_404_NOT_FOUND)
             else:
-                existing_entries_count = QueryModel.objects.filter(
-                    query_id=query_id
-                ).annotate(
-                    num_entries=F('id')
-                ).count()
-                version = existing_entries_count + 1
+                existing_entries_count = QueryModel.objects.filter(query_id=query_id).count() + 1
                 serializer = NewQuerySerializer(data=request.data,
-                                                context={'request': request, 'version': version, 'query_id': query_id})
+                                                context={'request': request, 'version': existing_entries_count,
+                                                         'query_id': query_id})
 
                 if serializer.is_valid():
                     serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as e:
+                    return Response({
+                        'status': '00',
+                        'message': 'Query created/updated successfully',
+                        'data': serializer.data
+                    }, status=status.HTTP_201_CREATED)
+                return Response({
+                    'status': '01',
+                    'message': 'Validation failed',
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except CustomAPIException as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SoAndTaAttachmentAPIView(APIView):
+
+    def get(self, request):
+        try:
+            attachments = QnaAttachment.objects.all()
+            serializer = QnaAttachmentSerializer(attachments, many=True)
+            return Response({'status': '00', 'message': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request):
+        try:
+            serializer = QnaAttachmentSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({'status': '00', 'message': 'Attachment created successfully', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        except CustomAPIException as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
