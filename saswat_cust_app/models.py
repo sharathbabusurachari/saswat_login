@@ -308,6 +308,7 @@ class VillageDetails(models.Model):
     active_milk_pouring_members = models.CharField(max_length=255, verbose_name="Active milk pouring members ")
     morning_milk_pouring = models.CharField(max_length=255, verbose_name="Morning Milk pouring at centre ")
     evening_milk_pouring = models.CharField(max_length=255, verbose_name="Evening Milk pouring at the centre ")
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
