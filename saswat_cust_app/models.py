@@ -764,7 +764,7 @@ class SignInSignOut(models.Model):
     event_date = models.DateField(verbose_name='Event Date')
     event_time = models.TimeField(verbose_name='Event Time')
     created_at = models.DateTimeField(auto_now_add=True)
-    remarks_one = models.CharField(max_length=255, null=True, blank=True)
+    remarks_one = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
