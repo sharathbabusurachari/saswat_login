@@ -1443,48 +1443,38 @@ class CustomAPIException(APIException):
 # -----------------------------------*------------Query API-------------*--------------------------------------*--------
 class QueryDataView(APIView):
     permission_classes = [AllowAny]
-
     def get_latest_queries(self, query_id=None, saswat_application_numbers=None, query_status=None):
-        # Define the main queryset
-        queryset = QueryModel.objects.filter(
+        base_queryset = QueryModel.objects.filter(
             saswat_application_number__saswat_application_number__in=saswat_application_numbers,
         )
 
-        # Subquery to get the latest version for each query_id
         latest_version_subquery = QueryModel.objects.filter(
-            saswat_application_number__saswat_application_number__in=saswat_application_numbers,
             query_id=OuterRef('query_id'),
+            saswat_application_number__saswat_application_number__in=saswat_application_numbers
         ).values('query_id').annotate(
             latest_version=Max('version')
         ).values('latest_version')
 
-        # Filter queryset based on query_status
-        if query_status == "OPEN":
-            # Display latest version for OPEN or REOPENED status
-            queryset = queryset.filter(
-                Q(query_status="OPEN") | Q(query_status="REOPENED"),
-                version=Subquery(latest_version_subquery)
-            )
-        elif query_status:
-            # Display latest version for other statuses
-            queryset = queryset.annotate(
-                max_version=Max(
-                    Case(
-                        When(query_status=query_status, then=Value(1)),
-                        default=Value(0),
-                        output_field=IntegerField(),
-                    )
+        if query_status:
+            if query_status.upper() == "OPEN":
+                queryset = base_queryset.filter(
+                    Q(query_status="OPEN") | Q(query_status="REOPENED"),
+                    version=Subquery(latest_version_subquery)
                 )
-            ).filter(
-                version=Subquery(latest_version_subquery),
-                max_version=1
+            else:
+                queryset = base_queryset.filter(
+                    query_status=query_status.upper(),
+                    version=Subquery(latest_version_subquery)
+                )
+        else:
+            queryset = base_queryset.filter(
+                version=Subquery(latest_version_subquery)
             )
 
         if query_id:
             queryset = queryset.filter(query_id=query_id)
 
         return queryset
-
     def serialize_and_respond(self, queryset, attachment_queryset, status_code=status.HTTP_200_OK):
         if queryset.exists():
             query_serializer = GetQuerySerializer(queryset, many=True)
@@ -1499,7 +1489,6 @@ class QueryDataView(APIView):
 
     def get(self, request, format=None):
         try:
-            # Extract and validate query parameters
             user_id = request.query_params.get('user_id')
             query_id = request.query_params.get('query_id')
             row_id = request.query_params.get('row_id')
@@ -1510,26 +1499,21 @@ class QueryDataView(APIView):
 
             query_status = param_status.upper() if param_status else None
 
-            # Fetch Employee Details
             employee = EmployeeDetails.objects.filter(employee_id=user_id).first()
             if not employee:
                 return Response({'status': '01', 'message': 'No Employee found for the provided user_id.'},
                                 status=status.HTTP_200_OK)
 
-            # Fetch Loan Applications
             loan_applications = LoanApplication.objects.filter(sales_officer=employee.id)
             if not loan_applications.exists():
                 return Response({'status': '01', 'message': 'No Loan Applications found for the given user.'},
                                 status=status.HTTP_200_OK)
 
-            # Serialize Loan Applications
             serializer = LoanApplicationSerializer(loan_applications, many=True)
             saswat_application_numbers = [app['saswat_application_number'] for app in serializer.data]
 
-            # Fetch Queries
-            query_data = self.get_latest_queries(query_id, saswat_application_numbers,query_status)
+            query_data = self.get_latest_queries(query_id, saswat_application_numbers, query_status)
 
-            # Fetch Attachments
             attachment_queryset = QnaAttachment.objects.none()
             if query_id:
                 attachment_queryset = QnaAttachment.objects.filter(query=row_id)
