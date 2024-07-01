@@ -35,7 +35,7 @@ import requests
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import F, Q, Sum, Max, OuterRef, Subquery
+from django.db.models import Max, Subquery, OuterRef, Case, When, Value, IntegerField, Q, Sum
 from django.db import connection
 from django.shortcuts import render
 from rest_framework.exceptions import APIException
@@ -1444,20 +1444,41 @@ class CustomAPIException(APIException):
 class QueryDataView(APIView):
     permission_classes = [AllowAny]
 
-    def get_latest_queries(self, query_id, saswat_application_numbers):
-        # Subquery to get the latest version for each query_id and status
+    def get_latest_queries(self, query_id=None, saswat_application_numbers=None, query_status=None):
+        # Define the main queryset
+        queryset = QueryModel.objects.filter(
+            saswat_application_number__saswat_application_number__in=saswat_application_numbers,
+        )
+
+        # Subquery to get the latest version for each query_id
         latest_version_subquery = QueryModel.objects.filter(
             saswat_application_number__saswat_application_number__in=saswat_application_numbers,
-            query_id=OuterRef('query_id')
+            query_id=OuterRef('query_id'),
         ).values('query_id').annotate(
             latest_version=Max('version')
         ).values('latest_version')
 
-        # Main queryset filtered by latest version and status (OPEN or REOPENED)
-        queryset = QueryModel.objects.filter(
-            Q(query_status="OPEN") | Q(query_status="REOPENED"),
-            saswat_application_number__saswat_application_number__in=saswat_application_numbers,
-            version=Subquery(latest_version_subquery))
+        # Filter queryset based on query_status
+        if query_status == "OPEN":
+            # Display latest version for OPEN or REOPENED status
+            queryset = queryset.filter(
+                Q(query_status="OPEN") | Q(query_status="REOPENED"),
+                version=Subquery(latest_version_subquery)
+            )
+        elif query_status:
+            # Display latest version for other statuses
+            queryset = queryset.annotate(
+                max_version=Max(
+                    Case(
+                        When(query_status=query_status, then=Value(1)),
+                        default=Value(0),
+                        output_field=IntegerField(),
+                    )
+                )
+            ).filter(
+                version=Subquery(latest_version_subquery),
+                max_version=1
+            )
 
         if query_id:
             queryset = queryset.filter(query_id=query_id)
@@ -1506,7 +1527,7 @@ class QueryDataView(APIView):
             saswat_application_numbers = [app['saswat_application_number'] for app in serializer.data]
 
             # Fetch Queries
-            query_data = self.get_latest_queries(query_id, saswat_application_numbers)
+            query_data = self.get_latest_queries(query_id, saswat_application_numbers,query_status)
 
             # Fetch Attachments
             attachment_queryset = QnaAttachment.objects.none()
