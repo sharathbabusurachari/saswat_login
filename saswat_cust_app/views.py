@@ -1444,19 +1444,25 @@ class CustomAPIException(APIException):
 class QueryDataView(APIView):
     permission_classes = [AllowAny]
 
-    def get_max_version_by_query_id(self, queryset):
-        max_versions = queryset.values('query_id').annotate(max_version=Max('version'))
-        max_version_by_query_id = {mv['query_id']: mv['max_version'] for mv in max_versions}
-        return max_version_by_query_id
+    def get_latest_queries(self, query_id, saswat_application_numbers):
+        # Subquery to get the latest version for each query_id and status
+        latest_version_subquery = QueryModel.objects.filter(
+            saswat_application_number__saswat_application_number__in=saswat_application_numbers,
+            query_id=OuterRef('query_id')
+        ).values('query_id').annotate(
+            latest_version=Max('version')
+        ).values('latest_version')
 
-    def filter_queryset_by_max_version(self, queryset, max_version_by_query_id, query_status=None):
-        filtered_queryset = QueryModel.objects.none()
-        for query_id, max_version in max_version_by_query_id.items():
-            query = QueryModel.objects.filter(query_id=query_id, version=max_version)
-            if query_status:
-                query = query.filter(query_status=query_status)
-            filtered_queryset |= query
-        return filtered_queryset
+        # Main queryset filtered by latest version and status (OPEN or REOPENED)
+        queryset = QueryModel.objects.filter(
+            Q(query_status="OPEN") | Q(query_status="REOPENED"),
+            saswat_application_number__saswat_application_number__in=saswat_application_numbers,
+            version=Subquery(latest_version_subquery))
+
+        if query_id:
+            queryset = queryset.filter(query_id=query_id)
+
+        return queryset
 
     def serialize_and_respond(self, queryset, attachment_queryset, status_code=status.HTTP_200_OK):
         if queryset.exists():
@@ -1474,9 +1480,9 @@ class QueryDataView(APIView):
         try:
             # Extract and validate query parameters
             user_id = request.query_params.get('user_id')
-            param_status = request.query_params.get('status')
             query_id = request.query_params.get('query_id')
             row_id = request.query_params.get('row_id')
+            param_status = request.query_params.get('status')
 
             if not user_id:
                 raise CustomAPIException("User ID is not provided")
@@ -1500,28 +1506,14 @@ class QueryDataView(APIView):
             saswat_application_numbers = [app['saswat_application_number'] for app in serializer.data]
 
             # Fetch Queries
-            query_filter = {
-                'saswat_application_number__saswat_application_number__in': saswat_application_numbers
-            }
-            if query_id:
-                query_filter['query_id'] = query_id
-            if query_status:
-                query_filter['query_status'] = query_status
+            query_data = self.get_latest_queries(query_id, saswat_application_numbers)
 
-            query_data = QueryModel.objects.filter(**query_filter)
-            if not query_data.exists():
-                return Response({'status': '01', 'message': 'No Queries found for the given criteria.'},
-                                status=status.HTTP_200_OK)
-
-            # Process and Serialize Queries
-            max_version_by_query_id = self.get_max_version_by_query_id(query_data)
-            filtered_queries = self.filter_queryset_by_max_version(query_data, max_version_by_query_id, query_status)
-
+            # Fetch Attachments
             attachment_queryset = QnaAttachment.objects.none()
             if query_id:
                 attachment_queryset = QnaAttachment.objects.filter(query=row_id)
 
-            return self.serialize_and_respond(filtered_queries, attachment_queryset)
+            return self.serialize_and_respond(query_data, attachment_queryset)
 
         except CustomAPIException as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
