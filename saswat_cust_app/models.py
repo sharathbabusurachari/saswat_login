@@ -714,7 +714,7 @@ class QueryModel(models.Model):
     remarks_by_ta = models.CharField(max_length=255, null=True, blank=True)
     remarks_by_so = models.CharField(max_length=255, null=True, blank=True)
     version = models.IntegerField(default=1, editable=False, null=True, blank=True)
-
+    remarks = models.JSONField(max_length=255, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
