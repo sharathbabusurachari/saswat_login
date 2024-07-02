@@ -1021,7 +1021,7 @@ class VleMobileVerificationView(APIView):
                     try:
                         existing_otp.delete()
                         otp_code = str(random.randint(1000, 9999))
-                        VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp_code=otp_code,
+                        VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp=otp_code,
                                                        vle_id_id=vle_id, user_id=user_id, status="Not Verified")
                         data = {
                             'otp': otp_code,
@@ -1057,7 +1057,7 @@ class VleMobileVerificationView(APIView):
                     if existing_otp.exists():
                         existing_otp.delete()
                     otp_code = str(random.randint(1000, 9999))
-                    VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp_code=otp_code,
+                    VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp=otp_code,
                                                    vle_id_id=vle_id, user_id=user_id, status="Not Verified")
                     data = {
                         'otp': otp_code,
