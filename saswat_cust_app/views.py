@@ -27,7 +27,7 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          SkillsAndKnowledgeSerializer, VLEEconomicAndSocialStatusInfoSerializer,
                                          VleNearbyMilkCenterContactSerializer,
                                          VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer,
-                                         LoanApplicationSerializer, CustomQuerySerializer, NewQuerySerializer,
+                                         LoanApplicationSerializer, NewQuerySerializer,
                                          GetQuerySerializer, SignInSignOutSerializer, QnaAttachmentSerializer)
 from datetime import datetime, timedelta, date
 import requests
