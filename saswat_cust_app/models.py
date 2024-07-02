@@ -178,10 +178,12 @@ class VleBasicInformation(models.Model):
 class VleMobileNumber(models.Model):
     vle_id = models.OneToOneField(VleVillageInfo, on_delete=models.CASCADE)
     vle_mobile_number = models.CharField(max_length=15, verbose_name="Mobile number of VLE", unique=True)
-    otp = models.CharField(max_length=15, verbose_name="OTP")
-    alternative_mobile_number = models.CharField(max_length=15, verbose_name="Alternative Mobile number of VLE")
+    otp = models.CharField(max_length=15, verbose_name="OTP", null=True, blank=True)
+    alternative_mobile_number = models.CharField(max_length=15, verbose_name="Alternative Mobile number of VLE",
+                                                 null=True, blank=True)
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    status = models.CharField(max_length=50, verbose_name="OTP Verification Status", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 

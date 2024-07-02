@@ -555,10 +555,10 @@ class VleMobileNumberView(APIView):
             if vle_id:
                 mo_no_instance = VleMobileNumber.objects.filter(vle_id=vle_id).first()
                 if not mo_no_instance:
-                    return Response({'error': 'BmcBasicInformation instance not found'},
+                    return Response({'error': 'VLE Mobile Number instance not found'},
                                     status=status.HTTP_404_NOT_FOUND)
 
-                serializer = VleMobileNumberSerializer(mo_no_instance, data=request.data)
+                serializer = VleMobileNumberSerializer(mo_no_instance, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
                     response_data = {
@@ -1021,6 +1021,8 @@ class VleMobileVerificationView(APIView):
                     try:
                         existing_otp.delete()
                         otp_code = str(random.randint(1000, 9999))
+                        VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp_code=otp_code,
+                                                       vle_id_id=vle_id, user_id=user_id, status="Not Verified")
                         data = {
                             'otp': otp_code,
                             'dest': vle_mobile_number,
@@ -1055,6 +1057,8 @@ class VleMobileVerificationView(APIView):
                     if existing_otp.exists():
                         existing_otp.delete()
                     otp_code = str(random.randint(1000, 9999))
+                    VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp_code=otp_code,
+                                                   vle_id_id=vle_id, user_id=user_id, status="Not Verified")
                     data = {
                         'otp': otp_code,
                         'dest': vle_mobile_number,
@@ -1100,6 +1104,7 @@ class VleValidateOTPAPIView(APIView):
                     'message': "OTP verified successfully",
                     'vle_id': vle_id
                 }
+                VleMobileNumber.objects.filter(vle_id=vle_id).update(status="Verified")
                 return Response(response_data, status=200)
 
             else:
