@@ -11,11 +11,14 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, Query, QueryModel, QnaAttachment, SignInSignOut)
+                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut)
+
 
 class GpsModelAdmin(admin.ModelAdmin):
     list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'created_at')
     list_per_page = 20
+
+
 admin.site.register(GpsModel, GpsModelAdmin)
 
 admin.site.register(UserOtp)

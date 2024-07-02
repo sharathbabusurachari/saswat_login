@@ -12,7 +12,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
-                                    LoanApplication, Query, QueryModel, SignInSignOut, QnaAttachment)
+                                    LoanApplication, QueryModel, SignInSignOut, QnaAttachment)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -57,7 +57,7 @@ class SendOTPAPIView(APIView):
             url = 'http://ci1.saswatfinance.com:8084/api/otp'
             #url = 'http://20.235.255.141:8084/saswat/otp'
             try:
-                existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_genration_time').first()
+                existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_generation_time').first()
                 if existing_otp is not None:
                     existing_otp.is_expired()
                     existing_otp.delete()
@@ -79,7 +79,6 @@ class SendOTPAPIView(APIView):
                     }
 
                     response = requests.post(url, json=data)
-                    print(response)
                     if response.status_code == 200:
                         # result = response.json()
                         UserOtp.objects.create(mobile_no=str(mobile_no), otp_code=otp_code)
@@ -153,7 +152,7 @@ class ValidateOTPAPIView(APIView):
                                                             otp_expiration_time__lt=timezone.now()).first()
 
                     verify_user_otp = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code,
-                                                             otp_genration_time__gte=check_valid_time).first()
+                                                             otp_generation_time__gte=check_valid_time).first()
                     session_id = request.auth
 
                     # otp_instance = get_object_or_404(UserOtp, mobile_no=str(mobile_no), otp_code=otp_code)
@@ -330,11 +329,9 @@ class VleVillageInfoView(APIView):
 
     def post(self, request, *args, **kwargs):
         vle_v_info_serializer = VleVillageInfoSerializer(data=request.data)
-        print(vle_v_info_serializer)
         try:
             if vle_v_info_serializer.is_valid():
                 vle_id_instance = vle_v_info_serializer.save()
-                print(vle_id_instance)
                 response_data = {
                     'VleId': vle_id_instance.vle_id,
                     'status': '00',
@@ -1029,7 +1026,6 @@ class VleMobileVerificationView(APIView):
                             'dest': vle_mobile_number,
                                 }
                         response = requests.post(url, json=data)
-                        print(response)
                         if response.status_code == 200:
                             VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
                             response_data = {
@@ -1064,7 +1060,6 @@ class VleMobileVerificationView(APIView):
                         'dest': vle_mobile_number,
                     }
                     response = requests.post(url, json=data)
-                    print(response)
                     if response.status_code == 200:
                         VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
                         response_data = {
