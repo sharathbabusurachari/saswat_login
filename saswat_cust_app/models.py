@@ -296,7 +296,7 @@ class VleNearbyMilkCenterContact(models.Model):
     reason_not_provided = models.CharField(max_length=255, blank=True, null=True, verbose_name="Reason for not providing contacts (Leave this blank if above 3 fields are filled")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True, default=list)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
