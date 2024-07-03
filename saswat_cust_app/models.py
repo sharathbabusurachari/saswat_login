@@ -71,6 +71,7 @@ class GpsModel(models.Model):
     gps_date = models.DateField()
     gps_time = models.TimeField()
     status = models.CharField(max_length=10)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -105,6 +106,7 @@ class CustomerTest(models.Model):
     file = models.FileField(upload_to='documents/', blank=True)
     document_name = models.CharField(max_length=20)
     document_id = models.CharField(max_length=20)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
 
@@ -122,6 +124,7 @@ class VleVillageInfo(models.Model):
     pincode = models.CharField(max_length=20, verbose_name="Pincode")
     state = models.CharField(max_length=30, verbose_name="State")
     user_id = models.CharField(max_length=10, verbose_name="User Id")
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
@@ -145,6 +148,7 @@ class BmcBasicInformation(models.Model):
     morning_milk_pouring = models.CharField(max_length=100, verbose_name="Morning Milk pouring at centre")
     evening_milk_pouring = models.CharField(max_length=100, verbose_name="Evening milk pouring at the centre")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
@@ -165,6 +169,7 @@ class VleBasicInformation(models.Model):
     vle_current_position = models.CharField(max_length=100, verbose_name="VLE Current position at Milk Centre")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -184,6 +189,7 @@ class VleMobileNumber(models.Model):
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=50, verbose_name="OTP Verification Status", null=True, blank=True)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -205,6 +211,7 @@ class PhotoOfBmc(models.Model):
     bmc_photo_4 = models.ImageField(upload_to='bmc_photos/', verbose_name="Photo of BMC / Milk collection centre 4")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -222,6 +229,7 @@ class VLEBankDetails(models.Model):
     id_card = models.ImageField(upload_to='vle_documents/', verbose_name="ID card (Masked AADHAR / Driving license / Passport / Voter ID / Any govt ID)")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
     def __str__(self):
@@ -242,6 +250,7 @@ class SkillsAndKnowledge(models.Model):
     financial_standing_sales_officer = models.CharField(max_length=255, verbose_name="Financial Standing from Sales officer understanding")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -266,6 +275,7 @@ class VLEEconomicAndSocialStatusInfo(models.Model):
     reference_number = models.CharField(max_length=255, verbose_name="Reference Check")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -286,6 +296,7 @@ class VleNearbyMilkCenterContact(models.Model):
     reason_not_provided = models.CharField(max_length=255, blank=True, null=True, verbose_name="Reason for not providing contacts (Leave this blank if above 3 fields are filled")
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -329,6 +340,7 @@ class VleMobileVOtp(models.Model):
     otp_generation_time = models.DateTimeField(auto_now_add=True)
     otp_expiration_time = models.DateTimeField()
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
@@ -356,6 +368,7 @@ class VleOtp(models.Model):
     otp_expiration_time = models.DateTimeField()
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     user_id = models.CharField(max_length=50, verbose_name="User Id")
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
@@ -391,6 +404,7 @@ class Country(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     modified_by = models.CharField(max_length=255, verbose_name="Modified By")
 
     def __str__(self):
@@ -406,6 +420,7 @@ class District(models.Model):
     district_name = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
     modified_by = models.CharField(max_length=255, verbose_name="Modified By")
 
@@ -422,6 +437,7 @@ class DesignationDetails(models.Model):
     designation_name = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
     modified_by = models.CharField(max_length=255, verbose_name="Modified By")
 
@@ -447,6 +463,7 @@ class WeekDetails(models.Model):
     month_name = models.CharField(max_length=20, verbose_name="Month Name", editable=False)
     year = models.CharField(max_length=4, verbose_name="Year", editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
     modified_by = models.CharField(max_length=255, verbose_name="Modified By")
@@ -505,6 +522,7 @@ class EmployeeDetails(models.Model):
     full_address = models.TextField(verbose_name="Full address")
     pin_code = models.CharField(max_length=10, verbose_name="PIN CODE")
     work_department = models.CharField(max_length=20, null=True, blank=True)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
@@ -531,6 +549,7 @@ class EmployeeTargetDetails(models.Model):
     login_achieved = models.IntegerField()
     disbursement_achieved = models.IntegerField()
     version = models.IntegerField(default=1, editable=False, null=True, blank=True)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255)
@@ -602,6 +621,7 @@ class EmployeeSetTargetDetails(models.Model):
     visit_target = models.IntegerField()
     login_target = models.IntegerField()
     disbursement_target = models.IntegerField()
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255)
@@ -649,6 +669,7 @@ class LoanApplication(models.Model):
     status = models.CharField(choices=STATUS_CHOICES, max_length=20)
     customer_name = models.CharField(max_length=255)
     sales_officer = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="SO (Sales Officer)")
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
@@ -709,6 +730,7 @@ class QnaAttachment(models.Model):
     ta_attachment = models.FileField(upload_to='ta_attachments/', null=True, blank=True)
     attach_query_id = models.CharField(max_length=6, verbose_name="Query ID", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True,)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     modified_at = models.DateTimeField(default=timezone.now)
     created_by = models.CharField(max_length=255, verbose_name="Created By")
     modified_by = models.CharField(max_length=255, verbose_name="Modified By")
@@ -729,6 +751,7 @@ class SignInSignOut(models.Model):
     event_date = models.DateField(verbose_name='Event Date')
     event_time = models.TimeField(verbose_name='Event Time')
     created_at = models.DateTimeField(auto_now_add=True)
+    remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     remarks_one = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):

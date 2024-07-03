@@ -900,10 +900,10 @@ class VleNearbyMilkCenterContactView(APIView):
             if vle_id:
                 milk_center_instance = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id).first()
                 if not milk_center_instance:
-                    return Response({'error': 'BmcBasicInformation instance not found'},
+                    return Response({'error': 'VleNearbyMilkCenterContact instance not found'},
                                     status=status.HTTP_404_NOT_FOUND)
 
-                serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data)
+                serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
                     response_data = {
