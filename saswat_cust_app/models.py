@@ -694,6 +694,19 @@ class LoanApplication(models.Model):
         db_table = 'loan_application'
 
 
+class ShortenedQueries(models.Model):
+    shortened_query = models.CharField(max_length=255, verbose_name="AI Shortened Query")
+    description = models.CharField(max_length=255, verbose_name="AI Description", null=True, blank=True)
+    additional_info = models.JSONField(verbose_name="AI Additional Details", null=True, blank=True, default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.shortened_query)
+
+    class Meta:
+        db_table = 'shortened_queries'
+
+
 class QueryModel(models.Model):
     QUERY_STATUS_CHOICES = [
         ('OPEN', 'OPEN'), ('ANSWERED', 'ANSWERED'), ('REOPENED', 'REOPENED'), ('VERIFIED', 'VERIFIED')
@@ -702,6 +715,7 @@ class QueryModel(models.Model):
     saswat_application_number = models.ForeignKey(LoanApplication, on_delete=models.CASCADE)
     query_id = models.CharField(max_length=6, verbose_name="Query ID")
     query_date = models.DateField()
+    shortened_query = models.ForeignKey(ShortenedQueries, on_delete=models.CASCADE)
     question_or_query = models.CharField(max_length=255, verbose_name="Question / Query")
     query_status = models.CharField(choices=QUERY_STATUS_CHOICES, max_length=20)
     remarks_by_ta = models.CharField(max_length=255, null=True, blank=True)
@@ -716,6 +730,10 @@ class QueryModel(models.Model):
     @property
     def loan_id(self):
         return self.saswat_application_number.loan_id if self.saswat_application_number.loan_id else None
+
+    @property
+    def get_shortened_query(self, obj):
+        return obj.shortened_query.shortened_query if obj.shortened_query else None
 
     def __str__(self):
         return str(self.saswat_application_number)

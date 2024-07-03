@@ -11,7 +11,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut)
+                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries)
 
 
 class GpsModelAdmin(admin.ModelAdmin):
@@ -584,3 +584,17 @@ class SignInSignOutAdmin(admin.ModelAdmin):
 
 
 admin.site.register(SignInSignOut, SignInSignOutAdmin)
+
+class ShortenedQueriesAdmin(admin.ModelAdmin):
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+
+admin.site.register(ShortenedQueries, ShortenedQueriesAdmin)

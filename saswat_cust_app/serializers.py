@@ -4,7 +4,7 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
-                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment)
+                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -168,8 +168,15 @@ class QnaAttachmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ShortenedQueriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShortenedQueries
+        fields = ['shortened_query']
+
+
 class GetQuerySerializer(serializers.ModelSerializer):
     saswat_application_number = serializers.CharField(read_only=True)
+    shortened_queries = serializers.SerializerMethodField()
     loan_id = serializers.SerializerMethodField()
 
     class Meta:
@@ -179,10 +186,14 @@ class GetQuerySerializer(serializers.ModelSerializer):
     def get_loan_id(self, obj):
         return obj.loan_id
 
+    def get_shortened_queries(self, obj):
+        return obj.shortened_query.shortened_query if obj.shortened_query else None
+
 
 class NewQuerySerializer(serializers.ModelSerializer):
-    saswat_application_number = serializers.CharField(write_only=True,)
+    saswat_application_number = serializers.CharField(write_only=True)
     loan_id = serializers.SerializerMethodField()
+    shortened_query = serializers.CharField(write_only=True)
 
     class Meta:
         model = QueryModel
@@ -190,24 +201,27 @@ class NewQuerySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         version = self.context.get('version', None)
-        query_id = self.context.get('query_id', None)
         saswat_application_number = validated_data.pop('saswat_application_number', None)
+        shortened_query_str = validated_data.pop('shortened_query', None)
+        query_id = validated_data.get('query_id')
+
         if saswat_application_number:
-            saswat_application = LoanApplication.objects.get(
-                saswat_application_number=saswat_application_number)
+            saswat_application = LoanApplication.objects.get(saswat_application_number=saswat_application_number)
             validated_data['saswat_application_number'] = saswat_application
-        if query_id is not None:
-            validated_data['query_id'] = query_id
+
+        if shortened_query_str:
+            shortened_query_instance = ShortenedQueries.objects.get(shortened_query=shortened_query_str)
+            validated_data['shortened_query'] = shortened_query_instance
 
         if version is not None:
             max_version = QueryModel.objects.filter(query_id=query_id).aggregate(Max('version'))['version__max']
-            validated_data['version'] = (max_version or 0)+1
+            validated_data['version'] = (max_version or 0) + 1
+
         query = QueryModel.objects.create(**validated_data)
         return query
 
     def get_loan_id(self, obj):
         return obj.loan_id
-
 
 class SignInSignOutSerializer(serializers.ModelSerializer):
     class Meta:
