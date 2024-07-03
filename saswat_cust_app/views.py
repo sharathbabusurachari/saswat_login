@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import status
-# from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
 # from .utils import is_valid_indian_mobile_number
 from rest_framework.exceptions import ValidationError
 from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, State, VleVillageInfo,
@@ -897,25 +897,24 @@ class VleNearbyMilkCenterContactView(APIView):
     def put(self, request, *args, **kwargs):
         try:
             vle_id = request.data.get('vle_id')
-            if vle_id:
-                milk_center_instance = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id).first()
-                if not milk_center_instance:
-                    return Response({'error': 'VleNearbyMilkCenterContact instance not found'},
-                                    status=status.HTTP_404_NOT_FOUND)
-
-                serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data, partial=True)
-                if serializer.is_valid():
-                    serializer.save()
-                    response_data = {
-                        'VleId': vle_id,
-                        'status': '00',
-                        'message': "success",
-                    }
-                    return Response(response_data, status=status.HTTP_200_OK)
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
+            if not vle_id:
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            milk_center_instance = get_object_or_404(VleNearbyMilkCenterContact, vle_id=vle_id)
+
+            serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                response_data = {
+                    'VleId': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

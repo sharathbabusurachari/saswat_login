@@ -121,9 +121,21 @@ class VLEEconomicAndSocialStatusInfoSerializer(serializers.ModelSerializer):
 
 
 class VleNearbyMilkCenterContactSerializer(serializers.ModelSerializer):
+    new_remark = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = VleNearbyMilkCenterContact
-        fields = '__all__'
+        fields = ['vle_id', 'name', 'mobile_number', 'address', 'reason_not_provided',
+                  'user_id', 'remarks', 'uuid_id', 'created_at', 'updated_at', 'new_remark']
+
+    def update(self, instance, validated_data):
+        new_remark = validated_data.pop('new_remark', None)
+        if new_remark:
+            if not isinstance(instance.remarks, list):
+                instance.remarks = []
+            instance.remarks.append(new_remark)
+        return super().update(instance, validated_data)
+
 
 
 class VillageDetailsSerializer(serializers.ModelSerializer):
