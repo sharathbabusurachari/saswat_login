@@ -695,8 +695,8 @@ class LoanApplication(models.Model):
 
 
 class ShortenedQueries(models.Model):
-    shortened_query = models.CharField(max_length=255, verbose_name="AI Shortened Query")
-    description = models.CharField(max_length=255, verbose_name="AI Description", null=True, blank=True)
+    shortened_query = models.CharField(max_length=255, verbose_name="AI Shortened Query", default=1)
+    description = models.CharField(max_length=255, verbose_name="AI Description", null=True, blank=True, default=1)
     additional_info = models.JSONField(verbose_name="AI Additional Details", null=True, blank=True, default=list)
     created_at = models.DateTimeField(auto_now_add=True)
 
