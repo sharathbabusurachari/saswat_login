@@ -39,6 +39,9 @@ from django.db.models import Max, Subquery, OuterRef, Case, When, Value, Integer
 from django.db import connection
 from django.shortcuts import render
 from rest_framework.exceptions import APIException
+from django.db import IntegrityError
+import psycopg2
+
 
 class SendOTPAPIView(APIView):
 
@@ -1003,32 +1006,86 @@ class VleMobileVerificationView(APIView):
         vle_mobile_number = request.data.get('mobile_no')
         vle_id = request.data.get('vle_id')
         user_id = request.data.get('user_id')
+        primary_or_secondary = request.data.get('primary_or_secondary')
         url = 'http://ci1.saswatfinance.com:8084/api/otp'
 
         try:
+            # mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number,
+            #                                                status="Verified").exists()
             mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number).exists()
-            if mobile_exists:
-                response_data = {
-                    'status': '01',
-                    'message': "Mobile Number already exists, Please enter another number.",
+            another_mobile_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).exists()
+            unverified_mobile_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
+                                                                      vle_mobile_number=vle_mobile_number,
+                                                                      status="Not Verified").exists()
+            if primary_or_secondary == 1:
+                if mobile_exists:
+                    response_data = {
+                        'status': '01',
+                        'message': "Mobile Number already exists, Please enter another number.",
 
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number)
-                if existing_otp.exists():
-                    try:
-                        existing_otp.delete()
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                elif another_mobile_exists or unverified_mobile_exists:
+                    existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number)
+                    if existing_otp.exists():
+                        try:
+                            existing_otp.delete()
+                            otp_code = str(random.randint(1000, 9999))
+                            if another_mobile_exists:
+                                another_mobile_exists.delete()
+                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                    vle_mobile_number=vle_mobile_number, otp=otp_code, status="Not Verified")
+                            if unverified_mobile_exists:
+                                unverified_mobile_exists.delete()
+                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id,
+                                                               vle_mobile_number=vle_mobile_number,
+                                                               status="Not Verified").update(otp=otp_code)
+                            data = {
+                                'otp': otp_code,
+                                'dest': vle_mobile_number,
+                            }
+                            response = requests.post(url, json=data)
+                            if response.status_code == 200:
+                                VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code,
+                                                      vle_id_id=vle_id, user_id=user_id)
+                                response_data = {
+                                    'vle_id': vle_id,
+                                    'status': '00',
+                                    'message': "OTP sent successfully",
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                            else:
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Failed to send OTP to the user",
+
+                                }
+                                return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        except Exception as e:
+                            # print("Error deleting existing OTPs:", e)
+                            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    else:
+                        existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
+                        if existing_otp.exists():
+                            existing_otp.delete()
                         otp_code = str(random.randint(1000, 9999))
-                        VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp=otp_code,
-                                                       vle_id_id=vle_id, user_id=user_id, status="Not Verified")
+                        if another_mobile_exists:
+                            another_mobile_exists.delete()
+                            VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                vle_mobile_number=vle_mobile_number, otp=otp_code, status="Not Verified")
+                        if unverified_mobile_exists:
+                            unverified_mobile_exists.delete()
+                            VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id,
+                                                           vle_mobile_number=vle_mobile_number,
+                                                           status="Not Verified").update(otp=otp_code)
                         data = {
                             'otp': otp_code,
                             'dest': vle_mobile_number,
-                                }
+                        }
                         response = requests.post(url, json=data)
                         if response.status_code == 200:
-                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
+                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code,
+                                                  vle_id_id=vle_id, user_id=user_id)
                             response_data = {
                                 'vle_id': vle_id,
                                 'status': '00',
@@ -1043,45 +1100,216 @@ class VleMobileVerificationView(APIView):
                             }
                             return Response(response_data,
                                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # Optionally, perform additional actions after deletion
-                    except Exception as e:
-                        print("Error deleting existing OTPs:", e)
                 else:
-                    print("No existing OTPs found for the provided mobile number.")
-                # if existing_otp:
-                #     existing_otp.delete()
-                #
-                # else:
-                    existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
+                    existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number)
                     if existing_otp.exists():
-                        existing_otp.delete()
-                    otp_code = str(random.randint(1000, 9999))
-                    VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp=otp_code,
-                                                   vle_id_id=vle_id, user_id=user_id, status="Not Verified")
-                    data = {
-                        'otp': otp_code,
-                        'dest': vle_mobile_number,
-                    }
-                    response = requests.post(url, json=data)
-                    if response.status_code == 200:
-                        VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code, vle_id_id=vle_id, user_id=user_id)
-                        response_data = {
-                            'vle_id': vle_id,
-                            'status': '00',
-                            'message': "OTP sent successfully",
-                        }
-                        return Response(response_data, status=status.HTTP_200_OK)
+                        try:
+                            existing_otp.delete()
+                            otp_code = str(random.randint(1000, 9999))
+                            VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp=otp_code,
+                                                           vle_id_id=vle_id, user_id=user_id, status="Not Verified")
+                            data = {
+                                'otp': otp_code,
+                                'dest': vle_mobile_number,
+                            }
+                            response = requests.post(url, json=data)
+                            if response.status_code == 200:
+                                VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code,
+                                                      vle_id_id=vle_id, user_id=user_id)
+                                response_data = {
+                                    'vle_id': vle_id,
+                                    'status': '00',
+                                    'message': "OTP sent successfully",
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                            else:
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Failed to send OTP to the user",
+
+                                }
+                                return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        except Exception as e:
+                            # print("Error deleting existing OTPs:", e)
+                            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                     else:
-                        response_data = {
-                            'status': '01',
-                            'message': "Failed to send OTP to the user",
-
+                        existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
+                        if existing_otp.exists():
+                            existing_otp.delete()
+                        otp_code = str(random.randint(1000, 9999))
+                        VleMobileNumber.objects.create(vle_mobile_number=vle_mobile_number, otp=otp_code,
+                                                       vle_id_id=vle_id, user_id=user_id, status="Not Verified")
+                        data = {
+                            'otp': otp_code,
+                            'dest': vle_mobile_number,
                         }
-                        return Response(response_data,
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        response = requests.post(url, json=data)
+                        if response.status_code == 200:
+                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code,
+                                                  vle_id_id=vle_id, user_id=user_id)
+                            response_data = {
+                                'vle_id': vle_id,
+                                'status': '00',
+                                'message': "OTP sent successfully",
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
+                        else:
+                            response_data = {
+                                'status': '01',
+                                'message': "Failed to send OTP to the user",
 
+                            }
+                            return Response(response_data,
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif primary_or_secondary == -1:
+                primary_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).first()
+                if not primary_exists:
+                    return Response({'error': 'Enter Primary Mobile Number first.'},
+                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                elif mobile_exists:
+                    response_data = {
+                        'status': '01',
+                        'message': "Mobile Number already exists, Please enter another number.",
+
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                elif primary_exists:
+                    alternative_numbers_column = primary_exists.alternative_mobile_numbers
+                    primary_mobile_number = primary_exists.vle_mobile_number
+                    existing_otp = VleOtp.objects.filter(mobile_no=primary_mobile_number)
+                    if existing_otp.exists():
+                        try:
+                            existing_otp.delete()
+                            otp_code = str(random.randint(1000, 9999))
+                            alternate_data = {"alternate_mobile_number": vle_mobile_number, "alternate_otp": otp_code,
+                                              "alternate_status": "Not Verified"}
+                            if isinstance(alternative_numbers_column, list) and not alternative_numbers_column:
+                                alternate_data_list = [alternate_data]
+                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                    alternative_mobile_numbers=alternate_data_list)
+                            elif alternative_numbers_column and isinstance(alternative_numbers_column, list):
+                                already = False
+                                for number_entry in alternative_numbers_column:
+                                    if (number_entry['alternate_mobile_number'] == vle_mobile_number and
+                                            number_entry['alternate_status'] == "Verified"):
+                                        already = True
+                                if already:
+                                    response_data = {
+                                        'status': '01',
+                                        'message': "Mobile Number already exists, Please enter another number.",
+
+                                    }
+                                    return Response(response_data, status=status.HTTP_200_OK)
+                                updated = False
+                                for number_entry in alternative_numbers_column:
+                                    if (number_entry['alternate_mobile_number'] == vle_mobile_number and
+                                            number_entry['alternate_status'] == "Not Verified"):
+                                        number_entry['alternate_otp'] = otp_code
+                                        updated = True
+                                if updated:
+                                    primary_exists.save()
+                                else:
+                                    alternative_numbers_column.append(alternate_data)
+                                    VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                        alternative_mobile_numbers=alternative_numbers_column)
+                            else:
+                                alternate_data_list = [alternate_data]
+                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                    alternative_mobile_numbers=alternate_data_list)
+                            data = {
+                                'otp': otp_code,
+                                'dest': vle_mobile_number,
+                            }
+                            response = requests.post(url, json=data)
+                            if response.status_code == 200:
+                                VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code,
+                                                      vle_id_id=vle_id, user_id=user_id)
+                                response_data = {
+                                    'vle_id': vle_id,
+                                    'status': '00',
+                                    'message': "OTP sent successfully",
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                            else:
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Failed to send OTP to the user",
+
+                                }
+                                return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        except Exception as e:
+                            # print("Error deleting existing OTPs:", e)
+                            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    else:
+                        existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
+                        if existing_otp.exists():
+                            existing_otp.delete()
+                        otp_code = str(random.randint(1000, 9999))
+                        alternate_data = {"alternate_mobile_number": vle_mobile_number, "alternate_otp": otp_code,
+                                          "alternate_status": "Not Verified"}
+                        if isinstance(alternative_numbers_column, list) and not alternative_numbers_column:
+                            alternate_data_list = [alternate_data]
+                            VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                alternative_mobile_numbers=alternate_data_list)
+                        elif alternative_numbers_column and isinstance(alternative_numbers_column, list):
+                            already = False
+                            for number_entry in alternative_numbers_column:
+                                if (number_entry['alternate_mobile_number'] == vle_mobile_number and
+                                        number_entry['alternate_status'] == "Verified"):
+                                    already = True
+                            if already:
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Mobile Number already exists, Please enter another number.",
+
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                            updated = False
+                            for number_entry in alternative_numbers_column:
+                                if (number_entry['alternate_mobile_number'] == vle_mobile_number and
+                                        number_entry['alternate_status'] == "Not Verified"):
+                                    number_entry['alternate_otp'] = otp_code
+                                    updated = True
+                            if updated:
+                                primary_exists.save()
+                            else:
+                                alternative_numbers_column.append(alternate_data)
+                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                    alternative_mobile_numbers=alternative_numbers_column)
+                        else:
+                            alternate_data_list = [alternate_data]
+                            VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                alternative_mobile_numbers=alternate_data_list)
+                        data = {
+                            'otp': otp_code,
+                            'dest': vle_mobile_number,
+                        }
+                        response = requests.post(url, json=data)
+                        if response.status_code == 200:
+                            VleOtp.objects.create(mobile_no=str(vle_mobile_number), otp_code=otp_code,
+                                                  vle_id_id=vle_id, user_id=user_id)
+                            response_data = {
+                                'vle_id': vle_id,
+                                'status': '00',
+                                'message': "OTP sent successfully",
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
+                        else:
+                            response_data = {
+                                'status': '01',
+                                'message': "Failed to send OTP to the user",
+
+                            }
+                            return Response(response_data,
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except IntegrityError as e:
+            if isinstance(e.__cause__, psycopg2.errors.UniqueViolation):
+                return Response({'error': 'Provided VLE ID already exists'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except requests.exceptions.RequestException as e:
-            return Response({'message': 'Error occurred while making the request'},
+            return Response({'error': 'Error occurred while making the request'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -1089,23 +1317,45 @@ class VleValidateOTPAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        # serializer = VleOtpSerializer(data=request.data)
-        # if serializer.is_valid():
         mobile_no = request.data.get('mobile_no')
         otp_code = request.data.get('otp_code')
         vle_id = request.data.get('vle_id')
-
+        primary_or_secondary = request.data.get('primary_or_secondary')
         if VleOtp.objects.filter(mobile_no=mobile_no).exists():
-
             if VleOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).exists():
                 response_data = {
                     'status': '00',
                     'message': "OTP verified successfully",
                     'vle_id': vle_id
                 }
-                VleMobileNumber.objects.filter(vle_id=vle_id).update(status="Verified")
+                if primary_or_secondary == 1:
+                    VleMobileNumber.objects.filter(vle_id=vle_id).update(status="Verified")
+                elif primary_or_secondary == -1:
+                    primary_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id).first()
+                    if not primary_exists:
+                        return Response({'error': 'Primary Mobile Number Does Not Exist.'},
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    elif primary_exists:
+                        alternative_numbers_column = primary_exists.alternative_mobile_numbers
+                        if isinstance(alternative_numbers_column, list) and not alternative_numbers_column:
+                            return Response({'error': 'Alternate Number Not Found.'},
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        elif alternative_numbers_column and isinstance(alternative_numbers_column, list):
+                            updated = False
+                            for number_entry in alternative_numbers_column:
+                                if (number_entry['alternate_mobile_number'] == mobile_no and
+                                        number_entry['alternate_status'] == "Not Verified"):
+                                    number_entry['alternate_status'] = "Verified"
+                                    updated = True
+                            if updated:
+                                primary_exists.save()
+                            else:
+                                return Response({'error': 'Alternate Number Not Found.'},
+                                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        else:
+                            return Response({'error': 'Alternate Number Not Found'},
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 return Response(response_data, status=200)
-
             else:
                 response_data = {
                     'status': '01',

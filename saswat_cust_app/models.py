@@ -186,6 +186,8 @@ class VleMobileNumber(models.Model):
     otp = models.CharField(max_length=15, verbose_name="OTP", null=True, blank=True)
     alternative_mobile_number = models.CharField(max_length=260, verbose_name="Alternative Mobile number of VLE",
                                                  null=True, blank=True)
+    alternative_mobile_numbers = models.JSONField(verbose_name="Alternative Mobile numbers of VLE",
+                                                  null=True, blank=True, default=list)
     user_id = models.CharField(max_length=50, verbose_name="User Id")
     uuid_id = models.UUIDField(default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=50, verbose_name="OTP Verification Status", null=True, blank=True)
