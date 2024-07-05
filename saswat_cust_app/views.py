@@ -1033,11 +1033,13 @@ class VleMobileVerificationView(APIView):
                             existing_otp.delete()
                             otp_code = str(random.randint(1000, 9999))
                             if another_mobile_exists:
-                                another_mobile_exists.delete()
+                                VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).delete()
                                 VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
                                     vle_mobile_number=vle_mobile_number, otp=otp_code, status="Not Verified")
                             if unverified_mobile_exists:
-                                unverified_mobile_exists.delete()
+                                VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
+                                                               vle_mobile_number=vle_mobile_number,
+                                                               status="Not Verified").delete()
                                 VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id,
                                                                vle_mobile_number=vle_mobile_number,
                                                                status="Not Verified").update(otp=otp_code)
@@ -1071,11 +1073,13 @@ class VleMobileVerificationView(APIView):
                             existing_otp.delete()
                         otp_code = str(random.randint(1000, 9999))
                         if another_mobile_exists:
-                            another_mobile_exists.delete()
+                            VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).delete()
                             VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
                                 vle_mobile_number=vle_mobile_number, otp=otp_code, status="Not Verified")
                         if unverified_mobile_exists:
-                            unverified_mobile_exists.delete()
+                            VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
+                                                           vle_mobile_number=vle_mobile_number,
+                                                           status="Not Verified").delete()
                             VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id,
                                                            vle_mobile_number=vle_mobile_number,
                                                            status="Not Verified").update(otp=otp_code)
