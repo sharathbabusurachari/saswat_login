@@ -1012,7 +1012,8 @@ class VleMobileVerificationView(APIView):
         try:
             # mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number,
             #                                                status="Verified").exists()
-            mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number).exists()
+            mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number,
+                                                           status="Verified").exists()
             another_mobile_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).exists()
             unverified_mobile_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
                                                                       vle_mobile_number=vle_mobile_number,
