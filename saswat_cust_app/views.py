@@ -1014,6 +1014,8 @@ class VleMobileVerificationView(APIView):
             #                                                status="Verified").exists()
             mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number,
                                                            status="Verified").exists()
+            mobile_exists_1 = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number,
+                                                             status="Not Verified").exists()
             another_mobile_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).exists()
             unverified_mobile_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
                                                                       vle_mobile_number=vle_mobile_number,
@@ -1034,14 +1036,14 @@ class VleMobileVerificationView(APIView):
                             otp_code = str(random.randint(1000, 9999))
                             if another_mobile_exists:
                                 VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).delete()
-                                VleMobileNumber.objects.create(vle_id=vle_id, user_id=user_id,
+                                VleMobileNumber.objects.create(vle_id_id=vle_id, user_id=user_id,
                                                                vle_mobile_number=vle_mobile_number, otp=otp_code,
                                                                status="Not Verified")
                             if unverified_mobile_exists:
                                 VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
                                                                vle_mobile_number=vle_mobile_number,
                                                                status="Not Verified").delete()
-                                VleMobileNumber.objects.create(vle_id=vle_id, user_id=user_id,
+                                VleMobileNumber.objects.create(vle_id_id=vle_id, user_id=user_id,
                                                                vle_mobile_number=vle_mobile_number,
                                                                status="Not Verified", otp=otp_code)
                             data = {
@@ -1075,14 +1077,14 @@ class VleMobileVerificationView(APIView):
                         otp_code = str(random.randint(1000, 9999))
                         if another_mobile_exists:
                             VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).delete()
-                            VleMobileNumber.objects.create(vle_id=vle_id, user_id=user_id,
+                            VleMobileNumber.objects.create(vle_id_id=vle_id, user_id=user_id,
                                                            vle_mobile_number=vle_mobile_number, otp=otp_code,
                                                            status="Not Verified")
                         if unverified_mobile_exists:
                             VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id,
                                                            vle_mobile_number=vle_mobile_number,
                                                            status="Not Verified").delete()
-                            VleMobileNumber.objects.create(vle_id=vle_id, user_id=user_id,
+                            VleMobileNumber.objects.create(vle_id_id=vle_id, user_id=user_id,
                                                            vle_mobile_number=vle_mobile_number,
                                                            status="Not Verified", otp=otp_code)
                         data = {
@@ -1180,6 +1182,13 @@ class VleMobileVerificationView(APIView):
 
                     }
                     return Response(response_data, status=status.HTTP_200_OK)
+                elif mobile_exists_1:
+                    response_data = {
+                        'status': '01',
+                        'message': "Mobile Number already exists, Please enter another number.",
+
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
                 elif primary_exists:
                     alternative_numbers_column = primary_exists.alternative_mobile_numbers
                     primary_mobile_number = primary_exists.vle_mobile_number
@@ -1192,7 +1201,7 @@ class VleMobileVerificationView(APIView):
                                               "alternate_status": "Not Verified"}
                             if isinstance(alternative_numbers_column, list) and not alternative_numbers_column:
                                 alternate_data_list = [alternate_data]
-                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).update(
                                     alternative_mobile_numbers=alternate_data_list)
                             elif alternative_numbers_column and isinstance(alternative_numbers_column, list):
                                 already = False
@@ -1217,11 +1226,11 @@ class VleMobileVerificationView(APIView):
                                     primary_exists.save()
                                 else:
                                     alternative_numbers_column.append(alternate_data)
-                                    VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                    VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).update(
                                         alternative_mobile_numbers=alternative_numbers_column)
                             else:
                                 alternate_data_list = [alternate_data]
-                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).update(
                                     alternative_mobile_numbers=alternate_data_list)
                             data = {
                                 'otp': otp_code,
@@ -1256,7 +1265,7 @@ class VleMobileVerificationView(APIView):
                                           "alternate_status": "Not Verified"}
                         if isinstance(alternative_numbers_column, list) and not alternative_numbers_column:
                             alternate_data_list = [alternate_data]
-                            VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                            VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).update(
                                 alternative_mobile_numbers=alternate_data_list)
                         elif alternative_numbers_column and isinstance(alternative_numbers_column, list):
                             already = False
@@ -1281,11 +1290,11 @@ class VleMobileVerificationView(APIView):
                                 primary_exists.save()
                             else:
                                 alternative_numbers_column.append(alternate_data)
-                                VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                                VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).update(
                                     alternative_mobile_numbers=alternative_numbers_column)
                         else:
                             alternate_data_list = [alternate_data]
-                            VleMobileNumber.objects.filter(vle_id=vle_id, user_id=user_id).update(
+                            VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).update(
                                 alternative_mobile_numbers=alternate_data_list)
                         data = {
                             'otp': otp_code,
@@ -1336,7 +1345,7 @@ class VleValidateOTPAPIView(APIView):
                     'vle_id': vle_id
                 }
                 if primary_or_secondary == 1:
-                    VleMobileNumber.objects.filter(vle_id=vle_id).update(status="Verified")
+                    VleMobileNumber.objects.filter(vle_id_id=vle_id).update(status="Verified")
                 elif primary_or_secondary == -1:
                     primary_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id).first()
                     if not primary_exists:
