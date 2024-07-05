@@ -713,11 +713,24 @@ class QueryModel(models.Model):
     QUERY_STATUS_CHOICES = [
         ('OPEN', 'OPEN'), ('ANSWERED', 'ANSWERED'), ('REOPENED', 'REOPENED'), ('VERIFIED', 'VERIFIED')
     ]
+    QUERY_DESCRIPTION_CHOICES = [
+        ('Since applicant has a gold loan overdue, we need to cross check the same with his statements of accounts',
+         'Since applicant has a gold loan overdue, we need to cross check the same with his statements of accounts'),
+        ('Applicant needs to send photos of his house to confirm if he/she lives  there and that is is real.',
+         'Applicant needs to send photos of his house to confirm if he/she lives  there and that is is real.'),
+        ('Applicant needs to verify his milk details since there is a mismatch in his pd and cam report ',
+         'Applicant needs to verify his milk details since there is a mismatch in his pd and cam report '),
+        ('Co-applicant needs to submit proof of his DOB', 'Co-applicant needs to submit proof of his DOB')
+
+    ]
     id = models.AutoField(primary_key=True)
     saswat_application_number = models.ForeignKey(LoanApplication, on_delete=models.CASCADE)
     query_id = models.CharField(max_length=6, verbose_name="Query ID")
     query_date = models.DateField()
     shortened_query = models.ForeignKey(ShortenedQueries, on_delete=models.CASCADE)
+    query_description = models.CharField(max_length=255,
+                                         null=True, blank=True, choices=QUERY_DESCRIPTION_CHOICES,
+                                         verbose_name="Query Description")
     question_or_query = models.CharField(max_length=255, verbose_name="Question / Query")
     query_status = models.CharField(choices=QUERY_STATUS_CHOICES, max_length=20)
     remarks_by_ta = models.CharField(max_length=255, null=True, blank=True)
