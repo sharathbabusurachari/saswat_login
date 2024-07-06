@@ -171,13 +171,15 @@ class QnaAttachmentSerializer(serializers.ModelSerializer):
 class ShortenedQueriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShortenedQueries
-        fields = ['shortened_query']
+        fields = ['shortened_query', 'description', 'additional_info']
 
 
 class GetQuerySerializer(serializers.ModelSerializer):
     saswat_application_number = serializers.CharField(read_only=True)
     shortened_queries = serializers.SerializerMethodField()
     loan_id = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    additional_info = serializers.SerializerMethodField()
 
     class Meta:
         model = QueryModel
@@ -189,11 +191,19 @@ class GetQuerySerializer(serializers.ModelSerializer):
     def get_shortened_queries(self, obj):
         return obj.shortened_query.shortened_query if obj.shortened_query else None
 
+    def get_description(self, obj):
+        return obj.shortened_query.description if obj.shortened_query else None
+
+    def get_additional_info(self, obj):
+        return obj.shortened_query.additional_info if obj.shortened_query else None
+
 
 class NewQuerySerializer(serializers.ModelSerializer):
     saswat_application_number = serializers.CharField(write_only=True)
     loan_id = serializers.SerializerMethodField()
     shortened_query = serializers.CharField(write_only=True)
+    description = serializers.CharField(write_only=True)
+    additional_info = serializers.CharField(write_only=True)
 
     class Meta:
         model = QueryModel
@@ -203,6 +213,8 @@ class NewQuerySerializer(serializers.ModelSerializer):
         version = self.context.get('version', None)
         saswat_application_number = validated_data.pop('saswat_application_number', None)
         shortened_query_str = validated_data.pop('shortened_query', None)
+        description_str = validated_data.pop('description', None)
+        additional_info_str = validated_data.pop('additional_info', None)
         query_id = validated_data.get('query_id')
 
         if saswat_application_number:
@@ -212,6 +224,14 @@ class NewQuerySerializer(serializers.ModelSerializer):
         if shortened_query_str:
             shortened_query_instance = ShortenedQueries.objects.get(shortened_query=shortened_query_str)
             validated_data['shortened_query'] = shortened_query_instance
+
+        if description_str:
+            description_str_instance = ShortenedQueries.objects.get(shortened_query=description_str)
+            validated_data['description'] = description_str_instance
+
+        if additional_info_str:
+            additional_info_instance = ShortenedQueries.objects.get(shortened_query=additional_info_str)
+            validated_data['additional_info'] = additional_info_instance
 
         if version is not None:
             max_version = QueryModel.objects.filter(query_id=query_id).aggregate(Max('version'))['version__max']
