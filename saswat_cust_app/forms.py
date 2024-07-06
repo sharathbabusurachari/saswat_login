@@ -6,16 +6,14 @@ from .models import QueryModel, ShortenedQueries
 
 class QueryModelForm(forms.ModelForm):
     description = forms.ModelChoiceField(
-        queryset=ShortenedQueries.objects.all(),
+        queryset=ShortenedQueries.objects.exclude(description__isnull=True).exclude(description=''),
         label="Description",
-        required=False,
-        widget=forms.Select
+        required=False
     )
     additional_info = forms.ModelChoiceField(
-        queryset=ShortenedQueries.objects.all(),
+        queryset=ShortenedQueries.objects.exclude(additional_info__isnull=True).exclude(additional_info=''),
         label="Additional Info",
-        required=False,
-        widget=forms.Select
+        required=False
     )
 
     class Meta:
