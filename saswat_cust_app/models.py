@@ -717,6 +717,7 @@ class QueryModel(models.Model):
     saswat_application_number = models.ForeignKey(LoanApplication, on_delete=models.CASCADE)
     query_id = models.CharField(max_length=6, verbose_name="Query ID")
     query_date = models.DateField()
+    shortened_query = models.ForeignKey(ShortenedQueries, related_name='queries_as_shortened', on_delete=models.CASCADE)
     description = models.ForeignKey(ShortenedQueries, related_name='querymodel_description', on_delete=models.CASCADE)
     additional_info = models.ForeignKey(ShortenedQueries, related_name='querymodel_additional_info',
                                     on_delete=models.CASCADE)
