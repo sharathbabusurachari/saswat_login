@@ -225,13 +225,20 @@ class NewQuerySerializer(serializers.ModelSerializer):
             shortened_query_instance = ShortenedQueries.objects.get(shortened_query=shortened_query_str)
             validated_data['shortened_query'] = shortened_query_instance
 
-        if description_str:
-            description_str_instance = ShortenedQueries.objects.get(shortened_query=description_str)
-            validated_data['description'] = description_str_instance
+        if description_str is not None:
+            try:
+                description_instance = ShortenedQueries.objects.get(shortened_query=description_str)
+                validated_data['description'] = description_instance
+            except ShortenedQueries.DoesNotExist:
+                validated_data['description'] = None  # Set to None if not found
 
-        if additional_info_str:
-            additional_info_instance = ShortenedQueries.objects.get(shortened_query=additional_info_str)
-            validated_data['additional_info'] = additional_info_instance
+        # Fetch the ShortenedQueries for additional_info
+        if additional_info_str is not None:
+            try:
+                additional_info_instance = ShortenedQueries.objects.get(shortened_query=additional_info_str)
+                validated_data['additional_info'] = additional_info_instance
+            except ShortenedQueries.DoesNotExist:
+                validated_data['additional_info'] = None  # Set to None if not found
 
         if version is not None:
             max_version = QueryModel.objects.filter(query_id=query_id).aggregate(Max('version'))['version__max']
