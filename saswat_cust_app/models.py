@@ -699,7 +699,7 @@ class LoanApplication(models.Model):
 class ShortenedQueries(models.Model):
     shortened_query = models.CharField(max_length=255, verbose_name="AI Shortened Query")
     description = models.CharField(max_length=255, verbose_name="AI Description", null=True, blank=True)
-    additional_info = models.CharField(verbose_name="AI Additional Information", null=True, blank=True)
+    additional_info = models.CharField(max_length=255, verbose_name="AI Additional Information", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
