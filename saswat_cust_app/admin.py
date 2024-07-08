@@ -16,7 +16,8 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
 
 
 class GpsModelAdmin(admin.ModelAdmin):
-    list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'created_at')
+    list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'remarks',
+                    'created_at')
     list_per_page = 20
 
 
@@ -576,7 +577,7 @@ admin.site.register(QueryModel, MainModelOneAdmin)
 
 @admin.register(QnaAttachment)
 class QnaAttachmentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'saswat_application_number', 'so_attachment', 'ta_attachment')
+    list_display = ('id', 'saswat_application_number', 'so_attachment', 'ta_attachment', 'remarks')
 
     def saswat_application_number(self, obj):
         return obj.query.saswat_application_number
@@ -585,7 +586,8 @@ class QnaAttachmentAdmin(admin.ModelAdmin):
 
 
 class SignInSignOutAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'created_at', 'remarks_one')
+    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'created_at', 'remarks',
+                    'remarks_one')
     # list_select_related = ['user']
     list_display_links = ('id', 'user')
     search_fields = ('user__user_id', 'user__first_name')

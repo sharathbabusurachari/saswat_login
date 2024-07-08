@@ -1766,7 +1766,7 @@ class QueryDataView(APIView):
 
             employee = EmployeeDetails.objects.filter(employee_id=user_id).first()
             if not employee:
-                return Response({'status': '01', 'message': 'No Employee found for the provided user_id.'},
+                return Response({'status': '01', 'message': 'No Loan Applications found for the given user.'},
                                 status=status.HTTP_200_OK)
 
             loan_applications = LoanApplication.objects.filter(sales_officer=employee.id)
