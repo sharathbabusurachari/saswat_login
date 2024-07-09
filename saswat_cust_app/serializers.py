@@ -202,8 +202,7 @@ class NewQuerySerializer(serializers.ModelSerializer):
     saswat_application_number = serializers.CharField(write_only=True)
     loan_id = serializers.SerializerMethodField()
     shortened_query = serializers.CharField(write_only=True)
-    description = serializers.CharField(write_only=True)
-    additional_info = serializers.CharField(write_only=True)
+
 
     class Meta:
         model = QueryModel
@@ -213,8 +212,6 @@ class NewQuerySerializer(serializers.ModelSerializer):
         version = self.context.get('version', None)
         saswat_application_number = validated_data.pop('saswat_application_number', None)
         shortened_query_str = validated_data.pop('shortened_query', None)
-        description_str = validated_data.pop('description', None)
-        additional_info_str = validated_data.pop('additional_info', None)
         query_id = validated_data.get('query_id')
 
         if saswat_application_number:
@@ -225,20 +222,6 @@ class NewQuerySerializer(serializers.ModelSerializer):
             shortened_query_instance = ShortenedQueries.objects.get(shortened_query=shortened_query_str)
             validated_data['shortened_query'] = shortened_query_instance
 
-        if description_str is not None:
-            try:
-                description_instance = ShortenedQueries.objects.get(shortened_query=description_str)
-                validated_data['description'] = description_instance
-            except ShortenedQueries.DoesNotExist:
-                validated_data['description'] = None  # Set to None if not found
-
-        # Fetch the ShortenedQueries for additional_info
-        if additional_info_str is not None:
-            try:
-                additional_info_instance = ShortenedQueries.objects.get(shortened_query=additional_info_str)
-                validated_data['additional_info'] = additional_info_instance
-            except ShortenedQueries.DoesNotExist:
-                validated_data['additional_info'] = None  # Set to None if not found
 
         if version is not None:
             max_version = QueryModel.objects.filter(query_id=query_id).aggregate(Max('version'))['version__max']

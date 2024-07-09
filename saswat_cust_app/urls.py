@@ -37,4 +37,5 @@ urlpatterns = [
     path('query-data/', QueryDataView.as_view(), name='query_data'),
     path('signin-signout/', SignInSignOutView.as_view(), name='signin_sign_out'),
     path('query-attachments/', SoAndTaAttachmentAPIView.as_view(), name='attachment-query-create'),
+    path('get_shortened_query_details/<int:pk>/', views.get_shortened_query_details, name='get_shortened_query_details'),
 ]

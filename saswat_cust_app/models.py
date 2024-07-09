@@ -718,9 +718,8 @@ class QueryModel(models.Model):
     query_id = models.CharField(max_length=6, verbose_name="Query ID")
     query_date = models.DateField()
     shortened_query = models.ForeignKey(ShortenedQueries, related_name='queries_as_shortened', on_delete=models.CASCADE)
-    description = models.ForeignKey(ShortenedQueries, related_name='querymodel_description', on_delete=models.SET_NULL, null=True, blank=True)
-    additional_info = models.ForeignKey(ShortenedQueries, related_name='querymodel_additional_info',
-                                    on_delete=models.SET_NULL,  null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI Description")
+    additional_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI Additional Info")
     question_or_query = models.CharField(max_length=255, verbose_name="Question / Query")
     query_status = models.CharField(choices=QUERY_STATUS_CHOICES, max_length=20)
     remarks_by_ta = models.CharField(max_length=255, null=True, blank=True)

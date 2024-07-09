@@ -5,23 +5,14 @@ from .models import QueryModel, ShortenedQueries
 
 
 class QueryModelForm(forms.ModelForm):
-    description = forms.ModelChoiceField(
-        queryset=ShortenedQueries.objects.exclude(description__isnull=True).exclude(description=''),
-        label="Description",
-        required=False
-    )
-    additional_info = forms.ModelChoiceField(
-        queryset=ShortenedQueries.objects.exclude(additional_info__isnull=True).exclude(additional_info=''),
-        label="Additional Info",
-        required=False
-    )
+    description = forms.CharField(max_length=255, required=False, label="AI Description",
+                                  widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    additional_info = forms.CharField(max_length=255, required=False, label="AI Additional Information",
+                                      widget=forms.TextInput(attrs={'readonly': 'readonly'}))
 
     class Meta:
         model = QueryModel
         fields = '__all__'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Customize label for each dropdown
-        self.fields['description'].label_from_instance = lambda obj: obj.description
-        self.fields['additional_info'].label_from_instance = lambda obj: obj.additional_info
+    class Media:
+        js = ('saswat_cust_app/js/admin_custom.js',)
