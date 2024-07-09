@@ -61,45 +61,45 @@ def export_as_csv_action(description="Export selected objects as CSV file",
     return export_as_csv
 
 
-def export_as_excel_action(description="Export selected objects as Excel file",
-                           fields=None, exclude=None, header=True):
-    def export_as_excel(modeladmin, request, queryset):
-        opts = modeladmin.model._meta
-        field_names = [field.name for field in opts.fields]
-
-        if fields:
-            fieldset = set(fields)
-            field_names = [f for f in field_names if f in fieldset]
-
-        if exclude:
-            excludeset = set(exclude)
-            field_names = [f for f in field_names if f not in excludeset]
-
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename={slugify(opts.verbose_name_plural)}.xlsx'
-
-        wb = Workbook()
-        ws = wb.active
-
-        if header:
-            ws.append(field_names)
-
-        for obj in queryset:
-            row = [getattr(obj, field) for field in field_names]
-            ws.append(row)
-
-        wb.save(response)
-        return response
-
-    export_as_excel.short_description = description
-    return export_as_excel
+# def export_as_excel_action(description="Export selected objects as Excel file",
+#                            fields=None, exclude=None, header=True):
+#     def export_as_excel(modeladmin, request, queryset):
+#         opts = modeladmin.model._meta
+#         field_names = [field.name for field in opts.fields]
+#
+#         if fields:
+#             fieldset = set(fields)
+#             field_names = [f for f in field_names if f in fieldset]
+#
+#         if exclude:
+#             excludeset = set(exclude)
+#             field_names = [f for f in field_names if f not in excludeset]
+#
+#         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#         response['Content-Disposition'] = f'attachment; filename={slugify(opts.verbose_name_plural)}.xlsx'
+#
+#         wb = Workbook()
+#         ws = wb.active
+#
+#         if header:
+#             ws.append(field_names)
+#
+#         for obj in queryset:
+#             row = [getattr(obj, field) for field in field_names]
+#             ws.append(row)
+#
+#         wb.save(response)
+#         return response
+#
+#     export_as_excel.short_description = description
+#     return export_as_excel
 
 
 class GpsModelAdmin(admin.ModelAdmin):
     list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'remarks',
                     'created_at')
     list_per_page = 20
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(GpsModel, GpsModelAdmin)
@@ -119,7 +119,7 @@ class VleVillageInfoAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VleVillageInfo, VleVillageInfoAdmin)
@@ -135,7 +135,7 @@ class BmcBasicInformationAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(BmcBasicInformation, BmcBasicInformationAdmin)
@@ -151,7 +151,7 @@ class VleBasicInformationAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VleBasicInformation, VleBasicInformationAdmin)
@@ -167,7 +167,7 @@ class VleMobileNumberAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VleMobileNumber, VleMobileNumberAdmin)
@@ -183,7 +183,7 @@ class PhotoOfBmcAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(PhotoOfBmc, PhotoOfBmcAdmin)
@@ -199,7 +199,7 @@ class VLEBankDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VLEBankDetails, VLEBankDetailsAdmin)
@@ -215,7 +215,7 @@ class SkillsAndKnowledgeAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(SkillsAndKnowledge, SkillsAndKnowledgeAdmin)
@@ -231,7 +231,7 @@ class VLEEconomicAndSocialStatusInfoAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VLEEconomicAndSocialStatusInfo, VLEEconomicAndSocialStatusInfoAdmin)
@@ -247,7 +247,7 @@ class VleNearbyMilkCenterContactAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VleNearbyMilkCenterContact, VleNearbyMilkCenterContactAdmin)
@@ -263,7 +263,7 @@ class VillageDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VillageDetails, VillageDetailsAdmin)
@@ -278,7 +278,7 @@ class VleMobileAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(VleMobileVOtp, VleMobileAdmin)
@@ -294,7 +294,7 @@ class VleOtpAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 admin.site.register(VleOtp, VleOtpAdmin)
 
@@ -320,7 +320,7 @@ class CountryAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
@@ -341,7 +341,7 @@ class StateAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(State, StateAdmin)
@@ -358,7 +358,7 @@ class DistrictAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
@@ -379,7 +379,7 @@ class UserDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(UserDetails, UserDetailsAdmin)
@@ -396,7 +396,7 @@ class DesignationDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
@@ -419,7 +419,7 @@ class WeekDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -456,7 +456,7 @@ class EmployeeDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     list_select_related = ['employee', 'designation', 'reporting_manager', 'cluster_head']
 
@@ -492,7 +492,7 @@ class EmployeeTargetDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def has_change_permission(self, request, obj=None):
         # Prevent updating records
@@ -522,7 +522,7 @@ class EmployeeSetTargetDetailsAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def has_change_permission(self, request, obj=None):
         # Prevent updating records
@@ -553,7 +553,7 @@ class LoanApplicationAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def get_reporting_manager_name(self, obj):
         return obj.sales_officer_rm
@@ -637,7 +637,7 @@ class MainModelOneAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model) + ['get_description', 'get_additional_info']
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
@@ -682,7 +682,7 @@ admin.site.register(QueryModel, MainModelOneAdmin)
 @admin.register(QnaAttachment)
 class QnaAttachmentAdmin(admin.ModelAdmin):
     list_display = ('id', 'saswat_application_number', 'so_attachment', 'ta_attachment', 'remarks')
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
     def saswat_application_number(self, obj):
         return obj.query.saswat_application_number
@@ -698,7 +698,7 @@ class SignInSignOutAdmin(admin.ModelAdmin):
     search_fields = ('user__user_id', 'user__first_name')
     search_help_text = f'Search with the User ID or First Name of User.'
     list_filter = ['event_date', 'user']
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(SignInSignOut, SignInSignOutAdmin)
@@ -713,7 +713,7 @@ class ShortenedQueriesAdmin(admin.ModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_display = self.get_model_fields(model)
-    actions = [export_as_csv_action(), export_as_excel_action()]
+    actions = [export_as_csv_action()]
 
 
 admin.site.register(ShortenedQueries, ShortenedQueriesAdmin)
