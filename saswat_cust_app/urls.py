@@ -12,6 +12,8 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     SignInSignOutView,
                     SoAndTaAttachmentAPIView,)
 
+from saswat_cust_app import views
+
 urlpatterns = [
     path('send-otp/', SendOTPAPIView.as_view(), name='send_otp'),
     path('validate-otp/', ValidateOTPAPIView.as_view(), name='validate_otp'),

@@ -12,7 +12,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
-                                    LoanApplication, QueryModel, SignInSignOut, QnaAttachment)
+                                    LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -1864,3 +1864,17 @@ class SignInSignOutView(APIView):
                 return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def get_shortened_query_details(request, pk):
+    try:
+        shortened_query = ShortenedQueries.objects.get(pk=pk)
+        data = {
+            'description': shortened_query.description,
+            'additional_info': shortened_query.additional_info,
+        }
+    except ShortenedQueries.DoesNotExist:
+        data = {
+            'description': '',
+            'additional_info': '',
+        }
+    return JsonResponse(data)
