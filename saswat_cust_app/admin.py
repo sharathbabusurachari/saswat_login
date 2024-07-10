@@ -625,7 +625,7 @@ class MainModelOneAdmin(admin.ModelAdmin):
     inlines = [AttachmentOneInline]
     search_fields = ['saswat_application_number__saswat_application_number', 'query_status']
     exclude = ['query_id', 'created_by', 'modified_by']
-    excluded_fields = ['id', 'saswat_application_number', 'description', 'additional_info']
+    excluded_fields = ['id', 'saswat_application_number', ]
 
     def get_model_fields(self, obj):
         fields = ['id', 'saswat_application_number', 'loan_id']
@@ -636,7 +636,7 @@ class MainModelOneAdmin(admin.ModelAdmin):
 
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
-        self.list_display = self.get_model_fields(model) + ['get_description', 'get_additional_info']
+        self.list_display = self.get_model_fields(model)
     actions = [export_as_csv_action()]
 
     def save_model(self, request, obj, form, change):
@@ -666,15 +666,6 @@ class MainModelOneAdmin(admin.ModelAdmin):
     def get_loan_id(self, obj):
         return obj.loan_id
 
-    def get_description(self, obj):
-        return obj.description.description if obj.description else None
-
-    get_description.short_description = 'Description'
-
-    def get_additional_info(self, obj):
-        return obj.additional_info.additional_info if obj.additional_info else None
-
-    get_additional_info.short_description = 'Additional Info'
 
 admin.site.register(QueryModel, MainModelOneAdmin)
 
