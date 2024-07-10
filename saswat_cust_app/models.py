@@ -679,7 +679,9 @@ class LoanApplication(models.Model):
 
     @property
     def sales_officer_rm(self):
-        return self.sales_officer.reporting_manager.full_name if self.sales_officer.reporting_manager.full_name else None
+        if self.sales_officer and self.sales_officer.reporting_manager:
+            return self.sales_officer.reporting_manager.full_name
+        return None
 
     @property
     def sales_officer_district(self):
