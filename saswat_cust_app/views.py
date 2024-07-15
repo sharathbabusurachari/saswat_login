@@ -1778,8 +1778,12 @@ class VleMobileVerificationView(APIView):
                                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except IntegrityError as e:
             if isinstance(e.__cause__, psycopg2.errors.UniqueViolation):
-                return Response({'error': 'Provided VLE ID already exists'},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                response_data = {
+                    'status': '01',
+                    'message': "Provided mobile number already exists with another VLE",
+
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except requests.exceptions.RequestException as e:
