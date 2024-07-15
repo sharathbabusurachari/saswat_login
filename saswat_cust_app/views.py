@@ -900,24 +900,47 @@ class VleNearbyMilkCenterContactView(APIView):
     def put(self, request, *args, **kwargs):
         try:
             vle_id = request.data.get('vle_id')
-            if not vle_id:
-                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+            new_remark = request.data.get('new_remark')
+            mobile_number = new_remark.get("Mobile Number")
+            name_of_the_person = new_remark.get("Name Of the Person")
+            add_of_the_milk_center = new_remark.get("Address of the Milk Center")
+            print(vle_id,mobile_number ,name_of_the_person, add_of_the_milk_center)
 
-            milk_center_instance = get_object_or_404(VleNearbyMilkCenterContact, vle_id=vle_id)
+            if vle_id:
+                milk_center_instance = VleNearbyMilkCenterContact.objects.filter(vle_id=vle_id).first()
+                if not milk_center_instance:
+                    vle_village_info = VleVillageInfo.objects.get(vle_id=vle_id)
+                    user_id = VleVillageInfo.objects.filter(vle_id=vle_id).values('user_id')
+                    if vle_village_info is not None:
+                        VleNearbyMilkCenterContact.objects.create(vle_id=vle_village_info,mobile_number=mobile_number,name=name_of_the_person,
+                                                                  address=add_of_the_milk_center,user_id=user_id)
+                    response_data = {
+                        'VleId': vle_id,
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
 
-            serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                response_data = {
-                    'VleId': vle_id,
-                    'status': '00',
-                    'message': "success",
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
+                user_id_dict = VleVillageInfo.objects.filter(vle_id=vle_id).values('user_id').first()
+
+                if user_id_dict:
+                    user_id = user_id_dict['user_id']  # This should be a string or valid value
+
+                    serializer = VleNearbyMilkCenterContactSerializer(milk_center_instance, data=request.data,
+                                                                      partial=True)
+                    if serializer.is_valid():
+                        milk_center_instance.user_id = user_id  # Set user_id as a string value
+                        serializer.save()  # Save the rest of the fields
+                        response_data = {
+                            'VleId': vle_id,
+                            'status': '00',
+                            'message': "success",
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    else:
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # else:
-        #     return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

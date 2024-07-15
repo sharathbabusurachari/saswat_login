@@ -4,7 +4,7 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
-                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries)
+                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -122,7 +122,7 @@ class VLEEconomicAndSocialStatusInfoSerializer(serializers.ModelSerializer):
 
 class VleNearbyMilkCenterContactSerializer(serializers.ModelSerializer):
     new_remark = serializers.DictField(write_only=True, required=False)
-
+    user_id = serializers.PrimaryKeyRelatedField(queryset=UserDetails.objects.all(), required=False, write_only=True)
     class Meta:
         model = VleNearbyMilkCenterContact
         fields = ['vle_id', 'name', 'mobile_number', 'address', 'reason_not_provided',
@@ -130,6 +130,9 @@ class VleNearbyMilkCenterContactSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         new_remark = validated_data.pop('new_remark', None)
+        user_id = validated_data.pop('user_id', None)
+        if user_id:
+            instance.user_id = user_id
         if new_remark:
             if not isinstance(instance.remarks, list):
                 instance.remarks = []
