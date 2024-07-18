@@ -4,7 +4,7 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
-                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails)
+                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails, EmployeeDetails)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -240,3 +240,11 @@ class SignInSignOutSerializer(serializers.ModelSerializer):
     class Meta:
         model = SignInSignOut
         fields = '__all__'
+
+class EmployeeDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = EmployeeDetails
+
+        fields = ['id', 'full_name', 'designation', 'mobile_number', 'official_email']
