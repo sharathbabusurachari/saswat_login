@@ -541,6 +541,16 @@ class VleMobileNumberView(APIView):
                 vle_id_instance = vle_mobile_number_serializer.save()
                 serialized_data = VleMobileNumberSerializer(vle_id_instance).data
                 vle_id = serialized_data.get('vle_id')
+                try:
+                    alternative_mobile_number = serialized_data.get('alternative_mobile_number')
+                    alternate_data = {"alternate_mobile_number": alternative_mobile_number, "alternate_otp": "9999",
+                                      "alternate_status": "Verified"}
+                    alternate_data_list = [alternate_data]
+                    vle_id_instance.status = 'Verified'
+                    vle_id_instance.alternative_mobile_numbers = alternate_data_list
+                    vle_id_instance.save()
+                except Exception as e:
+                    pass
                 response_data = {
                     'VleId': vle_id,
                     'status': '00',
@@ -563,7 +573,18 @@ class VleMobileNumberView(APIView):
 
                 serializer = VleMobileNumberSerializer(mo_no_instance, data=request.data, partial=True)
                 if serializer.is_valid():
-                    serializer.save()
+                    vle_id_instance = serializer.save()
+                    try:
+                        serialized_data = VleMobileNumberSerializer(vle_id_instance).data
+                        alternative_mobile_number = serialized_data.data.get('alternative_mobile_number')
+                        alternate_data = {"alternate_mobile_number": alternative_mobile_number, "alternate_otp": "9999",
+                                          "alternate_status": "Verified"}
+                        alternate_data_list = [alternate_data]
+                        vle_id_instance.status = 'Verified'
+                        vle_id_instance.alternative_mobile_numbers = alternate_data_list
+                        vle_id_instance.save()
+                    except Exception as e:
+                        pass
                     response_data = {
                         'VleId': vle_id,
                         'status': '00',
@@ -576,6 +597,49 @@ class VleMobileNumberView(APIView):
                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # def post(self, request, *args, **kwargs):
+    #     vle_mobile_number_serializer = VleMobileNumberSerializer(data=request.data)
+    #     try:
+    #         if vle_mobile_number_serializer.is_valid():
+    #             vle_id_instance = vle_mobile_number_serializer.save()
+    #             serialized_data = VleMobileNumberSerializer(vle_id_instance).data
+    #             vle_id = serialized_data.get('vle_id')
+    #             response_data = {
+    #                 'VleId': vle_id,
+    #                 'status': '00',
+    #                 'message': "success",
+    #             }
+    #             return Response(response_data, status=status.HTTP_200_OK)
+    #         else:
+    #             return Response(vle_mobile_number_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     except Exception as e:
+    #         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #
+    # def put(self, request, *args, **kwargs):
+    #     try:
+    #         vle_id = request.data.get('vle_id')
+    #         if vle_id:
+    #             mo_no_instance = VleMobileNumber.objects.filter(vle_id=vle_id).first()
+    #             if not mo_no_instance:
+    #                 return Response({'error': 'VLE Mobile Number instance not found'},
+    #                                 status=status.HTTP_404_NOT_FOUND)
+    #
+    #             serializer = VleMobileNumberSerializer(mo_no_instance, data=request.data, partial=True)
+    #             if serializer.is_valid():
+    #                 serializer.save()
+    #                 response_data = {
+    #                     'VleId': vle_id,
+    #                     'status': '00',
+    #                     'message': "success",
+    #                 }
+    #                 return Response(response_data, status=status.HTTP_200_OK)
+    #             else:
+    #                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #         else:
+    #             return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+    #     except Exception as e:
+    #         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PhotoOfBmcView(APIView):
