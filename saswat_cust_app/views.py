@@ -1476,10 +1476,16 @@ class VleMobileVerificationView(APIView):
                                         'message': "Failed to send OTP to the user",
 
                                     }
-                                    return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                    return Response(response_data, status=status.HTTP_200_OK)
                             except Exception as e:
                                 # print("Error deleting existing OTPs:", e)
-                                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Some error occurred, Please try again.",
+
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                                #return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                         else:
                             existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
                             if existing_otp.exists():
@@ -1517,8 +1523,7 @@ class VleMobileVerificationView(APIView):
                                     'message': "Failed to send OTP to the user",
 
                                 }
-                                return Response(response_data,
-                                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                return Response(response_data, status=status.HTTP_200_OK)
                     else:
                         existing_otp = VleOtp.objects.filter(mobile_no=vle_mobile_number)
                         if existing_otp.exists():
@@ -1547,10 +1552,16 @@ class VleMobileVerificationView(APIView):
                                         'message': "Failed to send OTP to the user",
 
                                     }
-                                    return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                    return Response(response_data, status=status.HTTP_200_OK)
                             except Exception as e:
                                 # print("Error deleting existing OTPs:", e)
-                                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Some error occurred, Please try again.",
+
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                                #return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                         else:
                             existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
                             if existing_otp.exists():
@@ -1578,13 +1589,18 @@ class VleMobileVerificationView(APIView):
                                     'message': "Failed to send OTP to the user",
 
                                 }
-                                return Response(response_data,
-                                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                return Response(response_data, status=status.HTTP_200_OK)
                 elif primary_or_secondary == -1:
                     primary_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id, user_id=user_id).first()
                     if not primary_exists:
-                        return Response({'error': 'Enter Primary Mobile Number first.'},
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                        response_data = {
+                            'status': '01',
+                            'message': "Enter Primary Mobile Number first.",
+
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                        # return Response({'error': 'Enter Primary Mobile Number first.'},
+                        #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                     elif mobile_exists:
                         response_data = {
                             'status': '01',
@@ -1662,10 +1678,16 @@ class VleMobileVerificationView(APIView):
                                         'message': "Failed to send OTP to the user",
 
                                     }
-                                    return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                    return Response(response_data, status=status.HTTP_200_OK)
                             except Exception as e:
                                 # print("Error deleting existing OTPs:", e)
-                                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Some error occurred, Please try again.",
+
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                                # return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                         else:
                             existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
                             if existing_otp.exists():
@@ -1726,8 +1748,7 @@ class VleMobileVerificationView(APIView):
                                     'message': "Failed to send OTP to the user",
 
                                 }
-                                return Response(response_data,
-                                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                return Response(response_data, status=status.HTTP_200_OK)
             else:
                 mobile_exists = VleMobileNumber.objects.filter(vle_mobile_number=vle_mobile_number).exists()
                 if mobile_exists:
@@ -1766,9 +1787,15 @@ class VleMobileVerificationView(APIView):
                                     'message': "Failed to send OTP to the user",
 
                                 }
-                                return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                return Response(response_data, status=status.HTTP_200_OK)
                         except Exception as e:
-                            print("Error deleting existing OTPs:", e)
+                            # print("Error deleting existing OTPs:", e)
+                            response_data = {
+                                'status': '01',
+                                'message': "Some error occurred, Please try again.",
+
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
                     else:
                         existing_otp = VleOtp.objects.filter(vle_id_id=vle_id)
                         if existing_otp.exists():
@@ -1797,8 +1824,7 @@ class VleMobileVerificationView(APIView):
                                 'message': "Failed to send OTP to the user",
 
                             }
-                            return Response(response_data,
-                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                            return Response(response_data, status=status.HTTP_200_OK)
         except IntegrityError as e:
             if isinstance(e.__cause__, psycopg2.errors.UniqueViolation):
                 response_data = {
@@ -1808,9 +1834,15 @@ class VleMobileVerificationView(APIView):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                # return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                response_data = {
+                    'status': '01',
+                    'message': "Error occurred while making the request.",
+
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
         except requests.exceptions.RequestException as e:
-            return Response({'error': 'Error occurred while making the request'},
+            return Response({'error': 'Error occurred while making the request.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -1835,13 +1867,25 @@ class VleValidateOTPAPIView(APIView):
                     elif primary_or_secondary == -1:
                         primary_exists = VleMobileNumber.objects.filter(vle_id_id=vle_id).first()
                         if not primary_exists:
-                            return Response({'error': 'Primary Mobile Number Does Not Exist.'},
-                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                            # return Response({'error': 'Primary Mobile Number Does Not Exist.'},
+                            #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                            response_data = {
+                                'status': '01',
+                                'message': "Primary Mobile Number Does Not Exist.",
+
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
                         elif primary_exists:
                             alternative_numbers_column = primary_exists.alternative_mobile_numbers
                             if isinstance(alternative_numbers_column, list) and not alternative_numbers_column:
-                                return Response({'error': 'Alternate Number Not Found.'},
-                                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                # return Response({'error': 'Alternate Number Not Found.'},
+                                #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Alternate Number Not Found.",
+
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
                             elif alternative_numbers_column and isinstance(alternative_numbers_column, list):
                                 updated = False
                                 for number_entry in alternative_numbers_column:
@@ -1852,11 +1896,23 @@ class VleValidateOTPAPIView(APIView):
                                 if updated:
                                     primary_exists.save()
                                 else:
-                                    return Response({'error': 'Alternate Number Not Found.'},
-                                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                    # return Response({'error': 'Alternate Number Not Found.'},
+                                    #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                    response_data = {
+                                        'status': '01',
+                                        'message': "Alternate Number Not Found.",
+
+                                    }
+                                    return Response(response_data, status=status.HTTP_200_OK)
                             else:
-                                return Response({'error': 'Alternate Number Not Found'},
-                                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                response_data = {
+                                    'status': '01',
+                                    'message': "Alternate Number Not Found.",
+
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+                                # return Response({'error': 'Alternate Number Not Found'},
+                                #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                     return Response(response_data, status=200)
                 else:
                     response_data = {
@@ -2356,6 +2412,25 @@ class SoAndTaAttachmentAPIView(APIView):
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# class SignInSignOutView(APIView):
+#     permission_classes = [AllowAny]
+#
+#     def post(self, request, *args, **kwargs):
+#         signin_signout_serializer = SignInSignOutSerializer(data=request.data)
+#         try:
+#             if signin_signout_serializer.is_valid():
+#                 signin_signout_serializer.save()
+#                 response_data = {
+#                     'status': '00',
+#                     'message': "success",
+#                 }
+#                 return Response(response_data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class SignInSignOutView(APIView):
     permission_classes = [AllowAny]
 
@@ -2369,10 +2444,29 @@ class SignInSignOutView(APIView):
                     'message': "success",
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
+            elif "remarks_one" in signin_signout_serializer.errors:
+                if ("Not a valid string." in signin_signout_serializer.errors["remarks_one"] and
+                        isinstance(signin_signout_serializer.data['remarks_one'], dict)):
+                    user_id = signin_signout_serializer.data['user']
+                    client_id = signin_signout_serializer.data['client_id']
+                    event_type = signin_signout_serializer.data['event_type']
+                    event_date = signin_signout_serializer.data['event_date']
+                    event_time = signin_signout_serializer.data['event_time']
+                    remarks_one_dump = json.dumps(signin_signout_serializer.data['remarks_one'])
+                    SignInSignOut.objects.create(user_id=user_id, client_id=client_id, event_type=event_type,
+                                                 event_date=event_date, event_time=event_time,
+                                                 remarks_one=remarks_one_dump)
+                    response_data = {
+                        'status': '00',
+                        'message': "success",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 def get_shortened_query_details(request, pk):
     try:
