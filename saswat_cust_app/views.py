@@ -579,11 +579,10 @@ class VleMobileNumberView(APIView):
                     vle_id_instance = serializer.save()
                     try:
                         serialized_data = VleMobileNumberSerializer(vle_id_instance).data
-                        alternative_mobile_number = serialized_data.data.get('alternative_mobile_number')
+                        alternative_mobile_number = serialized_data.get('alternative_mobile_number')
                         alternate_data = {"alternate_mobile_number": alternative_mobile_number, "alternate_otp": "9999",
                                           "alternate_status": "Verified"}
                         alternate_data_list = [alternate_data]
-                        vle_id_instance.status = 'Verified'
                         vle_id_instance.alternative_mobile_numbers = alternate_data_list
                         vle_id_instance.save()
                     except Exception as e:
