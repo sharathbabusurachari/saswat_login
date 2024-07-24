@@ -70,7 +70,7 @@ class SendOTPAPIView(APIView):
                         'status': '01',
                         'message': "Mobile number does not exist",
                     }
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(response_data, status=status.HTTP_200_OK)
 
                 otp_code = str(random.randint(1000, 9999))
                 data = {
@@ -95,6 +95,13 @@ class SendOTPAPIView(APIView):
                     response_data = {
                         'status': '00',
                         'message': "OTP sent successfully",
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    response_data = {
+                        'status': '01',
+                        'message': "Failed to send OTP to the user",
+
                     }
                     return Response(response_data, status=status.HTTP_200_OK)
 
