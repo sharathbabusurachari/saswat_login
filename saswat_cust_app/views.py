@@ -50,68 +50,125 @@ class SendOTPAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         mobile_no = request.data.get('mobile_no')
+
+        if not mobile_no:
+            return Response({'status': '01', 'message': 'Mobile number is required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         if mobile_no == "8888888888" or mobile_no == 8888888888:
             response_data = {
                 'status': '00',
                 'message': "OTP sent successfully",
-
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
         else:
-
             url = 'http://ci1.saswatfinance.com:8084/api/otp'
-            #url = 'http://20.235.255.141:8084/saswat/otp'
             try:
-                existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_generation_time').first()
-                if existing_otp is not None:
-                    existing_otp.is_expired()
-                    existing_otp.delete()
-                    response_data = {
-                        'status': '02',
-                        'message': "An OTP has already been sent",
-
-                    }
-                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-                # if not is_valid_indian_mobile_number(mobile_no):
-                #     return JsonResponse({'error': 'Invalid Indian mobile number format'}, status=400)
-                elif UserDetails.objects.filter(mobile_no=mobile_no).exists():
-                    otp_code = str(random.randint(1000, 9999))
-                    data = {
-                        'otp': otp_code,
-                        'dest': mobile_no,
-                        'msgName': "OTP"
-                    }
-
-                    response = requests.post(url, json=data)
-                    if response.status_code == 200:
-                        # result = response.json()
-                        UserOtp.objects.create(mobile_no=str(mobile_no), otp_code=otp_code)
-                        response_data = {
-                            'status': '00',
-                            'message': "OTP sent successfully",
-
-                        }
-                        return Response(response_data, status=status.HTTP_200_OK)
-                    else:
-                        response_data = {
-                            'status': '01',
-                            'message': "Failed to send OTP to the user",
-
-                        }
-                        return Response(response_data,
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                else:
+                if not UserDetails.objects.filter(mobile_no=mobile_no).exists():
                     response_data = {
                         'status': '01',
                         'message': "Mobile number does not exist",
+                    }
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
+                otp_code = str(random.randint(1000, 9999))
+                data = {
+                    'otp': otp_code,
+                    'dest': mobile_no,
+                    'msgName': "OTP"
+                }
+
+                response = requests.post(url, json=data)
+                response.raise_for_status()
+                if response.status_code == 200:
+                    # Update existing OTP if it exists, otherwise create a new one
+                    existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).first()
+                    if existing_otp:
+                        existing_otp.otp_code = otp_code
+                        existing_otp.otp_generation_time = timezone.now()
+                        existing_otp.otp_expiration_time = timezone.now() + timedelta(minutes=10)  # Assuming 10 minutes expiry
+                        existing_otp.save()
+                    else:
+                        UserOtp.objects.create(mobile_no=mobile_no, otp_code=otp_code)
+
+                    response_data = {
+                        'status': '00',
+                        'message': "OTP sent successfully",
                     }
                     return Response(response_data, status=status.HTTP_200_OK)
+
             except requests.exceptions.RequestException as e:
                 return Response({'message': 'Error occurred while making the request'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                return Response({'status': '01', 'message': f'An unexpected error occurred: {str(e)}'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # def post(self, request, *args, **kwargs):
+    #     mobile_no = request.data.get('mobile_no')
+    #     if mobile_no == "8888888888" or mobile_no == 8888888888:
+    #         response_data = {
+    #             'status': '00',
+    #             'message': "OTP sent successfully",
+    #
+    #         }
+    #         return Response(response_data, status=status.HTTP_200_OK)
+    #
+    #     else:
+    #
+    #         url = 'http://ci1.saswatfinance.com:8084/api/otp'
+    #         #url = 'http://20.235.255.141:8084/saswat/otp'
+    #         try:
+    #             existing_otp = UserOtp.objects.filter(mobile_no=mobile_no).order_by('otp_generation_time').first()
+    #             if existing_otp is not None:
+    #                 existing_otp.is_expired()
+    #                 existing_otp.delete()
+    #                 response_data = {
+    #                     'status': '02',
+    #                     'message': "An OTP has already been sent",
+    #
+    #                 }
+    #                 return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #             # if not is_valid_indian_mobile_number(mobile_no):
+    #             #     return JsonResponse({'error': 'Invalid Indian mobile number format'}, status=400)
+    #             elif UserDetails.objects.filter(mobile_no=mobile_no).exists():
+    #                 otp_code = str(random.randint(1000, 9999))
+    #                 data = {
+    #                     'otp': otp_code,
+    #                     'dest': mobile_no,
+    #                     'msgName': "OTP"
+    #                 }
+    #
+    #                 response = requests.post(url, json=data)
+    #                 if response.status_code == 200:
+    #                     # result = response.json()
+    #                     UserOtp.objects.create(mobile_no=str(mobile_no), otp_code=otp_code)
+    #                     response_data = {
+    #                         'status': '00',
+    #                         'message': "OTP sent successfully",
+    #
+    #                     }
+    #                     return Response(response_data, status=status.HTTP_200_OK)
+    #                 else:
+    #                     response_data = {
+    #                         'status': '01',
+    #                         'message': "Failed to send OTP to the user",
+    #
+    #                     }
+    #                     return Response(response_data,
+    #                                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #             else:
+    #                 response_data = {
+    #                     'status': '01',
+    #                     'message': "Mobile number does not exist",
+    #
+    #                 }
+    #                 return Response(response_data, status=status.HTTP_200_OK)
+    #         except requests.exceptions.RequestException as e:
+    #             return Response({'message': 'Error occurred while making the request'},
+    #                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ValidateOTPAPIView(APIView):
