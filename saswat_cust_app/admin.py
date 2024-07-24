@@ -110,11 +110,25 @@ class GpsModelAdmin(admin.ModelAdmin):
 
 admin.site.register(GpsModel, GpsModelAdmin)
 
-admin.site.register(UserOtp)
-# admin.site.register(UserDetails)
+
 admin.site.register(CustomerTest)
 admin.site.register(Gender)
 # admin.site.register(State)
+
+
+class UserOtpAdmin(admin.ModelAdmin):
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+
+admin.site.register(UserOtp, UserOtpAdmin)
+
 
 class VleVillageInfoAdmin(admin.ModelAdmin):
 

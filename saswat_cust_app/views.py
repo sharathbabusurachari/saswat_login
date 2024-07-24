@@ -183,50 +183,16 @@ class ValidateOTPAPIView(APIView):
     authentication_classes = [MobileNumberAuthentication]
 
     def post(self, request, *args, **kwargs):
-        serializer = OTPSerializer(data=request.data)
-        if serializer.is_valid():
-            mobile_no = serializer.validated_data['mobile_no']
-            otp_code = serializer.validated_data['otp_code']
-            if (mobile_no == "8888888888" or mobile_no == 8888888888) and (otp_code == "1234" or otp_code == 1234):
-                if UserDetails.objects.filter(mobile_no=mobile_no).exists():
+        try:
+            serializer = OTPSerializer(data=request.data)
+            if serializer.is_valid():
+                mobile_no = serializer.validated_data['mobile_no']
+                otp_code = serializer.validated_data['otp_code']
+                session_id = request.auth
+
+                if (mobile_no == "8888888888" or mobile_no == 8888888888) and (otp_code == "1234" or otp_code == 1234):
                     user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
-                    session_id = request.auth
-                    response_data = {
-                        'status': '00',
-                        'message': "OTP verified successfully",
-                        'session_id': session_id,
-                        'user_id': user_det.user_id,
-                        "first_name": user_det.first_name,
-                        "mid_name": user_det.mid_name,
-                        "last_name": user_det.last_name,
-                        "work_dept": user_det.work_dept,
-                        "mobile_no": user_det.mobile_no,
-                        "designation": user_det.designation,
-                        "designation_id": user_det.designation_id
-                    }
-                    return Response(response_data, status=200)
-                else:
-                    response_data = {
-                        'status': '01',
-                        'message': "Mobile number does not exist",
-                    }
-                    return JsonResponse(response_data, status=status.HTTP_200_OK)
-
-            else:
-
-                if UserDetails.objects.filter(mobile_no=mobile_no).exists():
-                    check_valid_time = datetime.now() - timedelta(minutes=1)
-                    user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
-                    valid_otp_mobile = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).first()
-                    valid_otp_time = UserOtp.objects.filter(mobile_no=mobile_no,
-                                                            otp_expiration_time__lt=timezone.now()).first()
-
-                    verify_user_otp = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code,
-                                                             otp_generation_time__gte=check_valid_time).first()
-                    session_id = request.auth
-
-                    # otp_instance = get_object_or_404(UserOtp, mobile_no=str(mobile_no), otp_code=otp_code)
-                    if verify_user_otp:
+                    if user_det:
                         response_data = {
                             'status': '00',
                             'message': "OTP verified successfully",
@@ -240,31 +206,148 @@ class ValidateOTPAPIView(APIView):
                             "designation": user_det.designation,
                             "designation_id": user_det.designation_id
                         }
-                        verify_user_otp.delete()
-                        return Response(response_data, status=200)
-                    elif valid_otp_time:
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    else:
                         response_data = {
                             'status': '01',
-                            'message': "OTP has expired",
+                            'message': "Mobile number does not exist",
                         }
-                        valid_otp_time.delete()
-                        return Response(response_data, status=status.HTTP_200_OK)
-                    elif valid_otp_mobile:
-                        valid_otp_mobile.delete()
-                    else:
+                        return JsonResponse(response_data, status=status.HTTP_200_OK)
+
+                else:
+                    user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
+                    if user_det:
+                        valid_otp = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).first()
+
+                        if valid_otp:
+                            if valid_otp.is_expired():
+                                valid_otp.delete()
+                                response_data = {
+                                    'status': '01',
+                                    'message': "OTP has expired.",
+                                }
+                                return Response(response_data, status=status.HTTP_200_OK)
+
+                            response_data = {
+                                'status': '00',
+                                'message': "OTP verified successfully",
+                                'session_id': session_id,
+                                'user_id': user_det.user_id,
+                                "first_name": user_det.first_name,
+                                "mid_name": user_det.mid_name,
+                                "last_name": user_det.last_name,
+                                "work_dept": user_det.work_dept,
+                                "mobile_no": user_det.mobile_no,
+                                "designation": user_det.designation,
+                                "designation_id": user_det.designation_id
+                            }
+                            valid_otp.delete()
+                            return Response(response_data, status=status.HTTP_200_OK)
+
                         response_data = {
                             'status': '01',
                             'message': "Invalid OTP",
                         }
                         return JsonResponse(response_data, status=status.HTTP_200_OK)
-                else:
-                    response_data = {
-                        'status': '01',
-                        'message': "Mobile number does not exist",
-                    }
-                    return JsonResponse(response_data, status=status.HTTP_200_OK)
+                    else:
+                        response_data = {
+                            'status': '01',
+                            'message': "Mobile number does not exist.",
+                        }
+                        return JsonResponse(response_data, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            response_data = {
+                'status': '02',
+                'message': "An error occurred.",
+                'error': str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # def post(self, request, *args, **kwargs):
+    #     serializer = OTPSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         mobile_no = serializer.validated_data['mobile_no']
+    #         otp_code = serializer.validated_data['otp_code']
+    #         if (mobile_no == "8888888888" or mobile_no == 8888888888) and (otp_code == "1234" or otp_code == 1234):
+    #             if UserDetails.objects.filter(mobile_no=mobile_no).exists():
+    #                 user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
+    #                 session_id = request.auth
+    #                 response_data = {
+    #                     'status': '00',
+    #                     'message': "OTP verified successfully",
+    #                     'session_id': session_id,
+    #                     'user_id': user_det.user_id,
+    #                     "first_name": user_det.first_name,
+    #                     "mid_name": user_det.mid_name,
+    #                     "last_name": user_det.last_name,
+    #                     "work_dept": user_det.work_dept,
+    #                     "mobile_no": user_det.mobile_no,
+    #                     "designation": user_det.designation,
+    #                     "designation_id": user_det.designation_id
+    #                 }
+    #                 return Response(response_data, status=200)
+    #             else:
+    #                 response_data = {
+    #                     'status': '01',
+    #                     'message': "Mobile number does not exist",
+    #                 }
+    #                 return JsonResponse(response_data, status=status.HTTP_200_OK)
+    #
+    #         else:
+    #
+    #             if UserDetails.objects.filter(mobile_no=mobile_no).exists():
+    #                 check_valid_time = datetime.now() - timedelta(minutes=1)
+    #                 user_det = UserDetails.objects.filter(mobile_no=mobile_no).first()
+    #                 valid_otp_mobile = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code).first()
+    #                 valid_otp_time = UserOtp.objects.filter(mobile_no=mobile_no,
+    #                                                         otp_expiration_time__lt=timezone.now()).first()
+    #
+    #                 verify_user_otp = UserOtp.objects.filter(mobile_no=mobile_no, otp_code=otp_code,
+    #                                                          otp_generation_time__gte=check_valid_time).first()
+    #                 session_id = request.auth
+    #
+    #                 # otp_instance = get_object_or_404(UserOtp, mobile_no=str(mobile_no), otp_code=otp_code)
+    #                 if verify_user_otp:
+    #                     response_data = {
+    #                         'status': '00',
+    #                         'message': "OTP verified successfully",
+    #                         'session_id': session_id,
+    #                         'user_id': user_det.user_id,
+    #                         "first_name": user_det.first_name,
+    #                         "mid_name": user_det.mid_name,
+    #                         "last_name": user_det.last_name,
+    #                         "work_dept": user_det.work_dept,
+    #                         "mobile_no": user_det.mobile_no,
+    #                         "designation": user_det.designation,
+    #                         "designation_id": user_det.designation_id
+    #                     }
+    #                     verify_user_otp.delete()
+    #                     return Response(response_data, status=200)
+    #                 elif valid_otp_time:
+    #                     response_data = {
+    #                         'status': '01',
+    #                         'message': "OTP has expired",
+    #                     }
+    #                     valid_otp_time.delete()
+    #                     return Response(response_data, status=status.HTTP_200_OK)
+    #                 elif valid_otp_mobile:
+    #                     valid_otp_mobile.delete()
+    #                 else:
+    #                     response_data = {
+    #                         'status': '01',
+    #                         'message': "Invalid OTP",
+    #                     }
+    #                     return JsonResponse(response_data, status=status.HTTP_200_OK)
+    #             else:
+    #                 response_data = {
+    #                     'status': '01',
+    #                     'message': "Mobile number does not exist",
+    #                 }
+    #                 return JsonResponse(response_data, status=status.HTTP_200_OK)
+    #
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetGpsView(APIView):
     permission_classes = [AllowAny]

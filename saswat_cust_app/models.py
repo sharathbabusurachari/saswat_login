@@ -54,7 +54,7 @@ class UserOtp(models.Model):
         super().save(*args, **kwargs)
 
     def is_expired(self):
-        return self.otp_generation_time < timezone.now() - timedelta(minutes=2)
+        return self.otp_expiration_time < timezone.now()
 
     # @staticmethod
     # def delete_expired():
