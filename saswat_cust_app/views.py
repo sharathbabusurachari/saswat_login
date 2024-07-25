@@ -797,27 +797,37 @@ class PhotoOfBmcView(APIView):
     def get(self, request, format=None):
         try:
             vle_id = request.query_params.get('vle_id')
-            if vle_id:
-                photo_of_bmc_queryset = PhotoOfBmc.objects.filter(vle_id=vle_id)
-                if not photo_of_bmc_queryset.exists():
-                    return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
-                                    status=status.HTTP_200_OK)
-                serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
+            if not vle_id:
                 response_data = {
-                    'status': '00',
-                    'message': "success",
-                    'data': serializer.data,
+                    'status': '01',
+                    'message': 'vle_id parameter is required',
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as ve:
-            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+
+            photo_of_bmc_queryset = PhotoOfBmc.objects.filter(vle_id=vle_id)
+            if not photo_of_bmc_queryset.exists():
+                return Response({
+                    'status': '01',
+                    'msg': 'Data does not exist',
+                    'data': []
+                },status=status.HTTP_200_OK)
+            serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
+            response_data = {
+                'status': '00',
+                'message': "success",
+                'data': serializer.data,
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response_data = {
+                'status': '01',
+                'message': 'An unexpected error occurred',
+                'error': str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, *args, **kwargs):
-        photo_of_bmc_serializer = PhotoOfBmcSerializer(data=request.data)
+        photo_of_bmc_serializer = PhotoOfBmcSerializer(data=request.data, partial=True)
         try:
             if photo_of_bmc_serializer.is_valid():
                 vle_id_instance = photo_of_bmc_serializer.save()
@@ -831,34 +841,131 @@ class PhotoOfBmcView(APIView):
                 }
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                return Response(photo_of_bmc_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {
+                    'status': '01',
+                    'message': 'Validation Error',
+                    'errors': photo_of_bmc_serializer.errors
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response_data = {
+                'status': '01',
+                'message': 'An unexpected error occurred',
+                'error': str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def put(self, request, *args, **kwargs):
         try:
             vle_id = request.data.get('vle_id')
-            if vle_id:
-                photo_bmc_instance = PhotoOfBmc.objects.filter(vle_id=vle_id).first()
-                if not photo_bmc_instance:
-                    return Response({'error': 'BmcBasicInformation instance not found'},
-                                    status=status.HTTP_404_NOT_FOUND)
+            if not vle_id:
+                response_data = {
+                    'status': '01',
+                    'message': 'VLE Id parameter is required'
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
 
-                serializer = PhotoOfBmcSerializer(photo_bmc_instance, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    response_data = {
-                        'VleId': vle_id,
-                        'status': '00',
-                        'message': "success",
-                    }
-                    return Response(response_data, status=status.HTTP_200_OK)
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            photo_bmc_instance = PhotoOfBmc.objects.filter(vle_id=vle_id).first()
+            if not photo_bmc_instance:
+                response_data = {
+                    'status': '01',
+                    'message': 'Photo Of Bmc instance not found'
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+
+            serializer = PhotoOfBmcSerializer(photo_bmc_instance, data=request.data,  partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                response_data = {
+                    'VleId': vle_id,
+                    'status': '00',
+                    'message': "success",
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+                response_data = {
+                    'status': '01',
+                    'message': "Validation Error",
+                    'errors': serializer.errors
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response_data = {
+                'status': '01',
+                'message': 'An unexpected error occurred',
+                'error': str(e)
+            }
+            return Response(response_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# class PhotoOfBmcView(APIView):
+#     permission_classes = [AllowAny]
+#
+#     def get(self, request, format=None):
+#         try:
+#             vle_id = request.query_params.get('vle_id')
+#             if vle_id:
+#                 photo_of_bmc_queryset = PhotoOfBmc.objects.filter(vle_id=vle_id)
+#                 if not photo_of_bmc_queryset.exists():
+#                     return Response({'status': '01', 'msg': 'Data does not exist', 'data': []},
+#                                     status=status.HTTP_200_OK)
+#                 serializer = PhotoOfBmcSerializer(photo_of_bmc_queryset, many=True)
+#                 response_data = {
+#                     'status': '00',
+#                     'message': "success",
+#                     'data': serializer.data,
+#                 }
+#                 return Response(response_data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+#         except ValueError as ve:
+#             return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#
+#     def post(self, request, *args, **kwargs):
+#         photo_of_bmc_serializer = PhotoOfBmcSerializer(data=request.data)
+#         try:
+#             if photo_of_bmc_serializer.is_valid():
+#                 vle_id_instance = photo_of_bmc_serializer.save()
+#                 serialized_data = PhotoOfBmcSerializer(vle_id_instance).data
+#                 vle_id = serialized_data.get('vle_id')
+#
+#                 response_data = {
+#                     'VleId': vle_id,
+#                     'status': '00',
+#                     'message': "success",
+#                 }
+#                 return Response(response_data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response(photo_of_bmc_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#
+#     def put(self, request, *args, **kwargs):
+#         try:
+#             vle_id = request.data.get('vle_id')
+#             if vle_id:
+#                 photo_bmc_instance = PhotoOfBmc.objects.filter(vle_id=vle_id).first()
+#                 if not photo_bmc_instance:
+#                     return Response({'error': 'BmcBasicInformation instance not found'},
+#                                     status=status.HTTP_404_NOT_FOUND)
+#
+#                 serializer = PhotoOfBmcSerializer(photo_bmc_instance, data=request.data)
+#                 if serializer.is_valid():
+#                     serializer.save()
+#                     response_data = {
+#                         'VleId': vle_id,
+#                         'status': '00',
+#                         'message': "success",
+#                     }
+#                     return Response(response_data, status=status.HTTP_200_OK)
+#                 else:
+#                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             else:
+#                 return Response({'error': 'vle_id parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class VLEBankDetailsView(APIView):
     permission_classes = [AllowAny]
