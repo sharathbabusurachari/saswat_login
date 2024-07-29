@@ -40,4 +40,5 @@ urlpatterns = [
     path('signin-signout/', SignInSignOutView.as_view(), name='signin_sign_out'),
     path('query-attachments/', SoAndTaAttachmentAPIView.as_view(), name='attachment-query-create'),
     path('get_shortened_query_details/<int:pk>/', views.get_shortened_query_details, name='get_shortened_query_details'),
+    path('get_documents/<int:document_id>/', views.get_documents, name='get_documents'),
 ]

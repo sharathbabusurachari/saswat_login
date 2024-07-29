@@ -12,7 +12,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries)
+                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments)
 from django.http import HttpResponse
 import csv
 from openpyxl import Workbook
@@ -728,3 +728,10 @@ class ShortenedQueriesAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ShortenedQueries, ShortenedQueriesAdmin)
+
+
+class DocumentsAdmin(admin.ModelAdmin):
+    list_display = ['id', 'document_name', 'created_at']
+
+
+admin.site.register(QueryDocuments, DocumentsAdmin)

@@ -183,6 +183,8 @@ class GetQuerySerializer(serializers.ModelSerializer):
     loan_id = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     additional_info = serializers.SerializerMethodField()
+    document_name = serializers.SerializerMethodField()
+
 
     class Meta:
         model = QueryModel
@@ -190,6 +192,9 @@ class GetQuerySerializer(serializers.ModelSerializer):
 
     def get_loan_id(self, obj):
         return obj.loan_id
+
+    def get_document_name(self, obj):
+        return obj.document.document_name if obj.document else None
 
     def get_shortened_queries(self, obj):
         return obj.shortened_query.shortened_query if obj.shortened_query else None

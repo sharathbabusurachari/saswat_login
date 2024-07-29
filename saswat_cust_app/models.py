@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import F, Q
 
 
+
 class OTP(models.Model):
     phone_number = models.CharField(max_length=15)
     otp_code = models.CharField(max_length=6)
@@ -697,8 +698,19 @@ class LoanApplication(models.Model):
     class Meta:
         db_table = 'loan_application'
 
+class QueryDocuments(models.Model):
+    document_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.document_name
+
+    class Meta:
+        db_table = 'query_documents'
+
 
 class ShortenedQueries(models.Model):
+    document = models.ForeignKey(QueryDocuments, on_delete=models.CASCADE, verbose_name="AI Documents", null=True, blank=True)
     shortened_query = models.CharField(max_length=255, verbose_name="AI Shortened Query")
     description = models.CharField(max_length=255, verbose_name="AI Description", null=True, blank=True)
     additional_info = models.CharField(max_length=255, verbose_name="AI Additional Information", null=True, blank=True)
@@ -719,6 +731,7 @@ class QueryModel(models.Model):
     saswat_application_number = models.ForeignKey(LoanApplication, on_delete=models.CASCADE)
     query_id = models.CharField(max_length=6, verbose_name="Query ID")
     query_date = models.DateField()
+    document = models.ForeignKey(QueryDocuments, on_delete=models.CASCADE, verbose_name="AI Documents", null=True, blank=True)
     shortened_query = models.ForeignKey(ShortenedQueries, related_name='queries_as_shortened', on_delete=models.CASCADE, verbose_name="AI Question")
     description = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI Description")
     additional_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI Additional Info")

@@ -2593,39 +2593,49 @@ class CustomAPIException(APIException):
 # -----------------------------------*------------Query API-------------*--------------------------------------*--------
 class QueryDataView(APIView):
     permission_classes = [AllowAny]
+
     def get_max_version_queries(self, cluster_head_id=None, selected_rm_id=None, selected_so_id=None):
 
         base_filter = Q()
+
         if cluster_head_id:
             base_filter &= Q(
                 saswat_application_number__sales_officer__reporting_manager__cluster_head_id=cluster_head_id) | \
                            Q(saswat_application_number__sales_officer__cluster_head_id=cluster_head_id)
+
         if selected_rm_id:
             base_filter &= Q(saswat_application_number__sales_officer__reporting_manager_id=selected_rm_id)
+
         if selected_so_id:
             base_filter &= Q(saswat_application_number__sales_officer_id=selected_so_id)
+
         # Subquery to get the max version of each query_id
         subquery = QueryModel.objects.filter(
             base_filter
         ).values('query_id').annotate(
             max_version=Max('version')
         ).values('query_id', 'max_version')
+
         # Main query to get the latest version query data
         latest_queries = QueryModel.objects.filter(
             base_filter,
             version=Subquery(subquery.values('max_version').filter(query_id=OuterRef('query_id')))
         )
+
         return latest_queries
+
     def get_latest_queries(self, query_id=None, saswat_application_numbers=None, query_status=None):
         base_queryset = QueryModel.objects.filter(
             saswat_application_number__saswat_application_number__in=saswat_application_numbers,
         )
+
         latest_version_subquery = QueryModel.objects.filter(
             query_id=OuterRef('query_id'),
             saswat_application_number__saswat_application_number__in=saswat_application_numbers
         ).values('query_id').annotate(
             latest_version=Max('version')
         ).values('latest_version')
+
         if query_status:
             if query_status.upper() == "OPEN":
                 queryset = base_queryset.filter(
@@ -2641,9 +2651,12 @@ class QueryDataView(APIView):
             queryset = base_queryset.filter(
                 version=Subquery(latest_version_subquery)
             )
+
         if query_id:
             queryset = queryset.filter(query_id=query_id)
+
         return queryset
+
     def serialize_and_respond(self, queryset, attachment_queryset, status_code=status.HTTP_200_OK):
         if queryset.exists():
             query_serializer = GetQuerySerializer(queryset, many=True)
@@ -2658,6 +2671,7 @@ class QueryDataView(APIView):
                 'attachments': attachment_serializer.data,
             }, status=status_code)
         return Response({'status': '01', 'message': 'No Records found.'}, status=status.HTTP_200_OK)
+
     def get(self, request, format=None):
         try:
             user_id = request.query_params.get('user_id')
@@ -2666,26 +2680,35 @@ class QueryDataView(APIView):
             param_status = request.query_params.get('status')
             selected_rm_id = request.query_params.get('selected_rm_id')
             selected_so_id = request.query_params.get('selected_so_id')
+
+
             if not user_id:
                 raise CustomAPIException("User ID is not provided")
+
             query_status = param_status.upper() if param_status else None
+
             employee = EmployeeDetails.objects.filter(employee__user_id=user_id).first()
             if not employee:
                 return Response({'status': '01', 'message': 'No Loan Applications found for the given user.'},
                                 status=status.HTTP_200_OK)
+
             response_data = {'status': '00'}
+
             all_statuses = ['OPEN', 'REOPENED', 'ANSWERED', 'VERIFIED']
+
             def get_status_counts(latest_queries):
                 status_counts = latest_queries.values('query_status').annotate(count=Count('query_status'))
                 status_counts_dict = {status: 0 for status in all_statuses}
                 for status in status_counts:
                     status_counts_dict[status['query_status']] = status['count']
                 return status_counts_dict
+
             # Cluster Head logic
             if employee.designation.designation_name == 'Cluster Head':
                 if selected_so_id:
                     # If an SO is selected, show their loan applications
                     loan_applications = LoanApplication.objects.filter(sales_officer=selected_so_id)
+
                     if not loan_applications.exists():
                         return Response(
                             {
@@ -2693,98 +2716,173 @@ class QueryDataView(APIView):
                                 'message': 'No Loan Applications found for the selected Sales Officer.'
                             },
                             status=status.HTTP_200_OK)
+
                     serializer = LoanApplicationSerializer(loan_applications, many=True)
                     saswat_application_numbers = [app['saswat_application_number'] for app in serializer.data]
+
                     query_data = self.get_latest_queries(query_id, saswat_application_numbers, query_status)
+
+
                     attachment_queryset = QnaAttachment.objects.none()
                     if query_id:
-                        attachment_queryset = QnaAttachment.objects.filter(query=row_id)
+                        attachment_queryset = QnaAttachment.objects.filter(id=row_id)
+
                     return self.serialize_and_respond(query_data, attachment_queryset)
+
                 elif selected_rm_id:
                     # If an RM is selected, show SOs under this RM
                     relationship_manager = get_object_or_404(EmployeeDetails, id=selected_rm_id)
                     sales_officers = EmployeeDetails.objects.filter(reporting_manager=relationship_manager)
                     so_serializer = EmployeeDetailsSerializer(sales_officers, many=True)
+
                     latest_queries = self.get_max_version_queries(employee.id, selected_rm_id=selected_rm_id)
                     status_counts_dict = get_status_counts(latest_queries)
+                    status_counts_dict = [status_counts_dict]
+
                     response_data.update( {
                         'status': '00',
                         'message': 'success',
                         'status_counts': status_counts_dict,
+                        'relationship_managers': [],
                         'sales_officers': so_serializer.data,
                         'queries': [],
                         'attachments': []
                     })
                     return Response(response_data, status=status.HTTP_200_OK)
+
                 else:
                     # If no RM is selected, show RMs under the cluster head
                     relationship_managers = EmployeeDetails.objects.filter(cluster_head=employee)
                     rm_serializer = EmployeeDetailsSerializer(relationship_managers, many=True)
+                    data = rm_serializer.data
+                    rm_data = [item for item in data if item['designation'] == 2]
+                    so_data = [item for item in data if item['designation'] == 3]
+
+
+
                     latest_queries = self.get_max_version_queries(employee.id)
                     status_counts_dict = get_status_counts(latest_queries)
+                    status_counts_dict = [status_counts_dict]
+
 
                     response_data.update( {
                         'status': '00',
                         'message': 'success',
                         'status_counts': status_counts_dict,
-                        'relationship_managers': rm_serializer.data,
-                        'sales_officers': [],
+                        'relationship_managers': rm_data,
+                        'sales_officers': so_data,
                         'queries': [],
                         'attachments': []
 
+
                     })
                     return Response(response_data, status=status.HTTP_200_OK)
+
             elif employee.designation.designation_name == 'Reporting Manager':
                 if selected_so_id:
                     # If an SO is selected, show their loan applications
                     loan_applications = LoanApplication.objects.filter(sales_officer=selected_so_id)
+
                     if not loan_applications.exists():
                         return Response(
                             {'status': '01', 'message': 'No Loan Applications found for the selected Sales Officer.'},
                             status=status.HTTP_200_OK)
+
                     serializer = LoanApplicationSerializer(loan_applications, many=True)
                     saswat_application_numbers = [app['saswat_application_number'] for app in serializer.data]
+
                     query_data = self.get_latest_queries(query_id, saswat_application_numbers, query_status)
+
                     attachment_queryset = QnaAttachment.objects.none()
                     if query_id:
-                        attachment_queryset = QnaAttachment.objects.filter(query=row_id)
+                        attachment_queryset = QnaAttachment.objects.filter(id=row_id)
+
                     return self.serialize_and_respond(query_data, attachment_queryset)
+
                 else:
                     # If no SO is selected, show SOs under the reporting manager
                     sales_officers = EmployeeDetails.objects.filter(reporting_manager=employee)
                     so_serializer = EmployeeDetailsSerializer(sales_officers, many=True)
+                    data = so_serializer.data
+                    rm_data = [item for item in data if item['designation'] == 2]
+                    so_data = [item for item in data if item['designation'] == 3]
+
                     latest_queries = self.get_max_version_queries(selected_rm_id=employee.id)
                     status_counts_dict = get_status_counts(latest_queries)
+                    status_counts_dict = [status_counts_dict]
+
 
                     response_data.update( {
                         'status': '00',
                         'message': 'success',
                         'status_counts': status_counts_dict,
-                        'relationship_managers':[],
-                        'sales_officers': so_serializer.data,
+                        'relationship_managers':rm_data,
+                        'sales_officers': so_data,
                         'queries': [],
                         'attachments': []
                     })
                     return Response(response_data, status=status.HTTP_200_OK)
+
             # Sales Officer logic
             elif employee.designation.designation_name == 'Sales Officer':
                 loan_applications = LoanApplication.objects.filter(sales_officer=employee.id)
                 latest_queries = self.get_max_version_queries(selected_so_id=employee.id)
                 status_counts_dict = get_status_counts(latest_queries)
+
                 if not loan_applications.exists():
                     return Response({'status': '01', 'message': 'No Loan Applications found for the given user.'},
                                     status=status.HTTP_200_OK)
+
                 serializer = LoanApplicationSerializer(loan_applications, many=True)
                 saswat_application_numbers = [app['saswat_application_number'] for app in serializer.data]
+
                 query_data = self.get_latest_queries(query_id, saswat_application_numbers, query_status)
+
                 attachment_queryset = QnaAttachment.objects.none()
                 if query_id:
-                    attachment_queryset = QnaAttachment.objects.filter(query=row_id)
+                    attachment_queryset = QnaAttachment.objects.filter(id=row_id)
+
                 return self.serialize_and_respond(query_data, attachment_queryset)
+
             else:
                 # For other designations, no loan applications will be shown
                 return Response({'status': '01', 'message': 'No Loan Applications found for the given user.'},
                                 status=status.HTTP_200_OK)
+        except CustomAPIException as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            q_id = request.data.get('id')
+            saswat_application_number = request.data.get('saswat_application_number')
+            query_id = request.data.get('query_id')
+            if not q_id or not saswat_application_number:
+                raise CustomAPIException("ID or Saswat Application Number is not provided")
+            query_data_queryset = QueryModel.objects.filter(id=q_id)
+            if not query_data_queryset.exists():
+                return Response({'status': '01', 'message': f'No Queries found for the given '
+                                                            f'Saswat Application Number.'},
+                                status=status.HTTP_404_NOT_FOUND)
+            else:
+                existing_entries_count = QueryModel.objects.filter(query_id=query_id).count() + 1
+                serializer = NewQuerySerializer(data=request.data,
+                                                context={'request': request, 'version': existing_entries_count,
+                                                         'query_id': query_id})
+
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({
+                        'status': '00',
+                        'message': 'Query created/updated successfully',
+                        'data': serializer.data
+                    }, status=status.HTTP_201_CREATED)
+                return Response({
+                    'status': '01',
+                    'message': 'Validation failed',
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
         except CustomAPIException as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -2871,41 +2969,6 @@ class QueryDataView(APIView):
     #         return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     #     except Exception as e:
     #         return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def post(self, request, *args, **kwargs):
-        try:
-            q_id = request.data.get('id')
-            saswat_application_number = request.data.get('saswat_application_number')
-            query_id = request.data.get('query_id')
-            if not q_id or not saswat_application_number:
-                raise CustomAPIException("ID or Saswat Application Number is not provided")
-            query_data_queryset = QueryModel.objects.filter(id=q_id)
-            if not query_data_queryset.exists():
-                return Response({'status': '01', 'message': f'No Queries found for the given '
-                                                            f'Saswat Application Number.'},
-                                status=status.HTTP_404_NOT_FOUND)
-            else:
-                existing_entries_count = QueryModel.objects.filter(query_id=query_id).count() + 1
-                serializer = NewQuerySerializer(data=request.data,
-                                                context={'request': request, 'version': existing_entries_count,
-                                                         'query_id': query_id})
-
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response({
-                        'status': '00',
-                        'message': 'Query created/updated successfully',
-                        'data': serializer.data
-                    }, status=status.HTTP_201_CREATED)
-                return Response({
-                    'status': '01',
-                    'message': 'Validation failed',
-                    'errors': serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
-        except CustomAPIException as e:
-            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class SoAndTaAttachmentAPIView(APIView):
 
@@ -2998,3 +3061,7 @@ def get_shortened_query_details(request, pk):
             'additional_info': '',
         }
     return JsonResponse(data)
+
+def get_documents(request, document_id):
+    shortened_queries = ShortenedQueries.objects.filter(document__id=document_id).values('id', 'shortened_query')
+    return JsonResponse({'shortened_queries': list(shortened_queries)})
