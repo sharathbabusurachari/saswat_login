@@ -671,7 +671,7 @@ class LoanApplication(models.Model):
     date_of_login = models.DateField()
     status = models.CharField(choices=STATUS_CHOICES, max_length=20)
     customer_name = models.CharField(max_length=255)
-    sales_officer = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="SO (Sales Officer)")
+    sales_officer = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="Sales Person")
     remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)

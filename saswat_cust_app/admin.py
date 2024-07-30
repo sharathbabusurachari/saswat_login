@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from django.db.models import F
+from django.db.models import F, Q
 # Register your models here.
 import random
 from .forms import QueryModelForm
@@ -34,6 +34,7 @@ def export_as_csv_action(description="Export selected objects as CSV file",
         if fields:
             fieldset = set(fields)
             field_names = [f for f in field_names if f in fieldset]
+
 
         if exclude:
             excludeset = set(exclude)
@@ -592,7 +593,9 @@ class LoanApplicationAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "sales_officer":
-            kwargs["queryset"] = EmployeeDetails.objects.filter(designation__designation_name="Sales Officer")
+            kwargs["queryset"] = EmployeeDetails.objects.filter(Q(designation__designation_name="Sales Officer") |
+                                                                Q(designation__designation_name="Reporting Manager")
+                                                                )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):

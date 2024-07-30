@@ -2731,13 +2731,18 @@ class QueryDataView(APIView):
 
                 elif selected_rm_id:
                     # If an RM is selected, show SOs under this RM
+
                     relationship_manager = get_object_or_404(EmployeeDetails, id=selected_rm_id)
+                    emp = [relationship_manager]
+
                     sales_officers = EmployeeDetails.objects.filter(reporting_manager=relationship_manager)
-                    so_serializer = EmployeeDetailsSerializer(sales_officers, many=True)
+                    combined_sales_officers = emp + list(sales_officers)
+                    so_serializer = EmployeeDetailsSerializer(combined_sales_officers, many=True)
 
                     latest_queries = self.get_max_version_queries(employee.id, selected_rm_id=selected_rm_id)
                     status_counts_dict = get_status_counts(latest_queries)
                     status_counts_dict = [status_counts_dict]
+
 
                     response_data.update( {
                         'status': '00',
@@ -2758,8 +2763,6 @@ class QueryDataView(APIView):
                     rm_data = [item for item in data if item['designation'] == 2]
                     so_data = [item for item in data if item['designation'] == 3]
 
-
-
                     latest_queries = self.get_max_version_queries(employee.id)
                     status_counts_dict = get_status_counts(latest_queries)
                     status_counts_dict = [status_counts_dict]
@@ -2779,6 +2782,7 @@ class QueryDataView(APIView):
                     return Response(response_data, status=status.HTTP_200_OK)
 
             elif employee.designation.designation_name == 'Reporting Manager':
+
                 if selected_so_id:
                     # If an SO is selected, show their loan applications
                     loan_applications = LoanApplication.objects.filter(sales_officer=selected_so_id)
@@ -2801,22 +2805,27 @@ class QueryDataView(APIView):
 
                 else:
                     # If no SO is selected, show SOs under the reporting manager
+
+                    emp = [employee]
                     sales_officers = EmployeeDetails.objects.filter(reporting_manager=employee)
-                    so_serializer = EmployeeDetailsSerializer(sales_officers, many=True)
+                    combined_sales_officers = emp + list(sales_officers)
+                    so_serializer = EmployeeDetailsSerializer(combined_sales_officers, many=True)
                     data = so_serializer.data
                     rm_data = [item for item in data if item['designation'] == 2]
-                    so_data = [item for item in data if item['designation'] == 3]
+                    so_data = [item for item in data if item['designation'] == 3 or item['designation'] == 2]
+
 
                     latest_queries = self.get_max_version_queries(selected_rm_id=employee.id)
                     status_counts_dict = get_status_counts(latest_queries)
                     status_counts_dict = [status_counts_dict]
 
 
+
                     response_data.update( {
                         'status': '00',
                         'message': 'success',
                         'status_counts': status_counts_dict,
-                        'relationship_managers':rm_data,
+                        'relationship_managers':[],
                         'sales_officers': so_data,
                         'queries': [],
                         'attachments': []
