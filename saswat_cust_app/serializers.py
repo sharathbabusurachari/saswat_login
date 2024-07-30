@@ -246,10 +246,15 @@ class SignInSignOutSerializer(serializers.ModelSerializer):
         model = SignInSignOut
         fields = '__all__'
 
+
 class EmployeeDetailsSerializer(serializers.ModelSerializer):
+    designation_name = serializers.SerializerMethodField()
 
     class Meta:
 
         model = EmployeeDetails
 
-        fields = ['id', 'full_name', 'designation', 'mobile_number', 'official_email']
+        fields = ['id', 'full_name', 'designation', 'designation_name', 'mobile_number', 'official_email']
+
+    def get_designation_name(self, obj):
+        return obj.designation.designation_name
