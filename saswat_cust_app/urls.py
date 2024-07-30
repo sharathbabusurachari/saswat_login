@@ -10,7 +10,9 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     privacy_policy,
                     QueryDataView,
                     SignInSignOutView,
-                    SoAndTaAttachmentAPIView,)
+                    SoAndTaAttachmentAPIView,
+                    ESignView, GetESIgnView
+                    )
 
 from saswat_cust_app import views
 
@@ -41,4 +43,6 @@ urlpatterns = [
     path('query-attachments/', SoAndTaAttachmentAPIView.as_view(), name='attachment-query-create'),
     path('get_shortened_query_details/<int:pk>/', views.get_shortened_query_details, name='get_shortened_query_details'),
     path('get_documents/<int:document_id>/', views.get_documents, name='get_documents'),
+    path('esign/', ESignView.as_view(), name='esign'),
+    path('get-esign/', GetESIgnView.as_view(), name='get_esign'),
 ]

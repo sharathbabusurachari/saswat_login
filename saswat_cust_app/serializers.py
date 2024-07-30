@@ -4,7 +4,8 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
-                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails, EmployeeDetails)
+                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails, EmployeeDetails,
+                     ESign)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -258,3 +259,8 @@ class EmployeeDetailsSerializer(serializers.ModelSerializer):
 
     def get_designation_name(self, obj):
         return obj.designation.designation_name
+
+class ESignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ESign
+        fields = '__all__'

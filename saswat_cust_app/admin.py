@@ -12,7 +12,7 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments)
+                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments, ESign)
 from django.http import HttpResponse
 import csv
 from openpyxl import Workbook
@@ -738,3 +738,42 @@ class DocumentsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(QueryDocuments, DocumentsAdmin)
+
+
+class ESignAdmin(admin.ModelAdmin):
+    exclude = ('created_by', 'modified_by')
+    list_display = (
+        'id', 'user', 'customer_mobile_number', 'customer_name', 'file_name', 'file', 's_file_data_base64',
+        's_validate_login_api_response', 's_embedded_signing_api_response', 'esign_status',
+        'remarks', 'created_at', 'modified_at', 'created_by', 'modified_by'
+    )
+    # list_select_related = ['user']
+    list_per_page = 30
+    actions = [export_as_csv_action(), export_as_excel_action()]
+    list_display_links = ('id', 'user')
+    search_fields = ('user__user_id', 'user__first_name', 'customer_mobile_number')
+    search_help_text = f'Search with the User ID or First Name of User or Mobile Number of Customer.'
+    list_filter = ['created_at', 'user', 'customer_mobile_number']
+
+    def truncate_field(self, field_value, max_length=30):
+        return (str(field_value)[:25] + '.....') if len(str(field_value)) > max_length else field_value
+
+    def get_truncated_field_method(field_name, short_description):
+        def method(self, obj):
+            return self.truncate_field(getattr(obj, field_name))
+        method.short_description = short_description
+        return method
+    s_file_data_base64 = get_truncated_field_method('file_data_base64', 'BASE 64 DATA OF FILE')
+    s_validate_login_api_response = get_truncated_field_method('validate_login_api_response',
+                                                               'VALIDATE LOGIN API RESPONSE')
+    s_embedded_signing_api_response = get_truncated_field_method('embedded_signing_api_response',
+                                                                 'EMBEDDED SIGNIN API RESPONSE')
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user.username
+        obj.modified_by = request.user.username
+        super().save_model(request, obj, form, change)
+
+
+admin.site.register(ESign, ESignAdmin)

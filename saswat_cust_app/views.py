@@ -12,7 +12,8 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
                                     DesignationDetails, WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
-                                    LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries)
+                                    LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries,
+                                    ESign)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -29,7 +30,8 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          VillageDetailsSerializer, VleMobileVOtpSerializer, VleOtpSerializer,
                                          LoanApplicationSerializer, NewQuerySerializer,
                                          GetQuerySerializer, SignInSignOutSerializer, QnaAttachmentSerializer,
-                                         EmployeeDetailsSerializer)
+                                         EmployeeDetailsSerializer,
+                                         ESignSerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -3074,3 +3076,288 @@ def get_shortened_query_details(request, pk):
 def get_documents(request, document_id):
     shortened_queries = ShortenedQueries.objects.filter(document__id=document_id).values('id', 'shortened_query')
     return JsonResponse({'shortened_queries': list(shortened_queries)})
+
+
+class GetESIgnView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user_id = request.query_params.get('user_id')
+            if not user_id:
+                raise ValueError("User ID is not provided.")
+            query_set = ESign.objects.filter(user_id=user_id)
+            if not query_set.exists():
+                response_data = {
+                    'status': '01',
+                    'message': 'No Data Found.'
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                serializer = ESignSerializer(query_set, many=True)
+                response_data = {
+                    'status': '00',
+                    'message': 'Success.',
+                    'data': serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ESignView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            user_id = request.data.get('user_id')
+            customer_mobile_number = request.data.get('customer_mobile_number')
+            customer_name = request.data.get('customer_name')
+            file_name = request.data.get('file_name')
+            file_data_base64 = request.data.get('file_data_base64')
+            file = request.FILES.get('file')
+            created_by = request.data.get('created_by')
+            modified_by = request.data.get('modified_by')
+            if not user_id:
+                raise ValueError("User ID is not provided.")
+            if not customer_mobile_number:
+                raise ValueError("Customer Mobile Number is not provided.")
+            if not customer_name:
+                raise ValueError("Customer Name is not provided.")
+            if not file_name:
+                raise ValueError("File Name is not provided.")
+            if not file_data_base64:
+                raise ValueError("Base 64 Data of File is not provided.")
+            if not file:
+                raise ValueError("File is not provided.")
+            if not created_by:
+                raise ValueError("'Created By' is not provided.")
+            if not modified_by:
+                raise ValueError("'Modified By' is not provided.")
+            validate_login_url = 'http://98.70.76.243:8083/saswat/validate_login'
+            username = "pooja@saswatfinance.com"
+            password = "javaBOOK26*"
+            validate_request_data = {
+                'UserName': username,
+                'Password': password
+            }
+            try:
+                response = requests.post(validate_login_url, json=validate_request_data)
+                response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+                if response is None or not response.content:
+                    response_data = {
+                        'status': '01',
+                        'message': 'No Response received, Please try again.'
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                elif (response and response.status_code == 200 and
+                      response.headers.get('content-type') == 'application/json'):
+                    try:
+                        response_content = response.json()  # Attempt to parse JSON
+                    except ValueError:
+                        response_data = {
+                            'status': '01',
+                            'message': 'Some error occurred, Please try again.'
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    response_data = {
+                        'status': '01',
+                        'message': 'Some error occurred, Please try again.'
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.HTTPError as http_err:
+                error_message = f'HTTP error occurred: {http_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except MaxRetryError as e:
+                error_message = f"Max retries exceeded when trying to connect to server. Error: {e}"
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except NewConnectionError as e:
+                error_message = f"Failed to establish a new connection: {e}"
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.ConnectionError as conn_err:
+                error_message = f'Error connecting to the server: {conn_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.Timeout as timeout_err:
+                error_message = f'Timeout error occurred: {timeout_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.RequestException as req_err:
+                error_message = f'An error occurred: {req_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            name = "Pooja"
+            email = "pooja@saswatfinance.com"
+            redirect_url = ""
+            signatory_email_ids = ["duke30@yopmail.com", "duke12@yopmail.com"]
+            list_document_details = [
+                {
+                    "DocumentName": str(file_name),
+                    "FileData": str(file_data_base64),
+                    "ControlDetails": [
+                        {
+                            "PageNo": 1,
+                            "SearchText": "",
+                            "ControlID": 4,
+                            "Anchor": "Top",
+                            "AssignedTo": 1,
+                            "Left": 2,
+                            "Top": 250,
+                            "Height": 190,
+                            "Width": 122
+                        },
+                        {
+                            "PageNo": "1",
+                            "SearchText": "",
+                            "ControlID": 4,
+                            "Anchor": "Top",
+                            "AssignedTo": 2,
+                            "Left": 497,
+                            "Top": 250,
+                            "Height": 438,
+                            "Width": 515
+                        }
+                    ]
+                }
+            ]
+            embedded_signing_url = 'http://98.70.76.243:8083/saswat/initiate_embedded_signing'
+            request_data = {
+                'Name': name,
+                'EmailId': email,
+                'RedirectURL': redirect_url,
+                'SignatoryEmailIds': signatory_email_ids,
+                'lstDocumentDetails': list_document_details
+            }
+            try:
+                auth_token_status = response_content['IsSuccess']
+                if not auth_token_status:
+                    response_data = {
+                        'status': '01',
+                        'message': 'Auth Token not generated, Please try again.'
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                response = requests.post(embedded_signing_url, json=request_data)
+                response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+                if response is None or not response.content:
+                    response_data = {
+                        'status': '01',
+                        'message': 'No Response received, Please try again.'
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                if (response and response.status_code == 200 and
+                        response.headers.get('content-type') == 'application/json'):
+                    try:
+                        response_content_final = response.json()  # Attempt to parse JSON
+                        query_set = ESign.objects.create(user_id=user_id,
+                                                         customer_mobile_number=str(customer_mobile_number),
+                                                         customer_name=str(customer_name), file_name=str(file_name),
+                                                         file=file, file_data_base64=str(file_data_base64),
+                                                         validate_login_api_response=response_content,
+                                                         embedded_signing_api_response=response_content_final,
+                                                         esign_status='Link Sent',
+                                                         created_by=str(created_by), modified_by=str(modified_by))
+                        response_data = {
+                            'status': '00',
+                            'message': 'URL to sign the document has been sent.',
+                            'response': response_content_final
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    except ValueError:
+                        response_data = {
+                            'status': '01',
+                            'message': 'Some error occurred, Please try again.'
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    response_data = {
+                        'status': '01',
+                        'message': 'Some error occurred, Please try again.'
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.HTTPError as http_err:
+                error_message = f'HTTP error occurred: {http_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except MaxRetryError as e:
+                error_message = f"Max retries exceeded when trying to connect to server. Error: {e}"
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except NewConnectionError as e:
+                error_message = f"Failed to establish a new connection: {e}"
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.ConnectionError as conn_err:
+                error_message = f'Error connecting to the server: {conn_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.Timeout as timeout_err:
+                error_message = f'Timeout error occurred: {timeout_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            except requests.exceptions.RequestException as req_err:
+                error_message = f'An error occurred: {req_err}'
+                response_data = {
+                    'status': '01',
+                    'message': error_message
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            row_id = request.data.get('id')
+            if not row_id:
+                raise ValueError("ID is not provided")
+            query_data_queryset = ESign.objects.filter(id=row_id)
+            if not query_data_queryset.exists():
+                return Response({'status': '01', 'message': f'No matching record found.'},
+                                status=status.HTTP_200_OK)
+            else:
+                query_data_queryset = query_data_queryset.first()
+                serializer = ESignSerializer(query_data_queryset, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

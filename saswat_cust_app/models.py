@@ -796,3 +796,27 @@ class SignInSignOut(models.Model):
 
     class Meta:
         db_table = 'signin_signout'
+
+
+class ESign(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(UserDetails, on_delete=models.CASCADE, verbose_name="User")
+    customer_mobile_number = models.CharField(max_length=10, verbose_name="Customer Mobile Number")
+    customer_name = models.CharField(max_length=100, verbose_name="Customer Name")
+    file_name = models.CharField(max_length=100, verbose_name="File Name")
+    file = models.FileField(upload_to='files_to_esign/', verbose_name="File to E-Sign")
+    file_data_base64 = models.TextField(verbose_name="Base 64 Data of File")
+    validate_login_api_response = models.JSONField(null=True, blank=True, verbose_name="Validate Login API Response")
+    embedded_signing_api_response = models.JSONField(null=True, blank=True, verbose_name="Embedded SIgnin API Response")
+    esign_status = models.CharField(max_length=255, null=True, blank=True, verbose_name="E Sign Status")
+    remarks = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+
+    def __str__(self):
+        return self.customer_mobile_number
+
+    class Meta:
+        db_table = 'e_sign'
