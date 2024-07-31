@@ -3275,20 +3275,27 @@ class ESignView(APIView):
                         response.headers.get('content-type') == 'application/json'):
                     try:
                         response_content_final = response.json()  # Attempt to parse JSON
-                        query_set = ESign.objects.create(user_id=user_id,
-                                                         customer_mobile_number=str(customer_mobile_number),
-                                                         customer_name=str(customer_name), file_name=str(file_name),
-                                                         file=file, file_data_base64=str(file_data_base64),
-                                                         validate_login_api_response=response_content,
-                                                         embedded_signing_api_response=response_content_final,
-                                                         esign_status='Link Sent',
-                                                         created_by=str(created_by), modified_by=str(modified_by))
-                        response_data = {
-                            'status': '00',
-                            'message': 'URL to sign the document has been sent.',
-                            'response': response_content_final
-                        }
-                        return Response(response_data, status=status.HTTP_200_OK)
+                        if response_content_final['status'] and response_content_final['status'] == "true":
+                            query_set = ESign.objects.create(user_id=user_id,
+                                                             customer_mobile_number=str(customer_mobile_number),
+                                                             customer_name=str(customer_name), file_name=str(file_name),
+                                                             file=file, file_data_base64=str(file_data_base64),
+                                                             validate_login_api_response=response_content,
+                                                             embedded_signing_api_response=response_content_final,
+                                                             esign_status='Link Sent',
+                                                             created_by=str(created_by), modified_by=str(modified_by))
+                            response_data = {
+                                'status': '00',
+                                'message': 'URL to sign the document has been sent.',
+                                'response': response_content_final
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
+                        else:
+                            response_data = {
+                                'status': '01',
+                                'message': 'Some error occurred, Please try again.'
+                            }
+                            return Response(response_data, status=status.HTTP_200_OK)
                     except ValueError:
                         response_data = {
                             'status': '01',
