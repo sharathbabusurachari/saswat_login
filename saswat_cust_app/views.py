@@ -2759,7 +2759,12 @@ class QueryDataView(APIView):
 
                 else:
                     # If no RM is selected, show RMs under the cluster head
-                    relationship_managers = EmployeeDetails.objects.filter(cluster_head=employee)
+                    # relationship_managers = EmployeeDetails.objects.filter(cluster_head=employee)
+                    relationship_managers = EmployeeDetails.objects.filter(
+                        cluster_head=employee
+                    ).exclude(
+                        ~Q(reporting_manager__isnull=True)
+                    )
                     rm_serializer = EmployeeDetailsSerializer(relationship_managers, many=True)
                     data = rm_serializer.data
                     rm_data = [item for item in data if item['designation'] == 2]
