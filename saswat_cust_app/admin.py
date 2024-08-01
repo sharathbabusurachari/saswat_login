@@ -695,11 +695,11 @@ admin.site.register(QueryModel, MainModelOneAdmin)
 
 @admin.register(QnaAttachment)
 class QnaAttachmentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'saswat_application_number', 'so_attachment', 'ta_attachment', 'remarks')
+    list_display = ('id', 'query_id', 'so_attachment', 'ta_attachment', 'remarks')
     actions = [export_as_csv_action(), export_as_excel_action()]
 
     def saswat_application_number(self, obj):
-        return obj.query.saswat_application_number
+        return obj.query.query_id
 
     saswat_application_number.short_description = 'Saswat Application Number'
 

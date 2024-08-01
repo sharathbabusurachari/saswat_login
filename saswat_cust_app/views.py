@@ -2727,7 +2727,7 @@ class QueryDataView(APIView):
 
                     attachment_queryset = QnaAttachment.objects.none()
                     if query_id:
-                        attachment_queryset = QnaAttachment.objects.filter(id=row_id)
+                        attachment_queryset = QnaAttachment.objects.filter(query_id=row_id)
 
                     return self.serialize_and_respond(query_data, attachment_queryset)
 
@@ -2806,7 +2806,7 @@ class QueryDataView(APIView):
 
                     attachment_queryset = QnaAttachment.objects.none()
                     if query_id:
-                        attachment_queryset = QnaAttachment.objects.filter(id=row_id)
+                        attachment_queryset = QnaAttachment.objects.filter(query_id=row_id)
 
                     return self.serialize_and_respond(query_data, attachment_queryset)
 
@@ -2856,7 +2856,7 @@ class QueryDataView(APIView):
 
                 attachment_queryset = QnaAttachment.objects.none()
                 if query_id:
-                    attachment_queryset = QnaAttachment.objects.filter(id=row_id)
+                    attachment_queryset = QnaAttachment.objects.filter(query_id=row_id)
 
                 return self.serialize_and_respond(query_data, attachment_queryset)
 
