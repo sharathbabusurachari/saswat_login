@@ -667,7 +667,7 @@ class LoanApplication(models.Model):
 
     id = models.AutoField(primary_key=True)
     saswat_application_number = models.CharField(max_length=10, unique=True)
-    loan_id = models.CharField(max_length=10, null=True, blank=True)
+    loan_id = models.CharField(max_length=10, null=True, blank=True, verbose_name="Lender ID")
     date_of_login = models.DateField()
     status = models.CharField(choices=STATUS_CHOICES, max_length=20)
     customer_name = models.CharField(max_length=255)

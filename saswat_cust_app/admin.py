@@ -647,7 +647,7 @@ class MainModelOneAdmin(admin.ModelAdmin):
     form = QueryModelForm
     inlines = [AttachmentOneInline]
     search_fields = ['saswat_application_number__saswat_application_number', 'query_status']
-    exclude = ['query_id', 'created_by', 'modified_by']
+    exclude = ['query_id', 'created_by', 'modified_by', 'remarks_by_so']
     excluded_fields = ['id', 'saswat_application_number', ]
 
     def get_model_fields(self, obj):
