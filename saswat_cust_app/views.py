@@ -31,7 +31,8 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          LoanApplicationSerializer, NewQuerySerializer,
                                          GetQuerySerializer, SignInSignOutSerializer, QnaAttachmentSerializer,
                                          EmployeeDetailsSerializer,
-                                         ESignSerializer)
+                                         ESignSerializer,
+                                         QueryStatusUpdateSerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -2904,6 +2905,45 @@ class QueryDataView(APIView):
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def put(self, request, *args, **kwargs):
+        try:
+            q_id = request.data.get('id')
+            query_status = request.data.get('query_status')
+
+            if not q_id:
+                raise CustomAPIException("ID is not provided.")
+            if not query_status:
+                raise CustomAPIException("Query status is not provided.")
+
+            # Retrieve the query instance
+            query_instance = QueryModel.objects.filter(id=q_id).first()
+
+            if not query_instance:
+                return Response({'status': '01', 'message': 'Query not found.'},
+                                status=status.HTTP_200_OK)
+
+            # Partial update to only modify the query_status field
+            serializer = QueryStatusUpdateSerializer(query_instance, data={'query_status': query_status}, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'status': '00',
+                    'message': 'Query status updated successfully',
+                    'data': serializer.data
+                }, status=status.HTTP_200_OK)
+
+            return Response({
+                'status': '01',
+                'message': 'Validation failed',
+                'errors': serializer.errors
+            }, status=status.HTTP_200_OK)
+
+        except CustomAPIException as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     # def get_latest_queries(self, query_id=None, saswat_application_numbers=None, query_status=None):
     #     base_queryset = QueryModel.objects.filter(
     #         saswat_application_number__saswat_application_number__in=saswat_application_numbers,
@@ -2985,6 +3025,7 @@ class QueryDataView(APIView):
     #         return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     #     except Exception as e:
     #         return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class SoAndTaAttachmentAPIView(APIView):
 

@@ -264,3 +264,9 @@ class ESignSerializer(serializers.ModelSerializer):
     class Meta:
         model = ESign
         fields = '__all__'
+
+
+class QueryStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QueryModel
+        fields = ['query_status']

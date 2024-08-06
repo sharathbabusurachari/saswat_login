@@ -725,7 +725,7 @@ class ShortenedQueries(models.Model):
 
 class QueryModel(models.Model):
     QUERY_STATUS_CHOICES = [
-        ('OPEN', 'OPEN'), ('ANSWERED', 'ANSWERED'), ('REOPENED', 'REOPENED'), ('VERIFIED', 'VERIFIED')
+        ('OPEN', 'OPEN'), ('ANSWERED', 'ANSWERED'), ('VERIFIED', 'VERIFIED')
     ]
     id = models.AutoField(primary_key=True)
     saswat_application_number = models.ForeignKey(LoanApplication, on_delete=models.CASCADE)
