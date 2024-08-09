@@ -15,4 +15,4 @@ class QueryModelForm(forms.ModelForm):
         fields = '__all__'
 
     class Media:
-        js = ('saswat_cust_app/js/admin_custom.js',)
+        js = ('saswat_cust_app/js/admin_custom.js', 'saswat_cust_app/js/document_query.js')
