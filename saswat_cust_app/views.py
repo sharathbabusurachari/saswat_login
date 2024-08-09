@@ -2666,54 +2666,34 @@ class QueryDataView(APIView):
             saswat_application_number__saswat_application_number__in=saswat_application_numbers,
         )
 
+        # Subquery to get the maximum version for each query_id
+        max_version_subquery = QueryModel.objects.filter(
+            query_id=OuterRef('query_id')
+        ).values('query_id').annotate(
+            max_version=Max('version')
+        ).values('max_version')
+
+        # Filter to get only the latest version for each query_id
+        queryset = base_queryset.filter(
+            version=Subquery(max_version_subquery)
+        )
+
+        # Handle query_status filter with special case for 'OPEN'
         if query_status:
-            if query_status.upper() == "DRAFT":
-                # Subquery to get the latest draft version for each query_id
-                latest_draft_version_subquery = QueryModel.objects.filter(
-                    query_id=OuterRef('query_id'),
-                    saswat_application_number__saswat_application_number__in=saswat_application_numbers,
-                    query_status="DRAFT"
-                ).values('query_id').annotate(
-                    latest_version=Max('version')
-                ).values('latest_version')
+            query_status_upper = query_status.upper()
 
-                # Filter to get the latest draft version
-                queryset = base_queryset.filter(
-                    query_status="DRAFT",
-                    version=Subquery(latest_draft_version_subquery)
-                )
+            if query_status_upper == "OPEN":
+                # Annotate queryset to handle cases where the max version has status 'DRAFT'
+                queryset = queryset.annotate(
+                    adjusted_status=Case(
+                        When(query_status="DRAFT", then=Value("OPEN")),
+                        default=F('query_status'),
+                        output_field=CharField()
+                    )
+                ).filter(adjusted_status="OPEN")
             else:
-                # Subquery to get the latest version for each query_id based on the provided status
-                latest_status_version_subquery = QueryModel.objects.filter(
-                    query_id=OuterRef('query_id'),
-                    saswat_application_number__saswat_application_number__in=saswat_application_numbers,
-                    query_status=query_status.upper()
-                ).values('query_id').annotate(
-                    latest_version=Max('version')
-                ).values('latest_version')
-
-                # Filter to get the latest version based on the provided status
-                queryset = base_queryset.filter(
-                    query_status=query_status.upper(),
-                    version=Subquery(latest_status_version_subquery)
-                )
-        else:
-            # Exclude DRAFTs for cases where no status is provided
-            base_queryset = base_queryset.exclude(query_status="DRAFT")
-
-            # Subquery to get the latest non-draft version for each query_id
-            latest_non_draft_version_subquery = QueryModel.objects.filter(
-                query_id=OuterRef('query_id'),
-                saswat_application_number__saswat_application_number__in=saswat_application_numbers,
-                query_status__in=["OPEN", "REOPENED", "ANSWERED", "VERIFIED"]  # Adjust as needed
-            ).values('query_id').annotate(
-                latest_version=Max('version')
-            ).values('latest_version')
-
-            # Filter to get the latest non-draft version
-            queryset = base_queryset.filter(
-                version=Subquery(latest_non_draft_version_subquery)
-            )
+                # Apply other status filters directly
+                queryset = queryset.filter(query_status=query_status_upper)
 
         # Apply additional filtering by query_id if provided
         if query_id:
@@ -2724,6 +2704,9 @@ class QueryDataView(APIView):
     def serialize_and_respond(self, queryset, attachment_queryset, status_code=status.HTTP_200_OK):
         if queryset.exists():
             query_serializer = GetQuerySerializer(queryset, many=True)
+            for query_data in query_serializer.data:
+                if query_data['query_status'] == "DRAFT":
+                    query_data['query_status'] = "OPEN"
             attachment_serializer = QnaAttachmentSerializer(attachment_queryset, many=True)
             return Response({
                 'status': '00',
