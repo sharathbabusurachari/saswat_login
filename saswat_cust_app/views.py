@@ -39,7 +39,8 @@ import requests
 from .authenticate import MobileNumberAuthentication
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max, Subquery, OuterRef, Case, When, Value, IntegerField, Q, Sum, F
+from django.db.models import Max, Subquery, IntegerField, Q, Sum, F
+from django.db.models import OuterRef, Subquery, Max, F, Case, When, Value, CharField
 from django.db import connection
 from django.shortcuts import render
 from rest_framework.exceptions import APIException
