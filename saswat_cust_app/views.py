@@ -2627,34 +2627,70 @@ class QueryDataView(APIView):
 
         return latest_queries
 
+    # def get_latest_queries(self, query_id=None, saswat_application_numbers=None, query_status=None):
+    #     base_queryset = QueryModel.objects.filter(
+    #         saswat_application_number__saswat_application_number__in=saswat_application_numbers,
+    #     )
+    #
+    #     latest_version_subquery = QueryModel.objects.filter(
+    #         query_id=OuterRef('query_id'),
+    #         saswat_application_number__saswat_application_number__in=saswat_application_numbers
+    #     ).values('query_id').annotate(
+    #         latest_version=Max('version')
+    #     ).values('latest_version')
+    #
+    #     if query_status:
+    #         if query_status.upper() == "OPEN":
+    #             queryset = base_queryset.filter(
+    #                 Q(query_status="OPEN") | Q(query_status="REOPENED"),
+    #                 version=Subquery(latest_version_subquery)
+    #             )
+    #         else:
+    #             queryset = base_queryset.filter(
+    #                 query_status=query_status.upper(),
+    #                 version=Subquery(latest_version_subquery)
+    #             )
+    #     else:
+    #         queryset = base_queryset.filter(
+    #             version=Subquery(latest_version_subquery)
+    #         )
+    #
+    #     if query_id:
+    #         queryset = queryset.filter(query_id=query_id)
+    #
+    #     return queryset
+
     def get_latest_queries(self, query_id=None, saswat_application_numbers=None, query_status=None):
+        # Base queryset with saswat_application_numbers filter
         base_queryset = QueryModel.objects.filter(
             saswat_application_number__saswat_application_number__in=saswat_application_numbers,
-        )
+        ).exclude(query_status="DRAFT")  # Exclude all drafts
 
-        latest_version_subquery = QueryModel.objects.filter(
+        # Subquery to get the latest non-draft version for each query_id
+        latest_non_draft_version_subquery = QueryModel.objects.filter(
             query_id=OuterRef('query_id'),
-            saswat_application_number__saswat_application_number__in=saswat_application_numbers
+            saswat_application_number__saswat_application_number__in=saswat_application_numbers,
+            query_status__in=["OPEN", "REOPENED", "ANSWERED", "VERIFIED"]  # Adjust this list as needed
         ).values('query_id').annotate(
             latest_version=Max('version')
         ).values('latest_version')
 
-        if query_status:
-            if query_status.upper() == "OPEN":
-                queryset = base_queryset.filter(
-                    Q(query_status="OPEN") | Q(query_status="REOPENED"),
-                    version=Subquery(latest_version_subquery)
-                )
-            else:
-                queryset = base_queryset.filter(
-                    query_status=query_status.upper(),
-                    version=Subquery(latest_version_subquery)
-                )
-        else:
-            queryset = base_queryset.filter(
-                version=Subquery(latest_version_subquery)
-            )
+        # Filter the base queryset to get the latest non-draft version
+        queryset = base_queryset.filter(
+            version=Subquery(latest_non_draft_version_subquery)
+        )
 
+        # Apply specific query_status filter if provided
+        if query_status:
+            queryset = queryset.filter(
+                query_status=query_status.upper()
+            )
+            if query_status.upper() == "OPEN":
+                queryset = queryset.filter(
+                    Q(query_status="OPEN") | Q(query_status="REOPENED")
+                )
+
+        # Apply additional filtering by query_id if provided
         if query_id:
             queryset = queryset.filter(query_id=query_id)
 
