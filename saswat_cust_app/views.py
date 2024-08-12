@@ -3372,9 +3372,11 @@ class ESignView(APIView):
                                                              embedded_signing_api_response=response_content_final,
                                                              esign_status='Link Sent',
                                                              created_by=str(created_by), modified_by=str(modified_by))
+                            row_id = query_set.id
                             response_data = {
                                 'status': '00',
                                 'message': 'URL to sign the document has been sent.',
+                                'id': row_id,
                                 'response': response_content_final
                             }
                             return Response(response_data, status=status.HTTP_200_OK)
