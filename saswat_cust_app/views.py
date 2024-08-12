@@ -48,6 +48,8 @@ from django.db import IntegrityError
 import psycopg2
 from django.db.models import Count
 import json
+from urllib3.exceptions import MaxRetryError, NewConnectionError
+
 
 
 class SendOTPAPIView(APIView):
@@ -3227,7 +3229,7 @@ class ESignView(APIView):
                 raise ValueError("'Modified By' is not provided.")
             validate_login_url = 'http://98.70.76.243:8083/saswat/validate_login'
             username = "pooja@saswatfinance.com"
-            password = "javaBOOK26*"
+            password = "goldFISH26*"
             validate_request_data = {
                 'UserName': username,
                 'Password': password
