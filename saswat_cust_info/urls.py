@@ -18,10 +18,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
+
+
+def welcome(request):
+    return HttpResponse("<h1>Welcome to the Saswat portal </h1>" "<h1>Coming Soon </h1>")
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     #path('', admin.site.urls),
     path('api/', include('saswat_cust_app.urls')),
+    path('', welcome),
 ]
 
 if settings.DEBUG:
