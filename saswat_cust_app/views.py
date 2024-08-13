@@ -3468,3 +3468,32 @@ class ESignView(APIView):
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SearchESIgnByMobileView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user_id = request.query_params.get('user_id')
+            customer_mobile_number = request.query_params.get('customer_mobile_number')
+            if not user_id:
+                raise ValueError("User ID is not provided.")
+            if not customer_mobile_number:
+                raise ValueError("Customer Mobile Number is not provided.")
+            query_set = ESign.objects.filter(user_id=user_id, customer_mobile_number=customer_mobile_number)
+            if not query_set.exists():
+                response_data = {
+                    'status': '01',
+                    'message': 'No Data Found.'
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                serializer = ESignSerializer(query_set, many=True)
+                response_data = {
+                    'status': '00',
+                    'message': 'Success.',
+                    'data': serializer.data
+                }
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
