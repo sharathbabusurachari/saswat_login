@@ -3457,7 +3457,12 @@ class ESignView(APIView):
                 serializer = ESignSerializer(query_data_queryset, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
+                    response_data = {
+                        'status': '00',
+                        'message': 'Success.',
+                        'data': serializer.data
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({'status': '01', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
