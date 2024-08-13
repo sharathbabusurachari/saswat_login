@@ -18,6 +18,12 @@ import csv
 from openpyxl import Workbook
 from django.utils.text import slugify
 
+from django.utils.translation import gettext_lazy as _
+
+admin.site.site_header = "Saswat Administration"
+admin.site.site_title = "Saswat  Admin Portal"
+admin.site.index_title = _("Welcome to Saswat TA Portal")
+
 
 def export_as_csv_action(description="Export selected objects as CSV file",
                          fields=None, exclude=None, header=True):
