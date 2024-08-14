@@ -33,3 +33,5 @@ Werkzeug
 WTForms
 Pillow
 openpyxl
+django-import-export
+

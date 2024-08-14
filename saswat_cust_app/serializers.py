@@ -5,7 +5,8 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
                      LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails, EmployeeDetails,
-                     ESign)
+                     ESign, EMICollections,
+                     Collection)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -270,3 +271,16 @@ class QueryStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = QueryModel
         fields = ['query_status']
+
+class EMICollectionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EMICollections
+        fields = ['id', 'prospect_code', 'customer_name', 'disbursed_amount', 'instalment_no',
+                  'emi_amt', 'due_date']
+
+class CollectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Collection
+        fields = ['id', 'status', 'start_date', 'end_date', "employee_details", "loan_details",
+                  "created_by", "modified_by", 'created_at', 'modified_at',]

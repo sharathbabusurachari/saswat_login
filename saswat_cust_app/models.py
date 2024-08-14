@@ -532,7 +532,7 @@ class EmployeeDetails(models.Model):
     modified_by = models.CharField(max_length=255, verbose_name="Modified By")
 
     def __str__(self):
-        return self.full_name
+        return f"{self.full_name} - {self.designation}"
 
     class Meta:
         db_table = "employee_details"
@@ -820,3 +820,55 @@ class ESign(models.Model):
 
     class Meta:
         db_table = 'e_sign'
+
+
+class EMICollections(models.Model):
+    customer_name = models.CharField(max_length=100, verbose_name='Customer Name', blank=True, null=True)
+    co_applicant_name = models.CharField(max_length=100, verbose_name='Co Applicant Name', blank=True, null=True)
+    prospect_code = models.CharField(max_length=20, verbose_name='Prospect Code', blank=True, null=True)
+    prospect_id = models.IntegerField(unique=True, verbose_name='Prospect Id', blank=True, null=True)
+    product_name = models.CharField(max_length=100, verbose_name='Product Name', blank=True, null=True)
+    bank_name = models.CharField(max_length=100, verbose_name='Bank Name', blank=True, null=True)
+    branch = models.CharField(max_length=100, verbose_name='Branch Name', blank=True, null=True)
+    state = models.CharField(max_length=100, verbose_name='State ', blank=True, null=True)
+    cheque_no = models.CharField(max_length=100, verbose_name='Cheque Number', blank=True, null=True)
+    sanctioned_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Sanctioned Amount', blank=True, null=True)
+    location = models.CharField(max_length=50, verbose_name='Location', blank=True, null=True)
+    sm = models.CharField(max_length=50, verbose_name='SM', blank=True, null=True)
+    modes = models.CharField(max_length=50, verbose_name='Modes', blank=True, null=True)
+    ops = models.CharField(max_length=50, verbose_name='OPS', blank=True, null=True)
+    loan_status = models.CharField(max_length=100, verbose_name='Loan Status', blank=True, null=True)
+    instalment_no = models.IntegerField(verbose_name='Installments Number', blank=True, null=True)
+    emi_amt = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='EMI Amount', blank=True, null=True)
+    due_date = models.DateField(verbose_name='Due Date', blank=True, null=True)
+    interest = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Interest', blank=True, null=True)
+    principal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Principle', blank=True, null=True)
+    umrn = models.CharField(max_length=100, verbose_name='UMRN', blank=True, null=True)
+    disbursed_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Disbursed Amount', blank=True, null=True)
+    remark = models.CharField(max_length=100, verbose_name='Remark', blank=True, null=True)
+    # created_at = models.DateTimeField(auto_now_add=True, )
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.emi_amt}"
+
+    class Meta:
+        db_table = 'emi_collection'
+
+class Collection(models.Model):
+    employee_details = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="Employee Details")
+    loan_details = models.ForeignKey(EMICollections, on_delete=models.CASCADE, verbose_name="Loan Details")
+    status = models.CharField(max_length=100, verbose_name="Status")
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True, )
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+    remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
+
+
+    def __str__(self):
+        return f"{self.employee_details}"
+
+    class Meta:
+        db_table = 'collection'

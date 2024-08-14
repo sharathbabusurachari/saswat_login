@@ -12,13 +12,18 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
-                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments, ESign)
+                     LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments, ESign,
+                     Collection,
+                     EMICollections)
 from django.http import HttpResponse
 import csv
 from openpyxl import Workbook
 from django.utils.text import slugify
 
 from django.utils.translation import gettext_lazy as _
+
+from import_export.admin import ImportExportModelAdmin
+from import_export import resources, fields
 
 admin.site.site_header = "Saswat Administration"
 admin.site.site_title = "Saswat Admin Portal"
@@ -783,3 +788,75 @@ class ESignAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ESign, ESignAdmin)
+
+
+class EMICollectionsResource(resources.ModelResource):
+    prospect_code = fields.Field(attribute='prospect_code', column_name='PROSPECTCODE')
+    location = fields.Field(attribute='location', column_name='Location')
+    sm = fields.Field(attribute='sm', column_name='SM')
+    prospect_id = fields.Field(attribute='prospect_id', column_name='PROSPECTID')
+    branch = fields.Field(attribute='branch', column_name='BRANCH')
+    state = fields.Field(attribute='state', column_name='STATE')
+    customer_name = fields.Field(attribute='customer_name', column_name='CUSTOMER_NAME')
+    co_applicant_name = fields.Field(attribute='co_applicant_name', column_name='COAPPLICANT_NAME')
+    sanctioned_amount = fields.Field(attribute='sanctioned_amount', column_name='SANCTIONED_AMOUNT')
+    product_name = fields.Field(attribute='product_name', column_name='PRODUCT_NAME')
+    due_date = fields.Field(attribute='due_date', column_name='DUE_DATE')
+    modes = fields.Field(attribute='modes', column_name='MODES')
+    ops = fields.Field(attribute='ops', column_name='OPS')
+    remark = fields.Field(attribute='remark', column_name='Remark')
+    bank_name = fields.Field(attribute='bank_name', column_name='BANK_NAME')
+    cheque_no = fields.Field(attribute='cheque_no', column_name='CHEQUE_NO')
+    loan_status = fields.Field(attribute='loan_status', column_name='LOAN_STATUS')
+    instalment_no = fields.Field(attribute='instalment_no', column_name='INSTALMENT_NO')
+    emi_amt = fields.Field(attribute='emi_amt', column_name='EMI_AMT')
+    interest = fields.Field(attribute='interest', column_name='INTEREST')
+    principal = fields.Field(attribute='principal', column_name='PRINCIPAL')
+    umrn = fields.Field(attribute='umrn', column_name='UMRN')
+    disbursed_amount = fields.Field(attribute='disbursed_amount', column_name='DISBURSED_AMOUNT')
+    class Meta:
+        model = EMICollections
+        exclude = ('id',)
+        fields = ('customer_name', 'co_applicant_name', 'prospect_code', 'prospect_id', 'product_name',
+                  'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
+                  'ops', 'loan_status', 'instalment_no', 'emi_amt', 'due_date', 'interest', 'principal',
+                  'umrn', 'disbursed_amount', 'remark')
+        export_order = ('customer_name', 'co_applicant_name', 'prospect_code', 'prospect_id', 'product_name',
+                        'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
+                        'ops', 'loan_status', 'instalment_no', 'emi_amt', 'due_date', 'interest', 'principal',
+                        'umrn', 'disbursed_amount', 'remark')
+
+        import_id_fields = ('prospect_id',)
+
+
+@admin.register(EMICollections)
+class EMICollectionsAdmin(ImportExportModelAdmin):
+    resource_class = EMICollectionsResource
+    list_display = ('customer_name', 'co_applicant_name', 'prospect_code', 'prospect_id', 'product_name',
+                    'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
+                    'ops', 'loan_status', 'instalment_no', 'emi_amt', 'due_date', 'interest', 'principal',
+                    'umrn', 'disbursed_amount', 'remark')
+    search_fields = ('customer_name', 'prospect_code', 'product_name', 'bank_name')
+
+class CollectionAdmin(admin.ModelAdmin):
+    list_per_page = 15
+    exclude = ("created_by", "modified_by")
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user.username
+        obj.modified_by = request.user.username
+        super().save_model(request, obj, form, change)
+
+
+admin.site.register(Collection, CollectionAdmin)
+
+

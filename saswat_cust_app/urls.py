@@ -11,7 +11,7 @@ from .views import (SendOTPAPIView, ValidateOTPAPIView, GetGpsView, CustomerTest
                     QueryDataView,
                     SignInSignOutView,
                     SoAndTaAttachmentAPIView,
-                    ESignView, GetESIgnView, SearchESIgnByMobileView
+                    ESignView, GetESIgnView, SearchESIgnByMobileView, CollectionDataView
                     )
 
 from saswat_cust_app import views
@@ -46,4 +46,5 @@ urlpatterns = [
     path('esign/', ESignView.as_view(), name='esign'),
     path('get-esign/', GetESIgnView.as_view(), name='get_esign'),
     path('get-esign-by-mobile/', SearchESIgnByMobileView.as_view(), name='get_esign_by_mobile'),
+    path('emi-collection/', CollectionDataView.as_view(), name='collection-data'),
 ]
