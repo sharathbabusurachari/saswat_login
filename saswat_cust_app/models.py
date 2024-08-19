@@ -898,8 +898,8 @@ class CollectionType(models.Model):
 
 class CollectionPayment(models.Model):
     user_id = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
-    modes = models.ForeignKey(ModesOfPayment, on_delete=models.CASCADE, null=True, blank=True)
     loan_id = models.ForeignKey(Collection, on_delete=models.CASCADE, null=True, blank=True)
+    modes = models.ForeignKey(ModesOfPayment, on_delete=models.CASCADE, null=True, blank=True)
     paid_amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     ref_number = models.CharField(max_length=100, null=True, blank=True)
     customer_name = models.CharField(max_length=100, null=True, blank=True)
