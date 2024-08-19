@@ -279,8 +279,15 @@ class EMICollectionsSerializer(serializers.ModelSerializer):
                   'emi_amt', 'due_date']
 
 class CollectionSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
+    prospect_code = serializers.SerializerMethodField()
 
     class Meta:
         model = Collection
-        fields = ['id', 'status', 'start_date', 'end_date', "employee_details", "loan_details",
-                  "created_by", "modified_by", 'created_at', 'modified_at',]
+        fields = '__all__'
+
+    def get_customer_name(self, obj):
+        return obj.loan_details.customer_name if obj.loan_details else None
+
+    def get_prospect_code(self, obj):
+        return obj.loan_details.prospect_code if obj.loan_details else None
