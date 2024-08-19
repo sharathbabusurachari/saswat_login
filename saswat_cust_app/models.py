@@ -872,3 +872,61 @@ class Collection(models.Model):
 
     class Meta:
         db_table = 'collection'
+
+
+class ModesOfPayment(models.Model):
+    modes = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.modes
+
+    class Meta:
+        db_table = 'modes_of_payment'
+
+
+class CollectionType(models.Model):
+    type_of_collection = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.type_of_collection
+
+    class Meta:
+        db_table = 'collection_type'
+
+
+class CollectionPayment(models.Model):
+    user_id = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    modes = models.ForeignKey(ModesOfPayment, on_delete=models.CASCADE, null=True, blank=True)
+    loan_id = models.ForeignKey(Collection, on_delete=models.CASCADE, null=True, blank=True)
+    paid_amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    ref_number = models.CharField(max_length=100, null=True, blank=True)
+    customer_name = models.CharField(max_length=100, null=True, blank=True)
+    mobile_number = models.CharField(max_length=100, null=True, blank=True)
+    status = models.CharField(max_length=100, null=True, blank=True)
+    is_flagged = models.CharField(max_length=20, null=True, blank=True)
+    latitude = models.CharField(max_length=20, null=True, blank=True)
+    longitude = models.CharField(max_length=20, null=True, blank=True)
+    location_attachment = models.ImageField(upload_to='location_attachments/', null=True, blank=True)
+    date_time = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    attachment = models.ImageField(upload_to='collection_attachments/', null=True, blank=True)
+    promise_date = models.DateField(null=True, blank=True)
+    partial_paid = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    photo_with_customer = models.ImageField(upload_to='location_attachments/', null=True, blank=True)
+    house_photo = models.ImageField(upload_to='location_attachments/', null=True, blank=True)
+    cattle_photo = models.ImageField(upload_to='location_attachments/', null=True, blank=True)
+    vle_remark = models.CharField(max_length=100, null=True, blank=True)
+    neighbour_remark = models.CharField(max_length=100, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+
+    def __str__(self):
+        return self.customer_name
+
+    class Meta:
+        db_table = 'collection_payment'

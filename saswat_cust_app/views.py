@@ -9,13 +9,13 @@ from rest_framework.exceptions import ValidationError
 from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, State, VleVillageInfo,
                                     VleBasicInformation, VleMobileNumber, BmcBasicInformation, VLEBankDetails,
                                     VillageDetails, VleNearbyMilkCenterContact, VLEEconomicAndSocialStatusInfo,
-                                    PhotoOfBmc, SkillsAndKnowledge,VleMobileVOtp,VleOtp, Country, District,
+                                    PhotoOfBmc, SkillsAndKnowledge, VleMobileVOtp, VleOtp, Country, District,
                                     WeekDetails, EmployeeDetails, EmployeeTargetDetails,
                                     EmployeeSetTargetDetails,
                                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries,
                                     ESign,
                                     Collection, DesignationDetails,
-                                    EMICollections)
+                                    EMICollections, CollectionType, ModesOfPayment)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -36,7 +36,8 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          ESignSerializer,
                                          QueryStatusUpdateSerializer,
                                          CollectionSerializer,
-                                         EMICollectionsSerializer)
+                                         EMICollectionsSerializer, CollectionPaymentSerializer,
+                                         CollectionTypeSerializer, ModesOfPaymentSerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -54,7 +55,9 @@ from django.db.models import Count
 import json
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-
+STATUS_SUCCESS = 'OO'
+STATUS_FAILURE = '01'
+STATUS_ERROR = '01'
 
 class SendOTPAPIView(APIView):
 
@@ -3504,6 +3507,188 @@ class SearchESIgnByMobileView(APIView):
 
 
 
+# class CollectionDataView(APIView):
+#     def get(self, request):
+#         user_id = request.GET.get('user_id')
+#         loan_id = request.query_params.get('loan_id')
+#         selected_rm_id = request.GET.get('selected_rm_id')
+#         selected_so_id = request.GET.get('selected_so_id')
+#
+#         response_data = {
+#             "status": "00",
+#             "message": "success",
+#             "reporting_manager": [],
+#             "sales_officer": [],
+#             "collection_list": [],
+#             "emi_collections": []
+#         }
+#
+#         if not user_id:
+#             return Response({"status": "01", "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         if selected_so_id:
+#             return self.handle_selected_so(selected_so_id, loan_id, response_data)
+#
+#         if selected_rm_id:
+#             return self.handle_selected_rm(selected_rm_id, loan_id, response_data)
+#
+#         try:
+#             user_details = UserDetails.objects.get(user_id=user_id)
+#             employee_details = user_details.employees.first()
+#             if not employee_details:
+#                 return Response({"status": "01", "message": "Employee details not found for the user"},
+#                                 status=status.HTTP_404_NOT_FOUND)
+#
+#             designation_name = DesignationDetails.objects.get(id=employee_details.designation_id).designation_name
+#
+#             if designation_name == 'Cluster Head':
+#                 return self.handle_cluster_head(employee_details, response_data, loan_id)
+#             elif designation_name == 'Reporting Manager':
+#                 return self.handle_reporting_manager(employee_details, response_data, loan_id)
+#             elif designation_name == 'Sales Officer':
+#                 return self.handle_sales_officer(employee_details, response_data, loan_id)
+#             else:
+#                 return Response({"status": "01", "message": "Unknown designation"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         except UserDetails.DoesNotExist:
+#             return Response({"status": "01", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+#
+#     def handle_selected_so(self, selected_so_id, loan_id, response_data):
+#         try:
+#             employee_det = Collection.objects.filter(employee_details=selected_so_id, status="Active")
+#             if employee_det.exists():
+#                 collection_serializer = CollectionSerializer(employee_det, many=True)
+#                 response_data["collection_list"] = collection_serializer.data
+#             else:
+#                 return Response({
+#                     "status": "01",
+#                     "message": "No collection data"
+#                 }, status=status.HTTP_200_OK)
+#
+#             if loan_id:
+#                 return self.get_emi_collections(loan_id)
+#
+#             return Response(response_data)
+#
+#         except Collection.DoesNotExist:
+#             return Response({"status": "01", "message": "Loan Applications not found for the Sales Officer"},
+#                             status=status.HTTP_404_NOT_FOUND)
+#
+#     def handle_selected_rm(self, selected_rm_id, loan_id, response_data):
+#         try:
+#             if loan_id:
+#                 return self.get_emi_collections(loan_id)
+#
+#             selected_rm = EmployeeDetails.objects.get(id=selected_rm_id)
+#             sales_officers = EmployeeDetails.objects.filter(reporting_manager_id=selected_rm_id)
+#
+#             selected_rm_data = EmployeeDetailsSerializer(selected_rm).data
+#             sales_officer_data = EmployeeDetailsSerializer(sales_officers, many=True).data
+#
+#             rm_designation_name = DesignationDetails.objects.get(id=selected_rm_data['designation']).designation_name
+#             selected_rm_data['designation_name'] = rm_designation_name
+#
+#             for so in sales_officer_data:
+#                 so['designation_name'] = DesignationDetails.objects.get(id=so['designation']).designation_name
+#
+#             response_data["sales_officer"] = [selected_rm_data] + sales_officer_data
+#             return Response(response_data)
+#
+#         except EmployeeDetails.DoesNotExist:
+#             return Response({"status": "01", "message": "Reporting Manager not found"},
+#                             status=status.HTTP_200_OK)
+#
+#     def handle_cluster_head(self, employee_details, response_data, loan_id):
+#         try:
+#             collections = Collection.objects.filter(status="Active", employee_details=employee_details.id)
+#             collection_serializer = CollectionSerializer(collections, many=True)
+#             response_data["collection_list"] = collection_serializer.data
+#
+#             if loan_id:
+#                 return self.get_emi_collections(loan_id)
+#
+#             rm_designation = DesignationDetails.objects.get(designation_name='Reporting Manager')
+#             so_designation = DesignationDetails.objects.get(designation_name='Sales Officer')
+#
+#             reporting_managers = EmployeeDetails.objects.filter(cluster_head=employee_details,
+#                                                                 designation=rm_designation.id)
+#             sales_officers = EmployeeDetails.objects.filter(cluster_head=employee_details,
+#                                                             designation=so_designation.id)
+#             direct_sales_officers = sales_officers.filter(reporting_manager=None)
+#
+#             response_data["reporting_manager"] = EmployeeDetailsSerializer(reporting_managers, many=True).data
+#             response_data["sales_officer"] = EmployeeDetailsSerializer(direct_sales_officers, many=True).data
+#
+#             return Response(response_data)
+#
+#         except DesignationDetails.DoesNotExist:
+#             return Response({"status": "01", "message": "One or more designations not found"},
+#                             status=status.HTTP_404_NOT_FOUND)
+#
+#     def handle_reporting_manager(self, employee_details, response_data, loan_id):
+#         try:
+#             collections = Collection.objects.filter(status="Active", employee_details=employee_details.id)
+#             collection_serializer = CollectionSerializer(collections, many=True)
+#             response_data["collection_list"] = collection_serializer.data
+#
+#             if loan_id:
+#                 return self.get_emi_collections(loan_id)
+#
+#             sales_officers = EmployeeDetails.objects.filter(reporting_manager_id=employee_details.id)
+#             selected_rm_data = EmployeeDetailsSerializer(employee_details).data
+#             sales_officer_data = EmployeeDetailsSerializer(sales_officers, many=True).data
+#
+#             rm_designation_name = DesignationDetails.objects.get(id=selected_rm_data['designation']).designation_name
+#             selected_rm_data['designation_name'] = rm_designation_name
+#
+#             for so in sales_officer_data:
+#                 so['designation_name'] = DesignationDetails.objects.get(id=so['designation']).designation_name
+#
+#             response_data["sales_officer"] = [selected_rm_data] + sales_officer_data
+#
+#             return Response(response_data)
+#
+#         except EmployeeDetails.DoesNotExist:
+#             return Response({"status": "01", "message": "Reporting Manager not found"},
+#                             status=status.HTTP_404_NOT_FOUND)
+#
+#     def handle_sales_officer(self, employee_details, response_data, loan_id):
+#         try:
+#             collections = Collection.objects.filter(status="Active", employee_details=employee_details.id)
+#             collection_serializer = CollectionSerializer(collections, many=True)
+#             response_data["collection_list"] = collection_serializer.data
+#
+#             if loan_id:
+#                 return self.get_emi_collections(loan_id)
+#
+#             return Response(response_data)
+#
+#         except Collection.DoesNotExist:
+#             return Response({"status": "01", "message": "Collection is not found for the Sales Officer"},
+#                             status=status.HTTP_404_NOT_FOUND)
+#
+#     def get_emi_collections(self, loan_id):
+#         emi_collections = EMICollections.objects.filter(id=loan_id)
+#         if emi_collections.exists():
+#             emi_serializer = EMICollectionsSerializer(emi_collections, many=True)
+#             response_data = {
+#                 "status": "00",
+#                 "message": "success",
+#                 "reporting_manager": [],
+#                 "sales_officer": [],
+#                 "collection_list": [],
+#                 "emi_collections": emi_serializer.data
+#             }
+#             return Response(response_data)
+#         else:
+#             return Response({
+#                 "status": "01",
+#                 "message": "No EMI collections found for the given loan_id"
+#             }, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
 class CollectionDataView(APIView):
     def get(self, request):
         user_id = request.GET.get('user_id')
@@ -3512,7 +3697,7 @@ class CollectionDataView(APIView):
         selected_so_id = request.GET.get('selected_so_id')
 
         response_data = {
-            "status": "00",
+            "status": STATUS_SUCCESS,
             "message": "success",
             "reporting_manager": [],
             "sales_officer": [],
@@ -3521,7 +3706,7 @@ class CollectionDataView(APIView):
         }
 
         if not user_id:
-            return Response({"status": "01", "message": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return self._generate_failure_response("user_id is required")
 
         if selected_so_id:
             return self.handle_selected_so(selected_so_id, loan_id, response_data)
@@ -3533,8 +3718,7 @@ class CollectionDataView(APIView):
             user_details = UserDetails.objects.get(user_id=user_id)
             employee_details = user_details.employees.first()
             if not employee_details:
-                return Response({"status": "01", "message": "Employee details not found for the user"},
-                                status=status.HTTP_404_NOT_FOUND)
+                return self._generate_failure_response("Employee details not found for the user")
 
             designation_name = DesignationDetails.objects.get(id=employee_details.designation_id).designation_name
 
@@ -3545,10 +3729,10 @@ class CollectionDataView(APIView):
             elif designation_name == 'Sales Officer':
                 return self.handle_sales_officer(employee_details, response_data, loan_id)
             else:
-                return Response({"status": "01", "message": "Unknown designation"}, status=status.HTTP_400_BAD_REQUEST)
+                return self._generate_failure_response("Unknown designation")
 
         except UserDetails.DoesNotExist:
-            return Response({"status": "01", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            return self._generate_failure_response("User not found")
 
     def handle_selected_so(self, selected_so_id, loan_id, response_data):
         try:
@@ -3557,19 +3741,12 @@ class CollectionDataView(APIView):
                 collection_serializer = CollectionSerializer(employee_det, many=True)
                 response_data["collection_list"] = collection_serializer.data
             else:
-                return Response({
-                    "status": "01",
-                    "message": "No collection data"
-                }, status=status.HTTP_200_OK)
-
+                return self._generate_failure_response("No collection data")
             if loan_id:
                 return self.get_emi_collections(loan_id)
-
             return Response(response_data)
-
         except Collection.DoesNotExist:
-            return Response({"status": "01", "message": "Loan Applications not found for the Sales Officer"},
-                            status=status.HTTP_404_NOT_FOUND)
+            return self._generate_failure_response("Loan Applications not found for the Sales Officer")
 
     def handle_selected_rm(self, selected_rm_id, loan_id, response_data):
         try:
@@ -3592,8 +3769,7 @@ class CollectionDataView(APIView):
             return Response(response_data)
 
         except EmployeeDetails.DoesNotExist:
-            return Response({"status": "01", "message": "Reporting Manager not found"},
-                            status=status.HTTP_200_OK)
+            return self._generate_failure_response("Reporting Manager not found")
 
     def handle_cluster_head(self, employee_details, response_data, loan_id):
         try:
@@ -3619,8 +3795,7 @@ class CollectionDataView(APIView):
             return Response(response_data)
 
         except DesignationDetails.DoesNotExist:
-            return Response({"status": "01", "message": "One or more designations not found"},
-                            status=status.HTTP_404_NOT_FOUND)
+            return self._generate_failure_response("One or more designations not found")
 
     def handle_reporting_manager(self, employee_details, response_data, loan_id):
         try:
@@ -3646,8 +3821,7 @@ class CollectionDataView(APIView):
             return Response(response_data)
 
         except EmployeeDetails.DoesNotExist:
-            return Response({"status": "01", "message": "Reporting Manager not found"},
-                            status=status.HTTP_404_NOT_FOUND)
+            return self._generate_failure_response("Reporting Manager not found")
 
     def handle_sales_officer(self, employee_details, response_data, loan_id):
         try:
@@ -3661,15 +3835,14 @@ class CollectionDataView(APIView):
             return Response(response_data)
 
         except Collection.DoesNotExist:
-            return Response({"status": "01", "message": "Collection is not found for the Sales Officer"},
-                            status=status.HTTP_404_NOT_FOUND)
+            return self._generate_failure_response("Collection is not found for the Sales Officer")
 
     def get_emi_collections(self, loan_id):
         emi_collections = EMICollections.objects.filter(id=loan_id)
         if emi_collections.exists():
             emi_serializer = EMICollectionsSerializer(emi_collections, many=True)
             response_data = {
-                "status": "00",
+                "status": STATUS_SUCCESS,
                 "message": "success",
                 "reporting_manager": [],
                 "sales_officer": [],
@@ -3678,7 +3851,50 @@ class CollectionDataView(APIView):
             }
             return Response(response_data)
         else:
-            return Response({
-                "status": "01",
-                "message": "No EMI collections found for the given loan_id"
-            }, status=status.HTTP_404_NOT_FOUND)
+            return self._generate_failure_response("No EMI collections found for the given loan_id")
+
+    def _generate_failure_response(self, message):
+        response_data = {
+            'status': STATUS_FAILURE,
+            'message': message,
+        }
+        return JsonResponse(response_data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = CollectionPaymentSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            response_data = {
+                'status': STATUS_SUCCESS,
+                'message': "Success",
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ModesOfPaymentAPIView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        payment_modes = ModesOfPayment.objects.all()
+        serializer = ModesOfPaymentSerializer(payment_modes, many=True)
+        response_data = {
+            'status': STATUS_SUCCESS,
+            'message': "Modes of payment fetched successfully.",
+            "data": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class CollectionTypeAPIView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        collection_type = CollectionType.objects.all()
+        serializer = CollectionTypeSerializer(collection_type, many=True)
+        response_data = {
+            'status': STATUS_SUCCESS,
+            'message': "Type of collection fetched successfully.",
+            "data": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+

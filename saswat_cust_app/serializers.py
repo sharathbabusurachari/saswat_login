@@ -6,7 +6,7 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
                      LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails, EmployeeDetails,
                      ESign, EMICollections,
-                     Collection)
+                     Collection, ModesOfPayment, CollectionPayment, CollectionType)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -291,3 +291,24 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     def get_prospect_code(self, obj):
         return obj.loan_details.prospect_code if obj.loan_details else None
+
+class ModesOfPaymentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ModesOfPayment
+        fields = '__all__'
+
+
+class CollectionTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CollectionType
+        fields = '__all__'
+
+
+class CollectionPaymentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CollectionPayment
+        fields = '__all__'
+

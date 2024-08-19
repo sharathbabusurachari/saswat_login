@@ -9,12 +9,12 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation,
                      VleMobileNumber, PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge,
                      VLEEconomicAndSocialStatusInfo,
-                     VleNearbyMilkCenterContact, VillageDetails, VleOtp,VleMobileVOtp,
+                     VleNearbyMilkCenterContact, VillageDetails, VleOtp, VleMobileVOtp,
                      Country, District, DesignationDetails, WeekDetails,
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
                      LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments, ESign,
                      Collection,
-                     EMICollections)
+                     EMICollections, CollectionPayment, ModesOfPayment, CollectionType)
 from django.http import HttpResponse
 import csv
 from openpyxl import Workbook
@@ -858,5 +858,62 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Collection, CollectionAdmin)
+
+
+
+class CollectionPaymentAdmin(admin.ModelAdmin):
+    list_per_page = 15
+    exclude = ("created_by", "modified_by")
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user.username
+        obj.modified_by = request.user.username
+        super().save_model(request, obj, form, change)
+
+
+admin.site.register(CollectionPayment, CollectionPaymentAdmin)
+
+
+class ModesOfPaymentAdmin(admin.ModelAdmin):
+    list_per_page = 15
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+
+admin.site.register(ModesOfPayment, ModesOfPaymentAdmin)
+
+
+class CollectionTypeAdmin(admin.ModelAdmin):
+    list_per_page = 15
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+
+admin.site.register(CollectionType, CollectionTypeAdmin)
+
 
 
