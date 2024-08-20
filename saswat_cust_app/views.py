@@ -55,7 +55,7 @@ from django.db.models import Count
 import json
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 
-STATUS_SUCCESS = 'OO'
+STATUS_SUCCESS = '00'
 STATUS_FAILURE = '01'
 STATUS_ERROR = '01'
 
