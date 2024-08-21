@@ -272,11 +272,14 @@ class QueryStatusUpdateSerializer(serializers.ModelSerializer):
         model = QueryModel
         fields = ['query_status']
 
+
 class EMICollectionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = EMICollections
-        fields = ['id', 'prospect_code', 'customer_name', 'disbursed_amount', 'instalment_no',
-                  'emi_amt', 'due_date']
+        fields = ['id', 'lender_loan_id', 'customer_name', 'disbursed_amount', 'installment_no',
+                  'emi_amt', 'due_date', 'applicant_mobile_no', 'co_applicant_mobile_no', 'village_details',
+                  'block', 'taluk', 'cluster']
+
 
 class CollectionSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
@@ -290,7 +293,7 @@ class CollectionSerializer(serializers.ModelSerializer):
         return obj.loan_details.customer_name if obj.loan_details else None
 
     def get_prospect_code(self, obj):
-        return obj.loan_details.prospect_code if obj.loan_details else None
+        return obj.loan_details.lender_loan_id if obj.loan_details else None
 
 class ModesOfPaymentSerializer(serializers.ModelSerializer):
 
@@ -307,8 +310,16 @@ class CollectionTypeSerializer(serializers.ModelSerializer):
 
 
 class CollectionPaymentSerializer(serializers.ModelSerializer):
+    loan_id = serializers.CharField(write_only=True)
 
     class Meta:
         model = CollectionPayment
         fields = '__all__'
+
+    def create(self, validated_data):
+        loan_id = validated_data.pop('loan_id')
+        collection = Collection.objects.filter(loan_details__lender_loan_id=loan_id).first()
+        validated_data['loan_id'] = collection
+        collection_payment = CollectionPayment.objects.create(**validated_data)
+        return collection_payment
 

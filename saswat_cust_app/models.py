@@ -825,7 +825,7 @@ class ESign(models.Model):
 class EMICollections(models.Model):
     customer_name = models.CharField(max_length=100, verbose_name='Customer Name', blank=True, null=True)
     co_applicant_name = models.CharField(max_length=100, verbose_name='Co Applicant Name', blank=True, null=True)
-    prospect_code = models.CharField(max_length=20, verbose_name='Prospect Code', blank=True, null=True)
+    lender_loan_id = models.CharField(max_length=20, verbose_name='Lender Loan ID', blank=True, null=True)
     prospect_id = models.IntegerField(unique=True, verbose_name='Prospect Id', blank=True, null=True)
     product_name = models.CharField(max_length=100, verbose_name='Product Name', blank=True, null=True)
     bank_name = models.CharField(max_length=100, verbose_name='Bank Name', blank=True, null=True)
@@ -838,7 +838,7 @@ class EMICollections(models.Model):
     modes = models.CharField(max_length=50, verbose_name='Modes', blank=True, null=True)
     ops = models.CharField(max_length=50, verbose_name='OPS', blank=True, null=True)
     loan_status = models.CharField(max_length=100, verbose_name='Loan Status', blank=True, null=True)
-    instalment_no = models.IntegerField(verbose_name='Installments Number', blank=True, null=True)
+    installment_no = models.IntegerField(verbose_name='Installments Number', blank=True, null=True)
     emi_amt = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='EMI Amount', blank=True, null=True)
     due_date = models.DateField(verbose_name='Due Date', blank=True, null=True)
     interest = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Interest', blank=True, null=True)
@@ -846,10 +846,23 @@ class EMICollections(models.Model):
     umrn = models.CharField(max_length=100, verbose_name='UMRN', blank=True, null=True)
     disbursed_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Disbursed Amount', blank=True, null=True)
     remark = models.CharField(max_length=100, verbose_name='Remark', blank=True, null=True)
-    # created_at = models.DateTimeField(auto_now_add=True, )
+    applicant_mobile_no = models.CharField(max_length=15, verbose_name="Applicant Mobile Number",
+                                           blank=True, null=True)
+    co_applicant_mobile_no = models.CharField(max_length=15, verbose_name="Co-Applicant Mobile Number",
+                                              blank=True, null=True)
+    village_details = models.CharField(max_length=100, verbose_name="Village Details")
+    block = models.CharField(max_length=100, blank=True, null=True, verbose_name="Block")
+    taluk = models.CharField(max_length=100, blank=True, null=True, verbose_name="Taluk")
+    cluster = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cluster")
+    paid_status = models.CharField(max_length=100, blank=True, null=True,verbose_name="Paid Status")
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+
 
     def __str__(self):
-        return f"{self.customer_name} - {self.emi_amt}"
+        return f"{self.customer_name} - {self.lender_loan_id}"
 
     class Meta:
         db_table = 'emi_collection'
@@ -865,10 +878,11 @@ class Collection(models.Model):
     created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
     modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
     remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
+    collection_status = models.CharField(max_length=20, null=True, blank=True)
 
 
     def __str__(self):
-        return f"{self.employee_details}"
+        return f"{self.loan_details}"
 
     class Meta:
         db_table = 'collection'
@@ -898,8 +912,8 @@ class CollectionType(models.Model):
 
 class CollectionPayment(models.Model):
     user_id = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
-    loan_id = models.ForeignKey(Collection, on_delete=models.CASCADE, null=True, blank=True)
     modes = models.ForeignKey(ModesOfPayment, on_delete=models.CASCADE, null=True, blank=True)
+    loan_id = models.ForeignKey(Collection, on_delete=models.CASCADE)
     paid_amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     ref_number = models.CharField(max_length=100, null=True, blank=True)
     customer_name = models.CharField(max_length=100, null=True, blank=True)
@@ -918,6 +932,8 @@ class CollectionPayment(models.Model):
     cattle_photo = models.ImageField(upload_to='location_attachments/', null=True, blank=True)
     vle_remark = models.CharField(max_length=100, null=True, blank=True)
     neighbour_remark = models.CharField(max_length=100, null=True, blank=True)
+    customer_remark = models.CharField(max_length=100, null=True, blank=True)
+    version = models.IntegerField(default=1, editable=False, null=True, blank=True)
     description = models.CharField(max_length=255, null=True, blank=True)
     remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -926,7 +942,7 @@ class CollectionPayment(models.Model):
     modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
 
     def __str__(self):
-        return self.customer_name
+        return str(self.customer_name)
 
     class Meta:
         db_table = 'collection_payment'

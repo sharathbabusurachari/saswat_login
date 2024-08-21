@@ -15,7 +15,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries,
                                     ESign,
                                     Collection, DesignationDetails,
-                                    EMICollections, CollectionType, ModesOfPayment)
+                                    EMICollections, CollectionType, ModesOfPayment, CollectionPayment)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -3870,6 +3870,27 @@ class CollectionDataView(APIView):
                 'message': "Success",
             }
             return Response(response_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        lender_loan_id = request.data.get('loan_id')
+        try:
+
+            collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
+            collection_payment = CollectionPayment.objects.get(loan_id=collection.id)
+
+        except ObjectDoesNotExist:
+            return self._generate_failure_response('Collection or CollectionPayment not found')
+        serializer = CollectionPaymentSerializer(collection_payment, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save(loan_id=collection)
+            response_data = {
+                'status': STATUS_SUCCESS,
+                'message': "Update Success",
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ModesOfPaymentAPIView(APIView):

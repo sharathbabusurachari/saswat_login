@@ -791,7 +791,7 @@ admin.site.register(ESign, ESignAdmin)
 
 
 class EMICollectionsResource(resources.ModelResource):
-    prospect_code = fields.Field(attribute='prospect_code', column_name='PROSPECTCODE')
+    lender_loan_id = fields.Field(attribute='lender_loan_id', column_name='PROSPECTCODE')
     location = fields.Field(attribute='location', column_name='Location')
     sm = fields.Field(attribute='sm', column_name='SM')
     prospect_id = fields.Field(attribute='prospect_id', column_name='PROSPECTID')
@@ -808,23 +808,36 @@ class EMICollectionsResource(resources.ModelResource):
     bank_name = fields.Field(attribute='bank_name', column_name='BANK_NAME')
     cheque_no = fields.Field(attribute='cheque_no', column_name='CHEQUE_NO')
     loan_status = fields.Field(attribute='loan_status', column_name='LOAN_STATUS')
-    instalment_no = fields.Field(attribute='instalment_no', column_name='INSTALMENT_NO')
+    installment_no = fields.Field(attribute='installment_no', column_name='INSTALMENT_NO')
     emi_amt = fields.Field(attribute='emi_amt', column_name='EMI_AMT')
     interest = fields.Field(attribute='interest', column_name='INTEREST')
     principal = fields.Field(attribute='principal', column_name='PRINCIPAL')
     umrn = fields.Field(attribute='umrn', column_name='UMRN')
     disbursed_amount = fields.Field(attribute='disbursed_amount', column_name='DISBURSED_AMOUNT')
+    applicant_mobile_no = fields.Field(attribute='applicant_mobile_no', column_name='APPLICANT_MOBILE_NO')
+    co_applicant_mobile_no = fields.Field(attribute='co_applicant_mobile_no', column_name='CO_APPLICANT_MOBILE_NO')
+    village_details = fields.Field(attribute='village_details', column_name='VILLAGE_DETAILS')
+    block = fields.Field(attribute='block', column_name='BLOCK')
+    taluk = fields.Field(attribute='taluk', column_name='TALUK')
+    cluster = fields.Field(attribute='cluster', column_name='CLUSTER')
+    paid_status = fields.Field(attribute='paid_status', column_name='PAID_STATUS')
+    created_at = fields.Field(attribute='created_at', column_name='CREATED_AT')
+    modified_at = fields.Field(attribute='modified_at', column_name='MODIFIED_AT')
+    created_by = fields.Field(attribute='created_by', column_name='CREATED_BY')
+    modified_by = fields.Field(attribute='modified_by', column_name='MODIFIED_BY')
     class Meta:
         model = EMICollections
         exclude = ('id',)
-        fields = ('customer_name', 'co_applicant_name', 'prospect_code', 'prospect_id', 'product_name',
+        fields = ('customer_name', 'co_applicant_name', 'lender_loan_id', 'prospect_id', 'product_name',
                   'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
-                  'ops', 'loan_status', 'instalment_no', 'emi_amt', 'due_date', 'interest', 'principal',
-                  'umrn', 'disbursed_amount', 'remark')
-        export_order = ('customer_name', 'co_applicant_name', 'prospect_code', 'prospect_id', 'product_name',
+                  'ops', 'loan_status', 'installment_no', 'emi_amt', 'due_date', 'interest', 'principal',
+                  'umrn', 'disbursed_amount', 'remark', 'paid_status', 'applicant_mobile_no', 'co_applicant_mobile_no',
+                  'village_details', 'block', 'taluk', 'cluster')
+        export_order = ('customer_name', 'co_applicant_name', 'lender_loan_id', 'prospect_id', 'product_name',
                         'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
-                        'ops', 'loan_status', 'instalment_no', 'emi_amt', 'due_date', 'interest', 'principal',
-                        'umrn', 'disbursed_amount', 'remark')
+                        'ops', 'loan_status', 'installment_no', 'emi_amt', 'due_date', 'interest', 'principal',
+                        'umrn', 'disbursed_amount', 'remark', 'paid_status', 'applicant_mobile_no', 'co_applicant_mobile_no',
+                        'village_details', 'block', 'taluk', 'cluster')
 
         import_id_fields = ('prospect_id',)
 
@@ -832,11 +845,13 @@ class EMICollectionsResource(resources.ModelResource):
 @admin.register(EMICollections)
 class EMICollectionsAdmin(ImportExportModelAdmin):
     resource_class = EMICollectionsResource
-    list_display = ('customer_name', 'co_applicant_name', 'prospect_code', 'prospect_id', 'product_name',
+    list_display = ('customer_name', 'co_applicant_name', 'lender_loan_id', 'prospect_id', 'product_name',
                     'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
-                    'ops', 'loan_status', 'instalment_no', 'emi_amt', 'due_date', 'interest', 'principal',
-                    'umrn', 'disbursed_amount', 'remark')
-    search_fields = ('customer_name', 'prospect_code', 'product_name', 'bank_name')
+                    'ops', 'loan_status', 'installment_no', 'emi_amt', 'due_date', 'interest', 'principal',
+                    'umrn', 'disbursed_amount', 'remark', 'paid_status', 'applicant_mobile_no', 'co_applicant_mobile_no',
+                    'village_details', 'block', 'taluk', 'cluster', 'created_at', 'modified_at',
+                    'created_by', 'modified_by')
+    search_fields = ('customer_name', 'lender_loan_id', 'product_name', 'bank_name')
 
 class CollectionAdmin(admin.ModelAdmin):
     list_per_page = 15
@@ -858,7 +873,6 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Collection, CollectionAdmin)
-
 
 
 class CollectionPaymentAdmin(admin.ModelAdmin):
