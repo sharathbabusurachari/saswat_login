@@ -3864,20 +3864,22 @@ class CollectionDataView(APIView):
         serializer = CollectionPaymentSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
+            collection_payment = serializer.save()
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Success",
+                'row_id': collection_payment.id
             }
             return Response(response_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, *args, **kwargs):
+
+        row_id = request.data.get('row_id')
         lender_loan_id = request.data.get('loan_id')
         try:
-
             collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
-            collection_payment = CollectionPayment.objects.get(loan_id=collection.id)
+            collection_payment = CollectionPayment.objects.get(id=row_id, loan_id=collection.id)
 
         except ObjectDoesNotExist:
             return self._generate_failure_response('Collection or CollectionPayment not found')
@@ -3887,7 +3889,7 @@ class CollectionDataView(APIView):
             serializer.save(loan_id=collection)
             response_data = {
                 'status': STATUS_SUCCESS,
-                'message': "Update Success",
+                'message': "Update Success"
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
