@@ -848,7 +848,7 @@ class EMICollectionsAdmin(ImportExportModelAdmin):
     list_display = ('customer_name', 'co_applicant_name', 'lender_loan_id', 'prospect_id', 'product_name',
                     'bank_name', 'branch', 'state', 'cheque_no', 'sanctioned_amount', 'location', 'sm', 'modes',
                     'ops', 'loan_status', 'installment_no', 'emi_amt', 'due_date', 'interest', 'principal',
-                    'umrn', 'disbursed_amount', 'remark', 'paid_status', 'applicant_mobile_no', 'co_applicant_mobile_no',
+                    'umrn', 'disbursed_amount', 'remark', 'paid_status', 'payment_row_id', 'applicant_mobile_no', 'co_applicant_mobile_no',
                     'village_details', 'block', 'taluk', 'cluster', 'created_at', 'modified_at',
                     'created_by', 'modified_by')
     search_fields = ('customer_name', 'lender_loan_id', 'product_name', 'bank_name')

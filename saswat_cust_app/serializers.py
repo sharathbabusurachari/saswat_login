@@ -278,7 +278,7 @@ class EMICollectionsSerializer(serializers.ModelSerializer):
         model = EMICollections
         fields = ['id', 'lender_loan_id', 'customer_name', 'disbursed_amount', 'installment_no',
                   'emi_amt', 'due_date', 'applicant_mobile_no', 'co_applicant_mobile_no', 'village_details',
-                  'block', 'taluk', 'cluster']
+                  'block', 'taluk', 'cluster', 'payment_row_id', 'paid_status']
 
 
 class CollectionSerializer(serializers.ModelSerializer):
