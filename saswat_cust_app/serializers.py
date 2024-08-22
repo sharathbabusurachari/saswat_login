@@ -323,3 +323,19 @@ class CollectionPaymentSerializer(serializers.ModelSerializer):
         collection_payment = CollectionPayment.objects.create(**validated_data)
         return collection_payment
 
+    def update(self, instance, validated_data):
+        loan_id = validated_data.pop('loan_id', None)
+
+        if loan_id:
+            collection = Collection.objects.filter(loan_details__lender_loan_id=loan_id).first()
+            if collection:
+                instance.loan_id = collection
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
+
+

@@ -855,6 +855,7 @@ class EMICollections(models.Model):
     taluk = models.CharField(max_length=100, blank=True, null=True, verbose_name="Taluk")
     cluster = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cluster")
     paid_status = models.CharField(max_length=100, blank=True, null=True,verbose_name="Paid Status")
+    payment_row_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Payment Row Id")
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
     created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)

@@ -3862,9 +3862,14 @@ class CollectionDataView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = CollectionPaymentSerializer(data=request.data)
+        lender_loan_id = request.data.get('loan_id')
 
         if serializer.is_valid():
             collection_payment = serializer.save()
+            EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
+                payment_row_id=collection_payment.id,
+                paid_status=collection_payment.status
+            )
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Success",
@@ -3877,6 +3882,7 @@ class CollectionDataView(APIView):
 
         row_id = request.data.get('row_id')
         lender_loan_id = request.data.get('loan_id')
+
         try:
             collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
             collection_payment = CollectionPayment.objects.get(id=row_id, loan_id=collection.id)
@@ -3886,10 +3892,15 @@ class CollectionDataView(APIView):
         serializer = CollectionPaymentSerializer(collection_payment, data=request.data, partial=True)
 
         if serializer.is_valid():
-            serializer.save(loan_id=collection)
+            serializer.save()
+            EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
+                payment_row_id=collection_payment.id,
+                paid_status=collection_payment.status
+            )
             response_data = {
                 'status': STATUS_SUCCESS,
-                'message': "Update Success"
+                'message': "Update Success",
+                'row_id': collection_payment.id
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
