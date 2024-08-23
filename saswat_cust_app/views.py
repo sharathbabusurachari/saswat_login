@@ -3863,17 +3863,36 @@ class CollectionDataView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CollectionPaymentSerializer(data=request.data)
         lender_loan_id = request.data.get('loan_id')
-        status = request.data.get('status')
+        pay_status = request.data.get('status')
+        if pay_status == "Paid":
+            collection_status = "Collected - Need to be Verified"
+        elif pay_status == "Paid-Partially":
+            collection_status = "Partial collected - Need to be verified"
+        elif pay_status == "Not Paid":
+            collection_status = "Not collected"
+        elif pay_status == "CASH-Paid":
+            collection_status = "Collected - Need to be Verified"
+        elif pay_status == "CASH-Paid-Partially":
+            collection_status = "Partial collected - Need to be verified"
+        elif pay_status == "Unable to Pay":
+            collection_status = "Not collected"
+        elif pay_status == "Applicant-Unavailable":
+            collection_status = "Not collected"
+        elif pay_status == "Promise-To-pay":
+            collection_status = "Not collected"
+        else:
+            collection_status = "Unknown"
 
         if serializer.is_valid():
             collection_payment = serializer.save()
             EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
-                                          payment_row_id=collection_payment.id,
-                                          paid_status=collection_payment.status
-                                         )
-            Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
-                status=status,
+                payment_row_id=collection_payment.id,
+                paid_status=collection_payment.status
             )
+            if collection_status != "Unknown":
+                Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
+                    status=collection_status
+                )
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Success",
@@ -3885,7 +3904,25 @@ class CollectionDataView(APIView):
     def put(self, request, *args, **kwargs):
         row_id = request.data.get('row_id')
         lender_loan_id = request.data.get('loan_id')
-        status = request.data.get('status')
+        pay_status = request.data.get('status')
+        if pay_status == "Paid":
+            collection_status = "Collected - Need to be Verified"
+        elif pay_status == "Paid-Partially":
+            collection_status = "Partial collected - Need to be verified"
+        elif pay_status == "Not Paid":
+            collection_status = "Not collected"
+        elif pay_status == "CASH-Paid":
+            collection_status = "Collected - Need to be Verified"
+        elif pay_status == "CASH-Paid-Partially":
+            collection_status = "Partial collected - Need to be verified"
+        elif pay_status == "Unable to Pay":
+            collection_status = "Not collected"
+        elif pay_status == "Applicant-Unavailable":
+            collection_status = "Not collected"
+        elif pay_status == "Promise-To-pay":
+            collection_status = "Not collected"
+        else:
+            collection_status = "Unknown"
 
         try:
             collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
@@ -3901,9 +3938,11 @@ class CollectionDataView(APIView):
                 payment_row_id=collection_payment.id,
                 paid_status=collection_payment.status
             )
-            Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
-                status=status,
-            )
+            if collection_status != "Unknown":
+                Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
+                    status=collection_status
+                )
+
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Update Success",
@@ -3913,51 +3952,52 @@ class CollectionDataView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def post(self, request, *args, **kwargs):
-    #     serializer = CollectionPaymentSerializer(data=request.data)
-    #     lender_loan_id = request.data.get('loan_id')
-    #
-    #     if serializer.is_valid():
-    #         collection_payment = serializer.save()
-    #         EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
-    #             payment_row_id=collection_payment.id,
-    #             paid_status=collection_payment.status
-    #         )
-    #         response_data = {
-    #             'status': STATUS_SUCCESS,
-    #             'message': "Success",
-    #             'row_id': collection_payment.id
-    #         }
-    #         return Response(response_data, status=status.HTTP_200_OK)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def put(self, request, *args, **kwargs):
-    #
-    #     row_id = request.data.get('row_id')
-    #     lender_loan_id = request.data.get('loan_id')
-    #
-    #     try:
-    #         collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
-    #         collection_payment = CollectionPayment.objects.get(id=row_id, loan_id=collection.id)
-    #
-    #     except ObjectDoesNotExist:
-    #         return self._generate_failure_response('Collection or CollectionPayment not found')
-    #     serializer = CollectionPaymentSerializer(collection_payment, data=request.data, partial=True)
-    #
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
-    #             payment_row_id=collection_payment.id,
-    #             paid_status=collection_payment.status
-    #         )
-    #         response_data = {
-    #             'status': STATUS_SUCCESS,
-    #             'message': "Update Success",
-    #             'row_id': collection_payment.id
-    #         }
-    #         return Response(response_data, status=status.HTTP_200_OK)
-    #
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, *args, **kwargs):
+        #     serializer = CollectionPaymentSerializer(data=request.data)
+        #     lender_loan_id = request.data.get('loan_id')
+        #
+        #     if serializer.is_valid():
+        #         collection_payment = serializer.save()
+        #         EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
+        #             payment_row_id=collection_payment.id,
+        #             paid_status=collection_payment.status
+        #         )
+        #         response_data = {
+        #             'status': STATUS_SUCCESS,
+        #             'message': "Success",
+        #             'row_id': collection_payment.id
+        #         }
+        #         return Response(response_data, status=status.HTTP_200_OK)
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # def put(self, request, *args, **kwargs):
+        #
+        #     row_id = request.data.get('row_id')
+        #     lender_loan_id = request.data.get('loan_id')
+        #
+        #     try:
+        #         collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
+        #         collection_payment = CollectionPayment.objects.get(id=row_id, loan_id=collection.id)
+        #
+        #     except ObjectDoesNotExist:
+        #         return self._generate_failure_response('Collection or CollectionPayment not found')
+        #     serializer = CollectionPaymentSerializer(collection_payment, data=request.data, partial=True)
+        #
+        #     if serializer.is_valid():
+        #         serializer.save()
+        #         EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
+        #             payment_row_id=collection_payment.id,
+        #             paid_status=collection_payment.status
+        #         )
+        #         response_data = {
+        #             'status': STATUS_SUCCESS,
+        #             'message': "Update Success",
+        #             'row_id': collection_payment.id
+        #         }
+        #         return Response(response_data, status=status.HTTP_200_OK)
+        #
+        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ModesOfPaymentAPIView(APIView):
 
