@@ -274,17 +274,21 @@ class QueryStatusUpdateSerializer(serializers.ModelSerializer):
 
 
 class EMICollectionsSerializer(serializers.ModelSerializer):
+    paid_status = serializers.SerializerMethodField()
     class Meta:
         model = EMICollections
         fields = ['id', 'lender_loan_id', 'customer_name', 'disbursed_amount', 'installment_no',
                   'emi_amt', 'due_date', 'applicant_mobile_no', 'co_applicant_mobile_no', 'village_details',
                   'block', 'taluk', 'cluster', 'payment_row_id', 'paid_status']
 
+    def get_paid_status(self, obj):
+        return obj.paid_status if obj.paid_status is not None else ""
+
 
 class CollectionSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     prospect_code = serializers.SerializerMethodField()
-    paid_status = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Collection
@@ -295,8 +299,7 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     def get_prospect_code(self, obj):
         return obj.loan_details.lender_loan_id if obj.loan_details else None
-    def get_paid_status(self, obj):
-        return obj.paid_status if obj.paid_status is not None else ""
+
 
 class ModesOfPaymentSerializer(serializers.ModelSerializer):
 
