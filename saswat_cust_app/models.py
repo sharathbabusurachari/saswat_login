@@ -869,9 +869,16 @@ class EMICollections(models.Model):
         db_table = 'emi_collection'
 
 class Collection(models.Model):
+    STATUS_CHOICES = [
+        ('Collected', 'Collected'), ('Collected - Need to be Verified', 'Collected - Need to be Verified'),
+        ('Partial collected', 'Partial collected'),
+        ('Partial collected - Need to be verified', 'Partial collected - Need to be verified'),
+        ('Not collected', 'Not collected')
+    ]
     employee_details = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="Employee Details")
     loan_details = models.ForeignKey(EMICollections, on_delete=models.CASCADE, verbose_name="Loan Details")
-    status = models.CharField(max_length=100, verbose_name="Status")
+    # status = models.CharField(max_length=100, verbose_name="Status")
+    status = models.CharField(choices=STATUS_CHOICES, max_length=100, verbose_name="Status")
     start_date = models.DateField()
     end_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True, )

@@ -3736,7 +3736,7 @@ class CollectionDataView(APIView):
 
     def handle_selected_so(self, selected_so_id, loan_id, response_data):
         try:
-            employee_det = Collection.objects.filter(employee_details=selected_so_id, status="Active")
+            employee_det = Collection.objects.filter(employee_details=selected_so_id)
             if employee_det.exists():
                 collection_serializer = CollectionSerializer(employee_det, many=True)
                 response_data["collection_list"] = collection_serializer.data
@@ -3773,7 +3773,7 @@ class CollectionDataView(APIView):
 
     def handle_cluster_head(self, employee_details, response_data, loan_id):
         try:
-            collections = Collection.objects.filter(status="Active", employee_details=employee_details.id)
+            collections = Collection.objects.filter(employee_details=employee_details.id)
             collection_serializer = CollectionSerializer(collections, many=True)
             response_data["collection_list"] = collection_serializer.data
 
@@ -3799,7 +3799,7 @@ class CollectionDataView(APIView):
 
     def handle_reporting_manager(self, employee_details, response_data, loan_id):
         try:
-            collections = Collection.objects.filter(status="Active", employee_details=employee_details.id)
+            collections = Collection.objects.filter(employee_details=employee_details.id)
             collection_serializer = CollectionSerializer(collections, many=True)
             response_data["collection_list"] = collection_serializer.data
 
@@ -3825,7 +3825,7 @@ class CollectionDataView(APIView):
 
     def handle_sales_officer(self, employee_details, response_data, loan_id):
         try:
-            collections = Collection.objects.filter(status="Active", employee_details=employee_details.id)
+            collections = Collection.objects.filter(employee_details=employee_details.id)
             collection_serializer = CollectionSerializer(collections, many=True)
             response_data["collection_list"] = collection_serializer.data
 
@@ -3863,12 +3863,16 @@ class CollectionDataView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = CollectionPaymentSerializer(data=request.data)
         lender_loan_id = request.data.get('loan_id')
+        status = request.data.get('status')
 
         if serializer.is_valid():
             collection_payment = serializer.save()
             EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
-                payment_row_id=collection_payment.id,
-                paid_status=collection_payment.status
+                                          payment_row_id=collection_payment.id,
+                                          paid_status=collection_payment.status
+                                         )
+            Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
+                status=status,
             )
             response_data = {
                 'status': STATUS_SUCCESS,
@@ -3879,9 +3883,9 @@ class CollectionDataView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, *args, **kwargs):
-
         row_id = request.data.get('row_id')
         lender_loan_id = request.data.get('loan_id')
+        status = request.data.get('status')
 
         try:
             collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
@@ -3897,6 +3901,9 @@ class CollectionDataView(APIView):
                 payment_row_id=collection_payment.id,
                 paid_status=collection_payment.status
             )
+            Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
+                status=status,
+            )
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Update Success",
@@ -3905,6 +3912,52 @@ class CollectionDataView(APIView):
             return Response(response_data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def post(self, request, *args, **kwargs):
+    #     serializer = CollectionPaymentSerializer(data=request.data)
+    #     lender_loan_id = request.data.get('loan_id')
+    #
+    #     if serializer.is_valid():
+    #         collection_payment = serializer.save()
+    #         EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
+    #             payment_row_id=collection_payment.id,
+    #             paid_status=collection_payment.status
+    #         )
+    #         response_data = {
+    #             'status': STATUS_SUCCESS,
+    #             'message': "Success",
+    #             'row_id': collection_payment.id
+    #         }
+    #         return Response(response_data, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def put(self, request, *args, **kwargs):
+    #
+    #     row_id = request.data.get('row_id')
+    #     lender_loan_id = request.data.get('loan_id')
+    #
+    #     try:
+    #         collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
+    #         collection_payment = CollectionPayment.objects.get(id=row_id, loan_id=collection.id)
+    #
+    #     except ObjectDoesNotExist:
+    #         return self._generate_failure_response('Collection or CollectionPayment not found')
+    #     serializer = CollectionPaymentSerializer(collection_payment, data=request.data, partial=True)
+    #
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
+    #             payment_row_id=collection_payment.id,
+    #             paid_status=collection_payment.status
+    #         )
+    #         response_data = {
+    #             'status': STATUS_SUCCESS,
+    #             'message': "Update Success",
+    #             'row_id': collection_payment.id
+    #         }
+    #         return Response(response_data, status=status.HTTP_200_OK)
+    #
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ModesOfPaymentAPIView(APIView):
 
