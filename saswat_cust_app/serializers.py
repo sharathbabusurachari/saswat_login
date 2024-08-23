@@ -284,6 +284,7 @@ class EMICollectionsSerializer(serializers.ModelSerializer):
 class CollectionSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
     prospect_code = serializers.SerializerMethodField()
+    paid_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Collection
@@ -294,6 +295,8 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     def get_prospect_code(self, obj):
         return obj.loan_details.lender_loan_id if obj.loan_details else None
+    def get_paid_status(self, obj):
+        return obj.paid_status if obj.paid_status is not None else ""
 
 class ModesOfPaymentSerializer(serializers.ModelSerializer):
 
