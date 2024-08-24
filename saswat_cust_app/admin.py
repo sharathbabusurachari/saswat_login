@@ -725,6 +725,7 @@ class SignInSignOutAdmin(admin.ModelAdmin):
     list_filter = ['event_date', 'user']
     list_per_page = 30
     actions = [export_as_csv_action(), export_as_excel_action()]
+    readonly_fields = ('gps',)
 
     def truncate_field(self, field_value, max_length=30):
         return (str(field_value)[:20] + '.....') if len(str(field_value)) > max_length else field_value
