@@ -76,7 +76,8 @@ class GpsModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        # return self.name
+        return f"{self.name} - {self.id}"
 
 
 class Gender(models.Model):
@@ -787,9 +788,10 @@ class SignInSignOut(models.Model):
     event_type = models.CharField(max_length=20, verbose_name=' Event Type (Sign In / Sign Out)')
     event_date = models.DateField(verbose_name='Event Date')
     event_time = models.TimeField(verbose_name='Event Time')
-    created_at = models.DateTimeField(auto_now_add=True)
+    gps = models.ForeignKey(GpsModel, on_delete=models.CASCADE, verbose_name='GPS Reference', blank=True, null=True)
     remarks = models.JSONField(max_length=1000, verbose_name='Remarks', blank=True, null=True)
     remarks_one = models.CharField(max_length=1000, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.user)

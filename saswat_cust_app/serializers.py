@@ -244,6 +244,8 @@ class NewQuerySerializer(serializers.ModelSerializer):
         return obj.loan_id
 
 class SignInSignOutSerializer(serializers.ModelSerializer):
+    gps_id = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = SignInSignOut
         fields = '__all__'

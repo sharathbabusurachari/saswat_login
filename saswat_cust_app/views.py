@@ -3126,35 +3126,81 @@ class SignInSignOutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        signin_signout_serializer = SignInSignOutSerializer(data=request.data)
         try:
-            if signin_signout_serializer.is_valid():
-                signin_signout_serializer.save()
-                response_data = {
-                    'status': '00',
-                    'message': "success",
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            elif "remarks_one" in signin_signout_serializer.errors:
-                if ("Not a valid string." in signin_signout_serializer.errors["remarks_one"] and
-                        isinstance(signin_signout_serializer.data['remarks_one'], dict)):
-                    user_id = signin_signout_serializer.data['user']
-                    client_id = signin_signout_serializer.data['client_id']
-                    event_type = signin_signout_serializer.data['event_type']
-                    event_date = signin_signout_serializer.data['event_date']
-                    event_time = signin_signout_serializer.data['event_time']
-                    remarks_one_dump = json.dumps(signin_signout_serializer.data['remarks_one'])
-                    SignInSignOut.objects.create(user_id=user_id, client_id=client_id, event_type=event_type,
-                                                 event_date=event_date, event_time=event_time,
-                                                 remarks_one=remarks_one_dump)
+            if not request.data.get('remarks'):
+                signin_signout_serializer = SignInSignOutSerializer(data=request.data)
+                if signin_signout_serializer.is_valid():
+                    signin_signout_serializer.save()
                     response_data = {
                         'status': '00',
                         'message': "success",
                     }
                     return Response(response_data, status=status.HTTP_200_OK)
-                return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                elif "remarks_one" in signin_signout_serializer.errors:
+                    if ("Not a valid string." in signin_signout_serializer.errors["remarks_one"] and
+                            isinstance(signin_signout_serializer.data['remarks_one'], dict)):
+                        user_id = signin_signout_serializer.data['user']
+                        client_id = signin_signout_serializer.data['client_id']
+                        event_type = signin_signout_serializer.data['event_type']
+                        event_date = signin_signout_serializer.data['event_date']
+                        event_time = signin_signout_serializer.data['event_time']
+                        remarks_one_dump = json.dumps(signin_signout_serializer.data['remarks_one'])
+                        SignInSignOut.objects.create(user_id=user_id, client_id=client_id, event_type=event_type,
+                                                     event_date=event_date, event_time=event_time,
+                                                     remarks_one=remarks_one_dump)
+                        response_data = {
+                            'status': '00',
+                            'message': "success",
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                signin_signout_serializer = SignInSignOutSerializer(data=request.data)
+                if signin_signout_serializer.is_valid():
+                    get_gps_serializer = GpsSerializer(data=request.data.get('remarks'))
+                    if not get_gps_serializer.is_valid():
+                        return Response(get_gps_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    gps_instance = get_gps_serializer.save()
+                    gps_id = gps_instance.id
+                    request.data['gps_id'] = gps_id
+                    signin_signout_serializer = SignInSignOutSerializer(data=request.data)
+                    if signin_signout_serializer.is_valid():
+                        signin_signout_serializer.save()
+                        response_data = {
+                            'status': '00',
+                            'message': "success",
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    else:
+                        return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                elif "remarks_one" in signin_signout_serializer.errors:
+                    if ("Not a valid string." in signin_signout_serializer.errors["remarks_one"] and
+                            isinstance(signin_signout_serializer.data['remarks_one'], dict)):
+                        get_gps_serializer = GpsSerializer(data=request.data.get('remarks'))
+                        if not get_gps_serializer.is_valid():
+                            return Response(get_gps_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                        gps_instance = get_gps_serializer.save()
+                        gps_id = gps_instance.id
+                        user_id = signin_signout_serializer.data['user']
+                        client_id = signin_signout_serializer.data['client_id']
+                        event_type = signin_signout_serializer.data['event_type']
+                        event_date = signin_signout_serializer.data['event_date']
+                        event_time = signin_signout_serializer.data['event_time']
+                        remarks = signin_signout_serializer.data['remarks']
+                        remarks_one_dump = json.dumps(signin_signout_serializer.data['remarks_one'])
+                        SignInSignOut.objects.create(user_id=user_id, client_id=client_id, event_type=event_type,
+                                                     event_date=event_date, event_time=event_time, gps_id=gps_id,
+                                                     remarks=remarks, remarks_one=remarks_one_dump)
+                        response_data = {
+                            'status': '00',
+                            'message': "success",
+                        }
+                        return Response(response_data, status=status.HTTP_200_OK)
+                    return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response(signin_signout_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

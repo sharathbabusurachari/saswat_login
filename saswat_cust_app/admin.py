@@ -114,7 +114,7 @@ def export_as_excel_action(description="Export selected objects as Excel file",
 
 
 class GpsModelAdmin(admin.ModelAdmin):
-    list_display = ('mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'remarks',
+    list_display = ('id', 'mobile_no', 'name', 'latitude', 'longitude', 'gps_date', 'gps_time', 'status', 'remarks',
                     'created_at')
     list_per_page = 20
     actions = [export_as_csv_action(), export_as_excel_action()]
@@ -716,14 +716,26 @@ class QnaAttachmentAdmin(admin.ModelAdmin):
 
 
 class SignInSignOutAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'created_at', 'remarks',
-                    'remarks_one')
+    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'gps', 's_remarks',
+                    's_remarks_one', 'created_at')
     # list_select_related = ['user']
     list_display_links = ('id', 'user')
     search_fields = ('user__user_id', 'user__first_name')
     search_help_text = f'Search with the User ID or First Name of User.'
     list_filter = ['event_date', 'user']
+    list_per_page = 30
     actions = [export_as_csv_action(), export_as_excel_action()]
+
+    def truncate_field(self, field_value, max_length=30):
+        return (str(field_value)[:20] + '.....') if len(str(field_value)) > max_length else field_value
+
+    def get_truncated_field_method(field_name, short_description):
+        def method(self, obj):
+            return self.truncate_field(getattr(obj, field_name))
+        method.short_description = short_description
+        return method
+    s_remarks = get_truncated_field_method('remarks', 'REMARKS')
+    s_remarks_one = get_truncated_field_method('remarks_one', 'REMARKS ONE')
 
 
 admin.site.register(SignInSignOut, SignInSignOutAdmin)
