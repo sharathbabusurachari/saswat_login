@@ -404,7 +404,7 @@ class CollectionAutopaySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         loan_id = validated_data.pop('loan_id')
         print(loan_id)
-        collection = AutopayAssignedSerializer.objects.filter(loan_details__lender_loan_id=loan_id).first()
+        collection = AutopayAssigned.objects.filter(loan_details__lender_loan_id=loan_id).first()
         validated_data['max_amount'] = "100000.00"
         validated_data['loan_id'] = collection
         collection_payment = CollectionAutopay.objects.create(**validated_data)
@@ -414,7 +414,7 @@ class CollectionAutopaySerializer(serializers.ModelSerializer):
         loan_id = validated_data.pop('loan_id', None)
 
         if loan_id:
-            collection = AutopayAssignedSerializer.objects.filter(loan_details__lender_loan_id=loan_id).first()
+            collection = AutopayAssigned.objects.filter(loan_details__lender_loan_id=loan_id).first()
             if collection:
                 instance.loan_id = collection
 
