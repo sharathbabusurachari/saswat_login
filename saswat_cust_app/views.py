@@ -16,7 +16,7 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     ESign,
                                     Collection, DesignationDetails,
                                     EMICollections, CollectionType, ModesOfPayment, CollectionPayment, LoanAutoPayBase,
-                                    AutopayAssigned)
+                                    AutopayAssigned, CollectionAutopay)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -39,7 +39,7 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          CollectionSerializer,
                                          EMICollectionsSerializer, CollectionPaymentSerializer,
                                          CollectionTypeSerializer, ModesOfPaymentSerializer, LoanAutoPayBaseSerializer,
-                                         AutopayAssignedSerializer)
+                                         AutopayAssignedSerializer, CollectionAutopaySerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -56,6 +56,8 @@ import psycopg2
 from django.db.models import Count
 import json
 from urllib3.exceptions import MaxRetryError, NewConnectionError
+from saswat_cust_info.settings import (OTP_API_URL, DEBIT_REQUEST_URL, TRANSACTION_STATUS_URL, INITIATE_PAYMENT_URL,
+                                       CANCEL_MANDATE_URL)
 
 STATUS_SUCCESS = '00'
 STATUS_FAILURE = '01'
@@ -4073,6 +4075,7 @@ class CollectionTypeAPIView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+
 class AutopayRegisterAPIView(APIView):
 
     def get(self, request):
@@ -4245,4 +4248,81 @@ class AutopayRegisterAPIView(APIView):
             'message': message,
         }
         return JsonResponse(response_data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = CollectionAutopaySerializer(data=request.data)
+        lender_loan_id = request.data.get('loan_id')
+        date_str = request.data.get('due_date')
+        autopay_status = request.data.get('status')
+        final_collection_date = None
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        final_collection_date = date_obj.strftime("%Y/%m/%d")
+
+        # Hard-coded max_amount
+        max_amount = 100000
+        # Prepare payload for third-party API
+        required_fields = {
+            'firstName': request.data.get('first_name'),
+            'amount': request.data.get('amount'),
+            'phone': request.data.get('phone'),
+            'email': request.data.get('customer_email'),
+            'maxAmount': max_amount,
+            'finalCollectionDate': final_collection_date,
+            'address1': request.data.get('address_one'),
+            'address2': request.data.get('address_two'),
+            'city': request.data.get('city'),
+            'state': request.data.get('state'),
+            'country': request.data.get('country'),
+            'zipcode': request.data.get('zipcode'),
+            'productInfo': request.data.get('product_info'),
+        }
+
+        missing_fields = [key for key, value in required_fields.items() if not value]
+        if missing_fields:
+            return self._generate_failure_response(f"Please provide {', '.join(missing_fields)}.")
+        try:
+            response = requests.post(INITIATE_PAYMENT_URL, json=required_fields, verify=False)
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                if serializer.is_valid():
+                    collection_autopay = serializer.save()
+
+                    LoanAutoPayBase.objects.filter(lender_loan_id=lender_loan_id).update(
+                        payment_row_id=collection_autopay.id,
+                        paid_status=autopay_status
+                    )
+                    AutopayAssigned.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
+                        status=autopay_status
+                    )
+
+                    CollectionAutopay.objects.filter(
+                        loan_id__loan_details__lender_loan_id=lender_loan_id
+                    ).update(
+                        initiate_payment_api_response=response.json()
+                    )
+
+                    # Return success response
+                    return Response({
+                        'status': 'success',
+                        'message': "Initiated Successfully.",
+                        'result': response.json(),
+                        'row_id': collection_autopay.id
+                    }, status=status.HTTP_200_OK)
+                return self._generate_failure_response(serializer.errors)
+                # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return self._generate_failure_response("An error occurred while initiating payment.")
+
+        except requests.exceptions.RequestException as e:
+            return self._generate_failure_response(f"Request failed: {str(e)}")
+
+        except ValueError as e:
+            return self._generate_failure_response(f"Invalid data: {str(e)}")
+
+        except KeyError as e:
+            return self._generate_failure_response(f"Missing data in response: {str(e)}")
+
+        except Exception as e:
+            return self._generate_failure_response(f"An unexpected error occurred: {str(e)}")
+
 

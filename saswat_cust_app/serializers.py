@@ -387,8 +387,14 @@ class AutopayAssignedSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 
 
-class CollectionAutoPaySerializer(serializers.ModelSerializer):
+class CollectionAutopaySerializer(serializers.ModelSerializer):
     loan_id = serializers.CharField(write_only=True)
+    max_amount = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        # default=100000.00,
+        required=False
+    )
     print(loan_id)
 
     class Meta:
@@ -399,6 +405,7 @@ class CollectionAutoPaySerializer(serializers.ModelSerializer):
         loan_id = validated_data.pop('loan_id')
         print(loan_id)
         collection = AutopayAssignedSerializer.objects.filter(loan_details__lender_loan_id=loan_id).first()
+        validated_data['max_amount'] = "100000.00"
         validated_data['loan_id'] = collection
         collection_payment = CollectionAutopay.objects.create(**validated_data)
         return collection_payment

@@ -1015,7 +1015,9 @@ class LoanAutoPayBase(models.Model): #//copy of emi collection
 class AutopayAssigned(models.Model):
     STATUS_CHOICES = [
         ('Active', 'Active'),
-        ('InActive', 'InActive')
+        ('Initiate', 'Initiate'),
+        ('Success', 'Success'),
+        ('Failure', 'Failure'),
     ]
     employee_details = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="Employee Details")
     loan_details = models.ForeignKey(LoanAutoPayBase, on_delete=models.CASCADE, verbose_name="Loan Details")
@@ -1034,6 +1036,7 @@ class AutopayAssigned(models.Model):
 
     class Meta:
         db_table = 'autopay_assigned'
+
 
 class CollectionAutopay(models.Model):
     user_id = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
@@ -1056,7 +1059,7 @@ class CollectionAutopay(models.Model):
     debit_request_api_response = models.JSONField(null=True, blank=True)
     transaction_status_api_response = models.JSONField(null=True, blank=True)
     cancel_mandate_api_response = models.JSONField(null=True, blank=True)
-    status = models.CharField(max_length=6, null=True, blank=True)
+    status = models.CharField(max_length=10, null=True, blank=True)
     remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(default=timezone.now)
