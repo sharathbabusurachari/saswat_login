@@ -950,7 +950,7 @@ class CollectionTypeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CollectionType, CollectionTypeAdmin)
-admin.site.register(CollectionAutopay)
+#admin.site.register(CollectionAutopay)
 
 class LoanAutoPayBaseAdmin(admin.ModelAdmin):
     list_per_page = 15
