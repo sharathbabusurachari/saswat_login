@@ -15,7 +15,8 @@ from saswat_cust_app.models import (UserOtp, UserDetails, CustomerTest, Gender, 
                                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries,
                                     ESign,
                                     Collection, DesignationDetails,
-                                    EMICollections, CollectionType, ModesOfPayment, CollectionPayment)
+                                    EMICollections, CollectionType, ModesOfPayment, CollectionPayment, LoanAutoPayBase,
+                                    AutopayAssigned)
 
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -37,7 +38,8 @@ from saswat_cust_app.serializers import (OTPSerializer, GpsSerializer, CustomerT
                                          QueryStatusUpdateSerializer,
                                          CollectionSerializer,
                                          EMICollectionsSerializer, CollectionPaymentSerializer,
-                                         CollectionTypeSerializer, ModesOfPaymentSerializer)
+                                         CollectionTypeSerializer, ModesOfPaymentSerializer, LoanAutoPayBaseSerializer,
+                                         AutopayAssignedSerializer)
 from datetime import datetime, timedelta, date
 import requests
 # from rest_framework.authentication import SessionAuthentication
@@ -4070,4 +4072,177 @@ class CollectionTypeAPIView(APIView):
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
+
+class AutopayRegisterAPIView(APIView):
+
+    def get(self, request):
+        user_id = request.GET.get('user_id')
+        loan_id = request.query_params.get('loan_id')
+        selected_rm_id = request.GET.get('selected_rm_id')
+        selected_so_id = request.GET.get('selected_so_id')
+
+
+        response_data = {
+            "status": STATUS_SUCCESS,
+            "message": "success",
+            "reporting_manager": [],
+            "sales_officer": [],
+            "customer_list": [],
+            "customer_details": []
+        }
+
+        if not user_id:
+            return self._generate_failure_response("user_id is required")
+
+        if selected_so_id:
+            return self.handle_selected_so(selected_so_id, loan_id, response_data)
+
+        if selected_rm_id:
+            return self.handle_selected_rm(selected_rm_id, loan_id, response_data)
+
+        try:
+            user_details = UserDetails.objects.get(user_id=user_id)
+            employee_details = user_details.employees.first()
+            if not employee_details:
+                return self._generate_failure_response("Employee details not found for the user")
+
+            designation_name = DesignationDetails.objects.get(id=employee_details.designation_id).designation_name
+
+            if designation_name == 'Cluster Head':
+                return self.handle_cluster_head(employee_details, response_data, loan_id)
+            elif designation_name == 'Reporting Manager':
+                return self.handle_reporting_manager(employee_details, response_data, loan_id)
+            elif designation_name == 'Sales Officer':
+                return self.handle_sales_officer(employee_details, response_data, loan_id)
+            else:
+                return self._generate_failure_response("Unknown designation")
+
+        except UserDetails.DoesNotExist:
+            return self._generate_failure_response("User not found")
+
+    def handle_selected_so(self, selected_so_id, loan_id, response_data):
+        try:
+            employee_det = AutopayAssigned.objects.filter(employee_details=selected_so_id)
+            if employee_det.exists():
+                autopay_assigned_serializer = AutopayAssignedSerializer(employee_det, many=True)
+                response_data["customer_list"] = autopay_assigned_serializer.data
+            else:
+                return self._generate_failure_response("No collection data")
+            if loan_id:
+                return self.get_emi_collections(loan_id)
+            return Response(response_data)
+        except AutopayAssigned.DoesNotExist:
+            return self._generate_failure_response("Autopay Assigned not found for the Sales Officer")
+
+    def handle_selected_rm(self, selected_rm_id, loan_id, response_data):
+        try:
+            if loan_id:
+                return self.get_emi_collections(loan_id)
+
+            selected_rm = EmployeeDetails.objects.get(id=selected_rm_id)
+            sales_officers = EmployeeDetails.objects.filter(reporting_manager_id=selected_rm_id)
+
+            selected_rm_data = EmployeeDetailsSerializer(selected_rm).data
+            sales_officer_data = EmployeeDetailsSerializer(sales_officers, many=True).data
+
+            rm_designation_name = DesignationDetails.objects.get(id=selected_rm_data['designation']).designation_name
+            selected_rm_data['designation_name'] = rm_designation_name
+
+            for so in sales_officer_data:
+                so['designation_name'] = DesignationDetails.objects.get(id=so['designation']).designation_name
+
+            response_data["sales_officer"] = [selected_rm_data] + sales_officer_data
+            return Response(response_data)
+
+        except EmployeeDetails.DoesNotExist:
+            return self._generate_failure_response("Reporting Manager not found")
+
+    def handle_cluster_head(self, employee_details, response_data, loan_id):
+        try:
+            autopay_assigned = AutopayAssigned.objects.filter(employee_details=employee_details.id)
+            autopay_assigned_serializer = AutopayAssignedSerializer(autopay_assigned, many=True)
+            response_data["customer_list"] = autopay_assigned_serializer.data
+
+            if loan_id:
+                return self.get_emi_collections(loan_id)
+
+            rm_designation = DesignationDetails.objects.get(designation_name='Reporting Manager')
+            so_designation = DesignationDetails.objects.get(designation_name='Sales Officer')
+
+            reporting_managers = EmployeeDetails.objects.filter(cluster_head=employee_details,
+                                                                designation=rm_designation.id)
+            sales_officers = EmployeeDetails.objects.filter(cluster_head=employee_details,
+                                                            designation=so_designation.id)
+            direct_sales_officers = sales_officers.filter(reporting_manager=None)
+
+            response_data["reporting_manager"] = EmployeeDetailsSerializer(reporting_managers, many=True).data
+            response_data["sales_officer"] = EmployeeDetailsSerializer(direct_sales_officers, many=True).data
+
+            return Response(response_data)
+
+        except DesignationDetails.DoesNotExist:
+            return self._generate_failure_response("One or more designations not found")
+
+    def handle_reporting_manager(self, employee_details, response_data, loan_id):
+        try:
+            autopay_assigned = AutopayAssigned.objects.filter(employee_details=employee_details.id)
+            autopay_assigned_serializer = AutopayAssignedSerializer(autopay_assigned, many=True)
+            response_data["customer_list"] = autopay_assigned_serializer.data
+
+            if loan_id:
+                return self.get_emi_collections(loan_id)
+
+            sales_officers = EmployeeDetails.objects.filter(reporting_manager_id=employee_details.id)
+            selected_rm_data = EmployeeDetailsSerializer(employee_details).data
+            sales_officer_data = EmployeeDetailsSerializer(sales_officers, many=True).data
+
+            rm_designation_name = DesignationDetails.objects.get(id=selected_rm_data['designation']).designation_name
+            selected_rm_data['designation_name'] = rm_designation_name
+
+            for so in sales_officer_data:
+                so['designation_name'] = DesignationDetails.objects.get(id=so['designation']).designation_name
+
+            response_data["sales_officer"] = [selected_rm_data] + sales_officer_data
+
+            return Response(response_data)
+
+        except EmployeeDetails.DoesNotExist:
+            return self._generate_failure_response("Reporting Manager not found")
+
+    def handle_sales_officer(self, employee_details, response_data, loan_id):
+        try:
+            autopay_assigned = AutopayAssigned.objects.filter(employee_details=employee_details.id)
+            autopay_assigned_serializer = AutopayAssignedSerializer(autopay_assigned, many=True)
+            response_data["customer_list"] = autopay_assigned_serializer.data
+
+            if loan_id:
+                return self.get_emi_collections(loan_id)
+
+            return Response(response_data)
+
+        except AutopayAssigned.DoesNotExist:
+            return self._generate_failure_response("AutopayAssigned is not found for the Sales Officer")
+
+    def get_emi_collections(self, loan_id):
+        loan_autopay_base = LoanAutoPayBase.objects.filter(id=loan_id)
+        if loan_autopay_base.exists():
+            loan_autopay_base_serializer = LoanAutoPayBaseSerializer(loan_autopay_base, many=True)
+            response_data = {
+                "status": STATUS_SUCCESS,
+                "message": "success",
+                "reporting_manager": [],
+                "sales_officer": [],
+                "customer_list": [],
+                "customer_details": loan_autopay_base_serializer.data
+            }
+            return Response(response_data)
+        else:
+            return self._generate_failure_response("No Loan Autopay Base found for the given loan_id")
+
+    def _generate_failure_response(self, message):
+        response_data = {
+            'status': STATUS_FAILURE,
+            'message': message,
+        }
+        return JsonResponse(response_data, status=status.HTTP_200_OK)
 

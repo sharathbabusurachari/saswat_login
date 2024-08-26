@@ -4,9 +4,11 @@ from .models import (UserOtp, GpsModel, CustomerTest, Gender, State,
                      VleVillageInfo, BmcBasicInformation, VleBasicInformation, VleMobileNumber,
                      PhotoOfBmc, VLEBankDetails, SkillsAndKnowledge, VLEEconomicAndSocialStatusInfo,
                      VleNearbyMilkCenterContact, VillageDetails, VleMobileVOtp, VleOtp,
-                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails, EmployeeDetails,
+                     LoanApplication, QueryModel, SignInSignOut, QnaAttachment, ShortenedQueries, UserDetails,
+                     EmployeeDetails,
                      ESign, EMICollections,
-                     Collection, ModesOfPayment, CollectionPayment, CollectionType)
+                     Collection, ModesOfPayment, CollectionPayment, CollectionType, AutopayAssigned, LoanAutoPayBase,
+                     CollectionAutopay)
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -345,5 +347,76 @@ class CollectionPaymentSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class LoanAutoPayBaseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LoanAutoPayBase
+        fields = '__all__'
+
+
+class AutopayAssignedSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
+    loan_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AutopayAssigned
+        # fields = '__all__'
+        fields = ['id', 'customer_name', 'loan_id',
+                  'status', 'start_date', 'end_date', "employee_details", "loan_details",
+                  ]
+    def get_customer_name(self, obj):
+        return obj.loan_details.customer_name if obj.loan_details else None
+
+    def get_loan_id(self, obj):
+        return obj.loan_details.lender_loan_id if obj.loan_details else None
+
+
+# class LoanAutoPayRequestStatusSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = LoanAutoPayRequestStatus
+#         fields = '__all__'
+#
+#
+# class LoanAutoPaySerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = LoanAutoPay
+#         fields = '__all__'
+
+
+class CollectionAutoPaySerializer(serializers.ModelSerializer):
+    loan_id = serializers.CharField(write_only=True)
+    print(loan_id)
+
+    class Meta:
+        model = CollectionAutopay
+        fields = '__all__'
+
+    def create(self, validated_data):
+        loan_id = validated_data.pop('loan_id')
+        print(loan_id)
+        collection = AutopayAssignedSerializer.objects.filter(loan_details__lender_loan_id=loan_id).first()
+        validated_data['loan_id'] = collection
+        collection_payment = CollectionAutopay.objects.create(**validated_data)
+        return collection_payment
+
+    def update(self, instance, validated_data):
+        loan_id = validated_data.pop('loan_id', None)
+
+        if loan_id:
+            collection = AutopayAssignedSerializer.objects.filter(loan_details__lender_loan_id=loan_id).first()
+            if collection:
+                instance.loan_id = collection
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        return instance
+
 
 

@@ -14,7 +14,8 @@ from .models import (UserDetails, UserOtp, GpsModel, CustomerTest, Gender, State
                      EmployeeDetails, EmployeeTargetDetails, EmployeeSetTargetDetails,
                      LoanApplication, QueryModel, QnaAttachment, SignInSignOut, ShortenedQueries, QueryDocuments, ESign,
                      Collection,
-                     EMICollections, CollectionPayment, ModesOfPayment, CollectionType)
+                     EMICollections, CollectionPayment, ModesOfPayment, CollectionType, CollectionAutopay,
+                     LoanAutoPayBase, AutopayAssigned)
 from django.http import HttpResponse
 import csv
 from openpyxl import Workbook
@@ -949,6 +950,36 @@ class CollectionTypeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CollectionType, CollectionTypeAdmin)
+admin.site.register(CollectionAutopay)
+
+class LoanAutoPayBaseAdmin(admin.ModelAdmin):
+    list_per_page = 15
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
 
 
+admin.site.register(LoanAutoPayBase, LoanAutoPayBaseAdmin)
+
+
+class AutopayAssignedAdmin(admin.ModelAdmin):
+    list_per_page = 15
+
+    def get_model_fields(self, obj):
+        return [field.name for field in obj._meta.fields]
+
+    list_display = []
+
+    def __init__(self, model, admin_site):
+        super().__init__(model, admin_site)
+        self.list_display = self.get_model_fields(model)
+
+
+admin.site.register(AutopayAssigned, AutopayAssignedAdmin)
 

@@ -956,3 +956,115 @@ class CollectionPayment(models.Model):
 
     class Meta:
         db_table = 'collection_payment'
+
+
+class LoanAutoPayBase(models.Model): #//copy of emi collection
+
+    customer_name = models.CharField(max_length=100, verbose_name='Customer Name', blank=True, null=True)
+    customer_email = models.CharField(max_length=100, verbose_name='Customer Email', blank=True, null=True)
+    address1 = models.CharField(max_length=100, verbose_name='Customer Address 1', blank=True, null=True)
+    address2 = models.CharField(max_length=100, verbose_name='Customer Address 2', blank=True, null=True)
+    city = models.CharField(max_length=100, verbose_name='Customer CITY', blank=True, null=True)
+    zipcode = models.CharField(max_length=100, verbose_name='ZIPCODE', blank=True, null=True)
+    county = models.CharField(max_length=100, verbose_name='Country', blank=True, null=True)
+    co_applicant_name = models.CharField(max_length=100, verbose_name='Co Applicant Name', blank=True, null=True)
+    lender_loan_id = models.CharField(max_length=50, verbose_name='Lender Loan ID', unique=True)
+    prospect_id = models.IntegerField(unique=True, verbose_name='Prospect Id', blank=True, null=True)
+    product_name = models.CharField(max_length=100, verbose_name='Product Name', blank=True, null=True)
+    bank_name = models.CharField(max_length=100, verbose_name='Bank Name', blank=True, null=True)
+    branch = models.CharField(max_length=100, verbose_name='Branch Name', blank=True, null=True)
+    state = models.CharField(max_length=100, verbose_name='State ', blank=True, null=True)
+    cheque_no = models.CharField(max_length=100, verbose_name='Cheque Number', blank=True, null=True)
+    sanctioned_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Sanctioned Amount',
+                                            blank=True, null=True)
+    location = models.CharField(max_length=50, verbose_name='Location', blank=True, null=True)
+    sm = models.CharField(max_length=50, verbose_name='SM', blank=True, null=True)
+    modes = models.CharField(max_length=50, verbose_name='Modes', blank=True, null=True)
+    ops = models.CharField(max_length=50, verbose_name='OPS', blank=True, null=True)
+    loan_status = models.CharField(max_length=100, verbose_name='Loan Status', blank=True, null=True)
+    installment_no = models.IntegerField(verbose_name='Installments Number', blank=True, null=True)
+    emi_amt = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='EMI Amount', blank=True, null=True)
+    due_date = models.DateField(verbose_name='Due Date', blank=True, null=True)
+    interest = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Interest', blank=True, null=True)
+    principal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Principle', blank=True, null=True)
+    umrn = models.CharField(max_length=100, verbose_name='UMRN', blank=True, null=True)
+    disbursed_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Disbursed Amount', blank=True,
+                                           null=True)
+    remark = models.CharField(max_length=100, verbose_name='Remark', blank=True, null=True)
+    applicant_mobile_no = models.CharField(max_length=15, verbose_name="Applicant Mobile Number",
+                                           blank=True, null=True)
+    co_applicant_mobile_no = models.CharField(max_length=15, verbose_name="Co-Applicant Mobile Number",
+                                              blank=True, null=True)
+    village_details = models.CharField(max_length=100, verbose_name="Village Details")
+    block = models.CharField(max_length=100, blank=True, null=True, verbose_name="Block")
+    taluk = models.CharField(max_length=100, blank=True, null=True, verbose_name="Taluk")
+    cluster = models.CharField(max_length=100, blank=True, null=True, verbose_name="Cluster")
+    paid_status = models.CharField(max_length=100, blank=True, null=True, verbose_name="Paid Status")
+    payment_row_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Payment Row Id")
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.lender_loan_id}"
+    class Meta:
+        db_table = 'loan_autopay_base'
+
+
+class AutopayAssigned(models.Model):
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('InActive', 'InActive')
+    ]
+    employee_details = models.ForeignKey(EmployeeDetails, on_delete=models.CASCADE, verbose_name="Employee Details")
+    loan_details = models.ForeignKey(LoanAutoPayBase, on_delete=models.CASCADE, verbose_name="Loan Details")
+    status = models.CharField(choices=STATUS_CHOICES, max_length=100, verbose_name="Status")
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    created_date = models.DateTimeField(auto_now_add=True, )
+    modified_date = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+    remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.loan_details}"
+
+    class Meta:
+        db_table = 'autopay_assigned'
+
+class CollectionAutopay(models.Model):
+    user_id = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    loan_id = models.ForeignKey(AutopayAssigned, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=100)
+    customer_mobile = models.CharField(max_length=100, null=True, blank=True)
+    customer_email = models.EmailField()
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    max_amount = models.DecimalField(max_digits=8, decimal_places=2)
+    product_info = models.CharField(max_length=100)
+    final_collection_date = models.DateField(null=True, blank=True)
+    sub_merchant_id = models.CharField(max_length=100, null=True, blank=True)
+    address_one = models.TextField()
+    address_two = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    zipcode = models.CharField(max_length=6)
+    initiate_payment_api_response = models.JSONField(null=True, blank=True)
+    debit_request_api_response = models.JSONField(null=True, blank=True)
+    transaction_status_api_response = models.JSONField(null=True, blank=True)
+    cancel_mandate_api_response = models.JSONField(null=True, blank=True)
+    status = models.CharField(max_length=6, null=True, blank=True)
+    remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=255, verbose_name="Created By", null=True, blank=True)
+    modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
+
+    def __str__(self):
+        return self.customer_mobile
+
+    class Meta:
+        db_table = 'collection_autopay'
