@@ -24,10 +24,18 @@ from django.utils.translation import gettext_lazy as _
 
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources, fields
+from django.templatetags.static import static
+
 
 admin.site.site_header = "Saswat Administration"
 admin.site.site_title = "Saswat Admin Portal"
 admin.site.index_title = _("Welcome to Saswat TA Portal")
+
+class CustomAdminMixin(admin.ModelAdmin):
+    class Media:
+        css = {
+            'all': (static('css/custom_admin.css'),)
+        }
 
 
 def export_as_csv_action(description="Export selected objects as CSV file",
@@ -654,7 +662,7 @@ class AttachmentOneInline(admin.TabularInline):
     fields = ('so_attachment', 'ta_attachment')
 
 
-class MainModelOneAdmin(admin.ModelAdmin):
+class MainModelOneAdmin(CustomAdminMixin, admin.ModelAdmin):
     form = QueryModelForm
     inlines = [AttachmentOneInline]
     search_fields = ['saswat_application_number__saswat_application_number', 'query_status']
