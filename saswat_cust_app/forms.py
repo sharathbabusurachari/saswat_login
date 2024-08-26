@@ -19,4 +19,4 @@ class QueryModelForm(forms.ModelForm):
         }
 
     class Media:
-        js = ('saswat_cust_app/js/admin_custom.js')
+        js = ('saswat_cust_app/js/admin_custom.js',)
