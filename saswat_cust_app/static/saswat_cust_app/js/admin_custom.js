@@ -14,13 +14,20 @@ document.addEventListener('DOMContentLoaded', function () {
     documentField.addEventListener('change', function () {
         const documentId = this.value;
 
-        if (documentId) {
-            if (descriptionField) descriptionField.value = '';
-            if (additionalInfoField) additionalInfoField.value = '';
+        if (descriptionField) {
+            descriptionField.value = '';
+            adjustTextAreaHeight(descriptionField);
+        }
+        if (additionalInfoField) {
+            additionalInfoField.value = '';
+            adjustTextAreaHeight(additionalInfoField);
+        }
 
+        if (documentId) {
             fetch(`/api/get_documents/${documentId}/`)
                 .then(response => response.json())
                 .then(data => {
+
                     shortenedQueryField.innerHTML = '<option value="">---------</option>';
                     data.shortened_queries.forEach(function (shortenedQuery) {
                         const option = document.createElement('option');
@@ -32,11 +39,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
 
             shortenedQueryField.innerHTML = '<option value="">---------</option>';
-
-            if (descriptionField) descriptionField.value = '';
-            if (additionalInfoField) additionalInfoField.value = '';
         }
     });
+
 
     shortenedQueryField.addEventListener('change', function() {
         const shortenedQueryId = this.value;
@@ -65,10 +70,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.auto-expand').forEach(textarea => {
         adjustTextAreaHeight(textarea);
 
+
         textarea.addEventListener('input', () => {
             adjustTextAreaHeight(textarea);
         });
     });
 });
-
-
