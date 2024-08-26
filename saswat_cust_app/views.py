@@ -4304,7 +4304,7 @@ class AutopayRegisterAPIView(APIView):
 
                     # Return success response
                     return Response({
-                        'status': 'success',
+                        'status': STATUS_SUCCESS,
                         'message': "Initiated Successfully.",
                         'result': response.json(),
                         'row_id': collection_autopay.id
