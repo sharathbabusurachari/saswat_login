@@ -725,8 +725,8 @@ class QnaAttachmentAdmin(admin.ModelAdmin):
 
 
 class SignInSignOutAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'gps', 's_remarks',
-                    's_remarks_one', 'created_at')
+    list_display = ('id', 'user', 'client_id', 'event_type', 'event_date', 'event_time', 'gps', 'remarks',
+                    'remarks_one', 'created_at')
     # list_select_related = ['user']
     list_display_links = ('id', 'user')
     search_fields = ('user__user_id', 'user__first_name')
@@ -736,16 +736,16 @@ class SignInSignOutAdmin(admin.ModelAdmin):
     actions = [export_as_csv_action(), export_as_excel_action()]
     readonly_fields = ('gps',)
 
-    def truncate_field(self, field_value, max_length=30):
-        return (str(field_value)[:20] + '.....') if len(str(field_value)) > max_length else field_value
-
-    def get_truncated_field_method(field_name, short_description):
-        def method(self, obj):
-            return self.truncate_field(getattr(obj, field_name))
-        method.short_description = short_description
-        return method
-    s_remarks = get_truncated_field_method('remarks', 'REMARKS')
-    s_remarks_one = get_truncated_field_method('remarks_one', 'REMARKS ONE')
+    # def truncate_field(self, field_value, max_length=30):
+    #     return (str(field_value)[:20] + '.....') if len(str(field_value)) > max_length else field_value
+    #
+    # def get_truncated_field_method(field_name, short_description):
+    #     def method(self, obj):
+    #         return self.truncate_field(getattr(obj, field_name))
+    #     method.short_description = short_description
+    #     return method
+    # s_remarks = get_truncated_field_method('remarks', 'REMARKS')
+    # s_remarks_one = get_truncated_field_method('remarks_one', 'REMARKS ONE')
 
 
 admin.site.register(SignInSignOut, SignInSignOutAdmin)

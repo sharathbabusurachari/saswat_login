@@ -77,7 +77,7 @@ class GpsModel(models.Model):
 
     def __str__(self):
         # return self.name
-        return f"{self.name} - {self.id}"
+        return str(self.id)
 
 
 class Gender(models.Model):
