@@ -4326,3 +4326,31 @@ class AutopayRegisterAPIView(APIView):
             return self._generate_failure_response(f"An unexpected error occurred: {str(e)}")
 
 
+    def put(self, request, *args, **kwargs):
+        row_id = request.data.get('row_id')
+        pay_status = request.data.get('status')
+        try:
+            collection_autopay = CollectionAutopay.objects.get(id=row_id)
+            loan_id=collection_autopay.loan_id.loan_details.lender_loan_id
+            #autopay_assigned = AutopayAssigned.objects.get(loan_details__lender_loan_id=loan_id)
+        except ObjectDoesNotExist:
+            return self._generate_failure_response('Not found')
+        serializer = CollectionAutopaySerializer(collection_autopay, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            LoanAutoPayBase.objects.filter(lender_loan_id=loan_id).update(paid_status=pay_status,
+                                                                          payment_row_id=row_id)
+
+            AutopayAssigned.objects.filter(loan_details__lender_loan_id=loan_id).update(
+                status=pay_status)
+
+            response_data = {
+                'status': STATUS_SUCCESS,
+                'message': "Update Success",
+                'row_id': row_id
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
