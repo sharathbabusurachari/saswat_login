@@ -1,4 +1,6 @@
 # import string
+from decimal import Decimal
+
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
@@ -3910,84 +3912,162 @@ class CollectionDataView(APIView):
         }
         return JsonResponse(response_data, status=status.HTTP_200_OK)
 
+    def update_emi_collections(self, collection_payment, paid_amt, collection_status):
+        try:
+            # Validate `collection_payment`
+            if not collection_payment:
+                raise ValidationError("Collection payment record not found.")
+
+            # Validate `paid_amt` (must be a valid decimal number and non-negative)
+            try:
+                new_paid_amt_decimal = Decimal(str(paid_amt))
+                if new_paid_amt_decimal < 0:
+                    raise ValidationError("Paid amount cannot be negative.")
+            except InvalidOperation:
+                raise ValidationError("Invalid paid amount. Please provide a valid numeric value.")
+
+            # Validate that `emi_amt` exists and is valid
+            if not isinstance(collection_payment.emi_amt, Decimal):
+                raise ValidationError("Invalid EMI amount in the collection payment record.")
+
+            # Calculate the new total paid amount and balance amount
+            total_paid_amount = collection_payment.paid_amt + new_paid_amt_decimal
+            if total_paid_amount > collection_payment.emi_amt:
+                raise ValidationError("Paid amount cannot exceed the EMI amount.")
+
+            # Update the payment status and collection status
+            collection_payment.paid_status = collection_status
+            collection_payment.paid_amt = total_paid_amount
+            collection_payment.balance_amt = max(collection_payment.emi_amt - collection_payment.paid_amt, 0)
+
+            # Save the updated record
+            collection_payment.save()
+
+            # Return the updated collection payment record
+            return collection_payment
+
+        except ValidationError as e:
+            # Raise the validation error to be handled by the view
+            raise ValidationError(str(e))
+        except Exception as e:
+            # Handle unexpected exceptions
+            raise ValidationError(f"An unexpected error occurred: {str(e)}")
+
     def post(self, request, *args, **kwargs):
         serializer = CollectionPaymentSerializer(data=request.data)
         lender_loan_id = request.data.get('loan_id')
         pay_status = request.data.get('status')
-        if pay_status == "Paid":
-            collection_status = "Collected - Need to be Verified"
-        elif pay_status == "Paid-Partially":
-            collection_status = "Partial collected - Need to be verified"
-        elif pay_status == "Not Paid":
-            collection_status = "Not collected"
-        elif pay_status == "CASH-Paid":
-            collection_status = "Collected - Need to be Verified"
-        elif pay_status == "CASH-Paid-Partially":
-            collection_status = "Partial collected - Need to be verified"
-        elif pay_status == "Unable to Pay":
-            collection_status = "Not collected"
-        elif pay_status == "Applicant-Unavailable":
-            collection_status = "Not collected"
-        elif pay_status == "Promise-To-pay":
-            collection_status = "Not collected"
-        else:
-            collection_status = "Unknown"
+        paid_amt = request.data.get('paid_amount')
+
+        collection_status = self.get_collection_status(pay_status)
 
         if serializer.is_valid():
-            collection_payment = serializer.save()
+            validated_data = serializer.validated_data
+
+            # Fetch the collection payment record
+            try:
+                collection_payment = EMICollections.objects.get(lender_loan_id=lender_loan_id)
+            except EMICollections.DoesNotExist:
+                return self._generate_failure_response('Collection payment record not found.')
+
+            # Update the collection payment record
+            try:
+                collection_payment = self.update_emi_collections(collection_payment, paid_amt, collection_status)
+            except ValidationError as e:
+                return self._generate_failure_response(str(e))
+
+
+            # Update the EMICollections table with the new data
             EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
                 payment_row_id=collection_payment.id,
-                paid_status=collection_payment.status
+                paid_status=pay_status,
+                collections_status=collection_status
             )
-            if collection_status != "Unknown":
-                Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
-                    status=collection_status
-                )
+
+            # Set additional fields for the serializer
+            validated_data['balance_amount'] = collection_payment.balance_amt
+            validated_data['emi_amount'] = collection_payment.emi_amt
+
+            # Save the serializer with the updated data
+            collection_payment = serializer.save(
+                balance_amount=validated_data['balance_amount'],
+                emi_amount=validated_data['emi_amount']
+            )
+
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Success",
-                'row_id': collection_payment.id
+                'row_id': collection_payment.id,
+                'balance_amount': validated_data['balance_amount'],
+                'emi_amount': validated_data['emi_amount']
             }
             return Response(response_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return self._generate_failure_response(serializer.errors)
+
+    def get_collection_status(self, pay_status):
+        status_mapping = {
+            "Paid": "Collected - Need to be Verified",
+            "Paid-Partially": "Partial collected - Need to be verified",
+            "Not Paid": "Not collected",
+            "CASH-Paid": "Collected - Need to be Verified",
+            "CASH-Paid-Partially": "Partial collected - Need to be verified",
+            "Unable to Pay": "Not collected",
+            "Applicant-Unavailable": "Not collected",
+            "Promise-To-pay": "Not collected"
+        }
+        return status_mapping.get(pay_status, "Unknown")
 
     def put(self, request, *args, **kwargs):
         row_id = request.data.get('row_id')
         lender_loan_id = request.data.get('loan_id')
         pay_status = request.data.get('status')
-        if pay_status == "Paid":
-            collection_status = "Collected - Need to be Verified"
-        elif pay_status == "Paid-Partially":
-            collection_status = "Partial collected - Need to be verified"
-        elif pay_status == "Not Paid":
-            collection_status = "Not collected"
-        elif pay_status == "CASH-Paid":
-            collection_status = "Collected - Need to be Verified"
-        elif pay_status == "CASH-Paid-Partially":
-            collection_status = "Partial collected - Need to be verified"
-        elif pay_status == "Unable to Pay":
-            collection_status = "Not collected"
-        elif pay_status == "Applicant-Unavailable":
-            collection_status = "Not collected"
-        elif pay_status == "Promise-To-pay":
-            collection_status = "Not collected"
-        else:
-            collection_status = "Unknown"
+        paid_amt = request.data.get('paid_amount')
+
+        collection_status = self.get_collection_status(pay_status)
 
         try:
+            # Fetch the Collection and CollectionPayment records
             collection = Collection.objects.get(loan_details__lender_loan_id=lender_loan_id)
+            print(collection.id)
             collection_payment = CollectionPayment.objects.get(id=row_id, loan_id=collection.id)
+            emi_collection = EMICollections.objects.get(lender_loan_id=lender_loan_id)
+        except Collection.DoesNotExist:
+            return self._generate_failure_response('Collection not found')
+        except CollectionPayment.DoesNotExist:
+            return self._generate_failure_response('CollectionPayment not found')
 
-        except ObjectDoesNotExist:
-            return self._generate_failure_response('Collection or CollectionPayment not found')
+        except EMICollections.DoesNotExist:
+            return self._generate_failure_response('EMICollections not found')
+
+        # Validate `paid_amt` (must be a valid decimal number and non-negative)
+        try:
+            new_paid_amt_decimal = Decimal(str(paid_amt))
+            if new_paid_amt_decimal < 0:
+                raise ValidationError("Paid amount cannot be negative.")
+        except InvalidOperation:
+            raise ValidationError("Invalid paid amount. Please provide a valid numeric value.")
+
+        # Calculate the new total paid amount and balance amount
+        total_paid_amount = collection_payment.paid_amount + new_paid_amt_decimal
+        if total_paid_amount > emi_collection.emi_amt:
+            return self._generate_failure_response('Paid amount cannot exceed the EMI amount')
+
+        # Update the CollectionPayment record
         serializer = CollectionPaymentSerializer(collection_payment, data=request.data, partial=True)
-
         if serializer.is_valid():
-            serializer.save()
-            EMICollections.objects.filter(lender_loan_id=lender_loan_id).update(
-                payment_row_id=collection_payment.id,
-                paid_status=collection_payment.status
+            collection_payment = serializer.save(
+                paid_amount=total_paid_amount,
+                balance_amount=max(emi_collection.emi_amt - total_paid_amount, 0)
             )
+
+            # Update the EMICollections record
+            emi_collection.payment_row_id = collection_payment.id
+            emi_collection.paid_status = collection_payment.status
+            emi_collection.paid_amt = total_paid_amount
+            emi_collection.balance_amt = collection_payment.balance_amount
+            emi_collection.save()
+
+            # Update the Collection record if status has changed
             if collection_status != "Unknown":
                 Collection.objects.filter(loan_details__lender_loan_id=lender_loan_id).update(
                     status=collection_status
@@ -3996,11 +4076,17 @@ class CollectionDataView(APIView):
             response_data = {
                 'status': STATUS_SUCCESS,
                 'message': "Update Success",
-                'row_id': collection_payment.id
+                'row_id': collection_payment.id,
+                'balance_amount': collection_payment.balance_amount,
+                'paid_amount': total_paid_amount,
+                'emi_amount': emi_collection.emi_amt
             }
             return Response(response_data, status=status.HTTP_200_OK)
+        return self._generate_failure_response(serializer.errors)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 
     # def post(self, request, *args, **kwargs):

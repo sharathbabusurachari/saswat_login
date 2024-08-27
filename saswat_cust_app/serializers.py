@@ -283,7 +283,8 @@ class EMICollectionsSerializer(serializers.ModelSerializer):
         model = EMICollections
         fields = ['id', 'lender_loan_id', 'customer_name', 'disbursed_amount', 'installment_no',
                   'emi_amt', 'due_date', 'applicant_mobile_no', 'co_applicant_mobile_no', 'village_details',
-                  'block', 'taluk', 'cluster', 'payment_row_id', 'paid_status']
+                  'block', 'taluk', 'cluster', 'payment_row_id', 'paid_status', 'paid_amt',
+                  'balance_amt', 'collections_status']
 
     def get_paid_status(self, obj):
         return obj.paid_status if obj.paid_status is not None else ""
