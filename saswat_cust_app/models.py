@@ -8,6 +8,7 @@ from random import randint
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import F, Q
+from django.utils.translation import gettext as _
 
 
 
@@ -892,6 +893,12 @@ class Collection(models.Model):
     modified_by = models.CharField(max_length=255, verbose_name="Modified By", null=True, blank=True)
     remarks = models.JSONField(verbose_name="Additional Details", null=True, blank=True)
     collection_status = models.CharField(max_length=20, null=True, blank=True)
+
+
+    def clean(self):
+        # Check if this loan has already been assigned to another employee
+        if Collection.objects.filter(loan_details=self.loan_details).exclude(id=self.id).exists():
+            raise ValidationError(_("This loan is already assigned to another employee."))
 
 
     def __str__(self):
